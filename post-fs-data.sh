@@ -34,7 +34,6 @@ resetprop_if_diff ro.warranty_bit 0
 resetprop_if_diff ro.secureboot.lockstate locked
 
 # Realme
-resetprop_if_diff ro.boot.realme.lockstate 1
 resetprop_if_diff ro.boot.realmebootstate green
 
 # OnePlus
