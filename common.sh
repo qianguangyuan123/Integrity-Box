@@ -17,6 +17,7 @@ resetprop_hexpatch() {
     else
         local PROPFILE="/dev/__properties__/$(resetprop -Z "$NAME")"
     fi
+    [ ! -f "$PROPFILE" ] && return 1
     local NAMEOFFSET=$(echo $(strings -t d "$PROPFILE" | grep "$NAME") | cut -d ' ' -f 1)
 
     #<hex 2-byte change counter><flags byte><hex length of prop value><prop value + nul padding to 92 bytes><prop name>
