@@ -25,9 +25,14 @@ LIST=$MODPATH/example.app_replace.list
 [ -f "$MODPATH/custom.app_replace.list" ] && LIST=$MODPATH/custom.app_replace.list
 for APP in $(grep -v '^#' $LIST); do
     if [ -d "$APP" ]; then
-        HIDEDIR=$MODPATH/$APP
-        mkdir -p $HIDEDIR
-        touch $HIDEDIR/.replace
+        case $APP in
+            /system/*) HIDEDIR=$MODPATH/$APP;;
+            *) HIDEDIR=$MODPATH/system/$APP;;
+        esac
+        if [ ! -f "$HIDEDIR/.replace" ]; then
+            mkdir -p $HIDEDIR
+            touch $HIDEDIR/.replace
+        fi
         ui_print "! $(basename $APP) ROM app disabled"
     fi
 done

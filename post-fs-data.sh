@@ -16,9 +16,14 @@ LIST=$MODDIR/example.app_replace.list
 [ -f "$MODDIR/custom.app_replace.list" ] && LIST=$MODDIR/custom.app_replace.list
 for APP in $(grep -v '^#' $LIST); do
     if [ -d "$APP" ]; then
-        HIDEDIR=$MODDIR/$APP
-        mkdir -p $HIDEDIR
-        touch $HIDEDIR/.replace
+        case $APP in
+            /system/*) HIDEDIR=$MODDIR/$APP;;
+            *) HIDEDIR=$MODDIR/system/$APP;;
+        esac
+        if [ ! -f "$HIDEDIR/.replace" ]; then
+            mkdir -p $HIDEDIR
+            touch $HIDEDIR/.replace
+        fi
     fi
 done
 
