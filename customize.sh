@@ -33,7 +33,7 @@ for APP in $(grep -v '^#' $LIST); do
             mkdir -p $HIDEDIR
             touch $HIDEDIR/.replace
         fi
-        ui_print "! $(basename $APP) ROM app disabled"
+        ui_print "! $(basename $APP) ROM app disabled, please uninstall any user app versions/updates after next reboot"
     fi
 done
 
