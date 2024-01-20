@@ -15,14 +15,15 @@ esac;
 
 item() { echo "- $@"; }
 die() { [ "$INSTALL" ] || echo "$N$N! $@"; exit 1; }
-grep_get_json() { grep "$1" "$DIR/custom.pif.json" | cut -d\" -f4; }
-grep_check_json() { grep -q "$1" "$DIR/custom.pif.json" && [ "$(grep_get_json "$1")" ]; }
+grep_get_json() { grep "$1" "$FILE" | cut -d\" -f4; }
+grep_check_json() { grep -q "$1" "$FILE" && [ "$(grep_get_json "$1")" ]; }
 
 case "$1" in
   -f|--force|force) FORCE=1; shift;;
 esac;
 
 if [ -f "$1" ]; then
+  FILE="$1";
   DIR="$1";
   shift;
 else
@@ -32,8 +33,9 @@ else
   esac;
 fi;
 DIR=$(dirname "$(readlink -f "$DIR")");
+[ -z "$FILE" ] && FILE="$DIR/custom.pif.json";
 
-[ -f "$DIR/custom.pif.json" ] || die "No custom.pif.json found";
+[ -f "$FILE" ] || die "No json file found";
 
 grep_check_json api_level && [ ! "$FORCE" ] && die "No migration required";
 
@@ -82,8 +84,10 @@ if [ -z "$DEVICE_INITIAL_SDK_INT" -o "$DEVICE_INITIAL_SDK_INT" = "null" ]; then
   DEVICE_INITIAL_SDK_INT=25;
 fi;
 
-item "Renaming old file to custom.pif.json.bak ...";
-mv -f "$DIR/custom.pif.json" "$DIR/custom.pif.json.bak";
+if [ -f "$DIR/custom.pif.json" ]; then
+  item "Renaming old file to custom.pif.json.bak ...";
+  mv -f "$DIR/custom.pif.json" "$DIR/custom.pif.json.bak";
+fi;
 
 [ "$INSTALL" ] || item "Writing fields and properties to updated custom.pif.json ...";
 
