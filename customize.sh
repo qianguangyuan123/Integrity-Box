@@ -29,8 +29,10 @@ for APP in $(grep -v '^#' $LIST); do
             /system/*) HIDEDIR=$MODPATH/$APP;;
             *) HIDEDIR=$MODPATH/system/$APP;;
         esac
-        if [ ! -f "$HIDEDIR/.replace" ]; then
-            mkdir -p $HIDEDIR
+        mkdir -p $HIDEDIR
+        if [ "$KSU" == "true" ]; then
+            setfattr -n trusted.overlay.opaque -v y $HIDEDIR
+        else
             touch $HIDEDIR/.replace
         fi
         ui_print "! $(basename $APP) ROM app disabled, please uninstall any user app versions/updates after next reboot"

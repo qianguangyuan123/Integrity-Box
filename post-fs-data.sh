@@ -20,8 +20,10 @@ for APP in $(grep -v '^#' $LIST); do
             /system/*) HIDEDIR=$MODDIR/$APP;;
             *) HIDEDIR=$MODDIR/system/$APP;;
         esac
-        if [ ! -f "$HIDEDIR/.replace" ]; then
-            mkdir -p $HIDEDIR
+        mkdir -p $HIDEDIR
+        if [ "$KSU" == "true" ]; then
+            setfattr -n trusted.overlay.opaque -v y $HIDEDIR
+        else
             touch $HIDEDIR/.replace
         fi
     fi
