@@ -9,7 +9,7 @@ resetprop_hexpatch() {
     local CURVALUE="$(resetprop "$NAME")"
 
     [ ! "$NEWVALUE" -o ! "$CURVALUE" ] && return 1
-    [ "$NEWVALUE" = "$CURVALUE" -a ! "$FORCE" ] && return 1
+    [ "$NEWVALUE" = "$CURVALUE" -a ! "$FORCE" ] && return 2
 
     local NEWLEN=${#NEWVALUE}
     if [ -f /dev/__properties__ ]; then
@@ -17,7 +17,7 @@ resetprop_hexpatch() {
     else
         local PROPFILE="/dev/__properties__/$(resetprop -Z "$NAME")"
     fi
-    [ ! -f "$PROPFILE" ] && return 1
+    [ ! -f "$PROPFILE" ] && return 3
     local NAMEOFFSET=$(echo $(strings -t d "$PROPFILE" | grep "$NAME") | cut -d ' ' -f 1)
 
     #<hex 2-byte change counter><flags byte><hex length of prop value><prop value + nul padding to 92 bytes><prop name>
@@ -37,7 +37,7 @@ resetprop_if_diff() {
     local EXPECTED="$2"
     local CURRENT="$(resetprop "$NAME")"
 
-    [ -z "$CURRENT" ] || [ "$CURRENT" == "$EXPECTED" ] || resetprop_hexpatch "$NAME" "$EXPECTED"
+    [ -z "$CURRENT" ] || [ "$CURRENT" = "$EXPECTED" ] || resetprop_hexpatch "$NAME" "$EXPECTED"
 }
 
 # resetprop_if_match <prop name> <value match string> <new value>
@@ -46,5 +46,5 @@ resetprop_if_match() {
     local CONTAINS="$2"
     local VALUE="$3"
 
-    [[ "$(resetprop "$NAME")" == *"$CONTAINS"* ]] && resetprop_hexpatch "$NAME" "$VALUE"
+    [[ "$(resetprop "$NAME")" = *"$CONTAINS"* ]] && resetprop_hexpatch "$NAME" "$VALUE"
 }
