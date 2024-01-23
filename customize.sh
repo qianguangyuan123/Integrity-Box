@@ -30,7 +30,7 @@ for APP in $(grep -v '^#' $LIST); do
             *) HIDEDIR=$MODPATH/system/$APP;;
         esac
         mkdir -p $HIDEDIR
-        if [ "$KSU" == "true" ]; then
+        if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
             setfattr -n trusted.overlay.opaque -v y $HIDEDIR
         else
             touch $HIDEDIR/.replace
