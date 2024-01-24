@@ -6,7 +6,7 @@
 # Xiaomi.eu
 /product/app/XiaomiEUInject
 /product/app/XiaomiEUInject-Stub
-/system/app/XInjectModule
 
 # EliteRoms
 /system/app/EliteDevelopmentModule
+/system/app/XInjectModule
