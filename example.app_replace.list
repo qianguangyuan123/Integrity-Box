@@ -10,3 +10,6 @@
 # EliteRoms
 /system/app/EliteDevelopmentModule
 /system/app/XInjectModule
+
+# hentaiOS
+/system_ext/app/hentaiLewdbSVTDummy
