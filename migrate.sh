@@ -1,7 +1,7 @@
 #!/bin/sh
 
 case "$1" in
-  -h|--help|help) echo "sh migrate.sh [-f] [file]"; exit 0;;
+  -h|--help|help) echo "sh migrate.sh [-f] [-a] [file]"; exit 0;;
 esac;
 
 N="
@@ -20,6 +20,9 @@ grep_check_json() { grep -q "$1" "$FILE" && [ "$(grep_get_json "$1")" ]; }
 
 case "$1" in
   -f|--force|force) FORCE=1; shift;;
+esac;
+case "$1" in
+  -a|--advanced|advanced) ADVANCED=1; shift;;
 esac;
 
 if [ -f "$1" ]; then
@@ -100,8 +103,11 @@ echo "$N  // System Properties";
 echo '    "*.build.id": "'$ID'",';
 echo '    "*.security_patch": "'$SECURITY_PATCH'",';
 [ -z "$VNDK_VERSION" ] || echo '    "*.vndk_version": "'$VNDK_VERSION'",';
-echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'"';
-echo "}") > "$DIR/custom.pif.json";
+echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'",';
+if [ "$ADVANCED" ]; then
+  echo "$N  // Advanced Settings";
+  echo '    "verbose_logs": "0",';
+fi) | sed '$s/,/\n}/' > "$DIR/custom.pif.json";
 
 [ "$INSTALL" ] || cat "$DIR/custom.pif.json";
 
