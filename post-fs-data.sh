@@ -11,20 +11,29 @@ if [ -d /data/adb/modules/safetynet-fix ]; then
     touch /data/adb/modules/safetynet-fix/remove
 fi
 
-# Replace conflicting custom ROM injection app folders to disable them
+# Replace/remove conflicting custom ROM injection app folders/files to disable them
 LIST=$MODDIR/example.app_replace.list
 [ -f "$MODDIR/custom.app_replace.list" ] && LIST=$MODDIR/custom.app_replace.list
 for APP in $(grep -v '^#' $LIST); do
-    if [ -d "$APP" ]; then
+    if [ -e "$APP" ]; then
         case $APP in
-            /system/*) HIDEDIR=$MODDIR/$APP;;
-            *) HIDEDIR=$MODDIR/system/$APP;;
+            /system/*) HIDEPATH=$MODDIR/$APP;;
+            *) HIDEPATH=$MODDIR/system/$APP;;
         esac
-        mkdir -p $HIDEDIR
-        if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
-            setfattr -n trusted.overlay.opaque -v y $HIDEDIR
+        if [ -d "$APP" ]; then
+            mkdir -p $HIDEPATH
+            if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
+                setfattr -n trusted.overlay.opaque -v y $HIDEPATH
+            else
+                touch $HIDEPATH/.replace
+            fi
         else
-            touch $HIDEDIR/.replace
+            mkdir -p $(dirname $HIDEPATH)
+            if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
+                mknod $HIDEPATH c 0 0
+            else
+                touch $HIDEPATH
+            fi
         fi
     fi
 done

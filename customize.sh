@@ -20,22 +20,33 @@ if [ -d /data/adb/modules/MagiskHidePropsConf ]; then
     ui_print "! MagiskHidePropsConfig (MHPC) module may cause issues with PIF"
 fi
 
-# Replace conflicting custom ROM injection app folders to disable them
+# Replace/remove conflicting custom ROM injection app folders/files to disable them
 LIST=$MODPATH/example.app_replace.list
 [ -f "$MODPATH/custom.app_replace.list" ] && LIST=$MODPATH/custom.app_replace.list
 for APP in $(grep -v '^#' $LIST); do
-    if [ -d "$APP" ]; then
+    if [ -e "$APP" ]; then
         case $APP in
-            /system/*) HIDEDIR=$MODPATH/$APP;;
-            *) HIDEDIR=$MODPATH/system/$APP;;
+            /system/*) HIDEPATH=$MODPATH/$APP;;
+            *) HIDEPATH=$MODPATH/system/$APP;;
         esac
-        mkdir -p $HIDEDIR
-        if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
-            setfattr -n trusted.overlay.opaque -v y $HIDEDIR
+        if [ -d "$APP" ]; then
+            mkdir -p $HIDEPATH
+            if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
+                setfattr -n trusted.overlay.opaque -v y $HIDEPATH
+            else
+                touch $HIDEPATH/.replace
+            fi
         else
-            touch $HIDEDIR/.replace
+            mkdir -p $(dirname $HIDEPATH)
+            if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
+                mknod $HIDEPATH c 0 0
+            else
+                touch $HIDEPATH
+            fi
         fi
-        ui_print "! $(basename $APP) ROM app disabled, please uninstall any user app versions/updates after next reboot"
+        if [[ -d "$APP" -o "$APP" = *".apk" ]]; then
+            ui_print "! $(basename $APP .apk) ROM app disabled, please uninstall any user app versions/updates after next reboot"
+        fi
     fi
 done
 

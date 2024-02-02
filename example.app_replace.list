@@ -1,7 +1,7 @@
 # Rename to custom.app_replace.list once customized
 #
-# Add conflicting custom ROM injection app folder paths to this list
-# and they will be replaced systemlessly to disable them
+# Add conflicting custom ROM injection app folder/files paths to this list
+# and they will be replaced/removed systemlessly to disable them
 
 # Xiaomi.eu
 /product/app/XiaomiEUInject
@@ -13,3 +13,7 @@
 
 # hentaiOS
 /system_ext/app/hentaiLewdbSVTDummy
+
+# PixelOS
+/system_ext/overlay/CertifiedPropsOverlay.apk
+/system_ext/overlay/config/config.xml
