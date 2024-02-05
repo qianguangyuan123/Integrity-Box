@@ -10,7 +10,7 @@ N="
 case "$1" in
   -i|--install|install) INSTALL=1; shift;;
   *) echo "custom.pif.json migration script \
-       $N  by osm0sis @ xda-developers $N";;
+    $N  by osm0sis @ xda-developers $N";;
 esac;
 
 item() { echo "- $@"; }
@@ -32,7 +32,7 @@ if [ -f "$1" ]; then
 else
   case "$0" in
     *.sh) DIR="$0";;
-       *) DIR="$(lsof -p $$ 2>/dev/null | grep -o '/.*migrate.sh$')";;
+    *) DIR="$(lsof -p $$ 2>/dev/null | grep -o '/.*migrate.sh$')";;
   esac;
 fi;
 DIR=$(dirname "$(readlink -f "$DIR")");
@@ -51,6 +51,10 @@ for FIELD in $ALLFIELDS; do
   eval $FIELD=\"$(grep_get_json \"$FIELD\")\";
 done;
 
+if [ -n "$ID" ] && ! grep_check_json build.id; then
+  item 'Simple entry ID found, changing to ID field and "*.build.id" property ...';
+fi;
+
 if [ -z "$ID" ] && grep_check_json BUILD_ID; then
   item 'Deprecated entry BUILD_ID found, changing to ID field and "*.build.id" property ...';
   ID="$(grep_get_json BUILD_ID)";
@@ -63,6 +67,10 @@ fi;
 if grep_check_json VNDK_VERSION; then
   item 'Deprecated entry VNDK_VERSION found, changing to "*.vndk_version" property ...';
   VNDK_VERSION="$(grep_get_json VNDK_VERSION)";
+fi;
+
+if [ -n "$DEVICE_INITIAL_SDK_INT" ] && ! grep_check_json api_level; then
+  item 'Simple entry DEVICE_INITIAL_SDK_INT found, changing to DEVICE_INITIAL_SDK_INT field and "*api_level" property ...';
 fi;
 
 if [ -z "$DEVICE_INITIAL_SDK_INT" ] && grep_check_json FIRST_API_LEVEL; then
@@ -80,6 +88,11 @@ EOF
     eval [ -z "\$$FIELD" ] \&\& $FIELD=\"\$F$i\";
     i=$((i+1));
   done;
+fi;
+
+if [ -z "$SECURITY_PATCH" -o "$SECURITY_PATCH" = "null" ]; then
+  item 'Missing required SECURITY_PATCH field and "*.security_patch" property value found, leaving empty ...';
+  unset SECURITY_PATCH;
 fi;
 
 if [ -z "$DEVICE_INITIAL_SDK_INT" -o "$DEVICE_INITIAL_SDK_INT" = "null" ]; then
