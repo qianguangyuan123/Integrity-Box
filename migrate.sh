@@ -119,7 +119,7 @@ echo '    "*.security_patch": "'$SECURITY_PATCH'",';
 echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'",';
 if [ "$ADVANCED" ]; then
   echo "$N  // Advanced Settings";
-  echo '    "verbose_logs": "0",';
+  echo '    "verboseLogs": "0",';
 fi) | sed '$s/,/\n}/' > "$DIR/custom.pif.json";
 
 [ "$INSTALL" ] || cat "$DIR/custom.pif.json";
