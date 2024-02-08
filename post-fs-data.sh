@@ -11,7 +11,7 @@ if [ -d /data/adb/modules/safetynet-fix ]; then
     touch /data/adb/modules/safetynet-fix/remove
 fi
 
-# Replace/remove conflicting custom ROM injection app folders/files to disable them
+# Replace/hide conflicting custom ROM injection app folders/files to disable them
 LIST=$MODDIR/example.app_replace.list
 [ -f "$MODDIR/custom.app_replace.list" ] && LIST=$MODDIR/custom.app_replace.list
 for APP in $(grep -v '^#' $LIST); do

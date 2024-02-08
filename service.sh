@@ -15,7 +15,7 @@ if [ -n "$(resetprop ro.build.selinux)" ]; then
     resetprop --delete ro.build.selinux
 fi
 # use toybox to protect *stat* access time reading
-if [ "$(toybox cat /sys/fs/selinux/enforce)" == "0" ]; then
+if [ "$(toybox cat /sys/fs/selinux/enforce)" = "0" ]; then
     chmod 640 /sys/fs/selinux/enforce
     chmod 440 /sys/fs/selinux/policy
 fi
@@ -25,7 +25,7 @@ fi
 # SafetyNet/Play Integrity
 {
     # must be set after boot_completed for various OEMs
-    until [ "$(getprop sys.boot_completed)" == "1" ]; do
+    until [ "$(getprop sys.boot_completed)" = "1" ]; do
         sleep 1
     done
 
