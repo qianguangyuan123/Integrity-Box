@@ -15,7 +15,7 @@ esac;
 
 item() { echo "- $@"; }
 die() { [ "$INSTALL" ] || echo "$N$N! $@"; exit 1; }
-grep_get_json() { grep "$1" "$FILE" | cut -d\" -f4; }
+grep_get_json() { grep -m1 "$1" "$FILE" | cut -d\" -f4; }
 grep_check_json() { grep -q "$1" "$FILE" && [ "$(grep_get_json "$1")" ]; }
 
 case "$1" in
