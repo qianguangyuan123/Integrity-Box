@@ -39,7 +39,7 @@ fi
     # avoid breaking OnePlus display modes/fingerprint scanners
     resetprop_if_diff vendor.boot.verifiedbootstate green
 
-    # avoid breaking OnePlus/Oppo display fingerprint scanners on OOS/ColorOS 12+
+    # avoid breaking OnePlus/Oppo fingerprint scanners on OOS/ColorOS 12+
     resetprop_if_diff ro.boot.verifiedbootstate green
     resetprop_if_diff ro.boot.veritymode enforcing
     resetprop_if_diff vendor.boot.vbmeta.device_state locked
