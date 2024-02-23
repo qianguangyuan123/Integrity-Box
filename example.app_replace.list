@@ -14,6 +14,9 @@
 # hentaiOS
 /system_ext/app/hentaiLewdbSVTDummy
 
+# Evolution X
+/system_ext/app/PifPrebuilt
+
 # PixelOS
 /system_ext/overlay/CertifiedPropsOverlay.apk
 /system_ext/overlay/config/config.xml
