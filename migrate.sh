@@ -65,7 +65,7 @@ if [ -n "$SECURITY_PATCH" ] && ! grep_check_json security_patch; then
 fi;
 
 if grep_check_json VNDK_VERSION; then
-  item 'Deprecated entry VNDK_VERSION found, changing to "*.vndk_version" property ...';
+  item 'Deprecated entry VNDK_VERSION found, changing to "*.vndk.version" property ...';
   VNDK_VERSION="$(grep_get_json VNDK_VERSION)";
 fi;
 
@@ -115,7 +115,7 @@ done;
 echo "$N  // System Properties";
 echo '    "*.build.id": "'$ID'",';
 echo '    "*.security_patch": "'$SECURITY_PATCH'",';
-[ -z "$VNDK_VERSION" ] || echo '    "*.vndk_version": "'$VNDK_VERSION'",';
+[ -z "$VNDK_VERSION" ] || echo '    "*.vndk.version": "'$VNDK_VERSION'",';
 echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'",';
 if [ "$ADVANCED" ]; then
   echo "$N  // Advanced Settings";
