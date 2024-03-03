@@ -1,5 +1,5 @@
-MODDIR="${0%/*}"
-. "$MODDIR/common.sh"
+MODPATH="${0%/*}"
+. $MODPATH/common_func.sh
 
 # Conditional sensitive properties
 

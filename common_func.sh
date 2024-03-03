@@ -48,3 +48,6 @@ resetprop_if_match() {
 
     [[ "$(resetprop "$NAME")" = *"$CONTAINS"* ]] && resetprop_hexpatch "$NAME" "$VALUE"
 }
+
+# stub for boot-time
+ui_print() { return; }
