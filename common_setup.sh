@@ -10,9 +10,10 @@ LIST=$MODPATH/example.app_replace.list
 for APP in $(grep -v '^#' $LIST); do
     if [ -e "$APP" ]; then
         case $APP in
-            /system/*) HIDEPATH=$MODPATH/$APP;;
-            *) HIDEPATH=$MODPATH/system/$APP;;
+            /system/*) ;;
+            *) PREFIX=/system;;
         esac
+        HIDEPATH=$MODPATH$PREFIX/$APP
         if [ -d "$APP" ]; then
             mkdir -p $HIDEPATH
             if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
@@ -28,8 +29,30 @@ for APP in $(grep -v '^#' $LIST); do
                 touch $HIDEPATH
             fi
         fi
+        if [[ "$APP" = *"/overlay/"* ]]; then
+            CFG=$(echo $APP | grep -oE '.*/overlay')/config/config.xml
+            if [ -f "$CFG" ]; then
+                if [ -d "$APP" ]; then
+                    APK=$(readlink -f $APP/*.apk);
+                elif [[ "$APP" = *".apk" ]]; then
+                    APK=$(readlink -f $APP);
+                fi
+                if [ "$APK" ]; then
+                    PKGNAME=$(unzip -p $APK AndroidManifest.xml | tr -d '\0' | grep -oE '[[:alnum:].-_]+\*http' | cut -d\* -f1)
+                    if [ "$PKGNAME" ] && grep -q "overlay package=\"$PKGNAME" $CFG; then
+                        HIDECFG=$MODPATH$PREFIX$CFG
+                        if [ ! -f $HIDECFG ]; then
+                            mkdir -p $(dirname $HIDECFG)
+                            cp -fp $CFG $HIDECFG
+                        fi
+                        sed -i 's;<overlay \(package="'"$PKGNAME"'".*\) />;<!-- overlay \1 -->;' $HIDECFG
+                    fi
+                fi
+            fi
+        fi
         if [[ -d "$APP" -o "$APP" = *".apk" ]]; then
             ui_print "! $(basename $APP .apk) ROM app disabled, please uninstall any user app versions/updates after next reboot"
+            [ "$PKGNAME" ] && ui_print "! Corresponding $PKGNAME entry commented to disable in copied overlay config"
         fi
     fi
 done
