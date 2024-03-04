@@ -37,13 +37,13 @@ for APP in $(grep -v '^#' $LIST); do
                 elif [[ "$APP" = *".apk" ]]; then
                     APK=$(readlink -f $APP);
                 fi
-                if [ "$APK" ]; then
+                if [ -s "$APK" ]; then
                     PKGNAME=$(unzip -p $APK AndroidManifest.xml | tr -d '\0' | grep -oE '[[:alnum:].-_]+\*http' | cut -d\* -f1)
                     if [ "$PKGNAME" ] && grep -q "overlay package=\"$PKGNAME" $CFG; then
                         HIDECFG=$MODPATH$PREFIX$CFG
-                        if [ ! -f $HIDECFG ]; then
+                        if [ ! -f "$HIDECFG" ]; then
                             mkdir -p $(dirname $HIDECFG)
-                            cp -fp $CFG $HIDECFG
+                            cp -af $CFG $HIDECFG
                         fi
                         sed -i 's;<overlay \(package="'"$PKGNAME"'".*\) />;<!-- overlay \1 -->;' $HIDECFG
                     fi
