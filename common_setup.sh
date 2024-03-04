@@ -13,7 +13,7 @@ for APP in $(grep -v '^#' $LIST); do
             /system/*) ;;
             *) PREFIX=/system;;
         esac
-        HIDEPATH=$MODPATH$PREFIX/$APP
+        HIDEPATH=$MODPATH$PREFIX$APP
         if [ -d "$APP" ]; then
             mkdir -p $HIDEPATH
             if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
@@ -29,27 +29,29 @@ for APP in $(grep -v '^#' $LIST); do
                 touch $HIDEPATH
             fi
         fi
-        if [[ "$APP" = *"/overlay/"* ]]; then
-            CFG=$(echo $APP | grep -oE '.*/overlay')/config/config.xml
-            if [ -f "$CFG" ]; then
-                if [ -d "$APP" ]; then
-                    APK=$(readlink -f $APP/*.apk);
-                elif [[ "$APP" = *".apk" ]]; then
-                    APK=$(readlink -f $APP);
-                fi
-                if [ -s "$APK" ]; then
-                    PKGNAME=$(unzip -p $APK AndroidManifest.xml | tr -d '\0' | grep -oE '[[:alnum:].-_]+\*http' | cut -d\* -f1)
-                    if [ "$PKGNAME" ] && grep -q "overlay package=\"$PKGNAME" $CFG; then
-                        HIDECFG=$MODPATH$PREFIX$CFG
-                        if [ ! -f "$HIDECFG" ]; then
-                            mkdir -p $(dirname $HIDECFG)
-                            cp -af $CFG $HIDECFG
+        case $APP in
+            */overlay/*)
+                CFG=$(echo $APP | grep -oE '.*/overlay')/config/config.xml
+                if [ -f "$CFG" ]; then
+                    if [ -d "$APP" ]; then
+                        APK=$(readlink -f $APP/*.apk);
+                    elif [[ "$APP" = *".apk" ]]; then
+                        APK=$(readlink -f $APP);
+                    fi
+                    if [ -s "$APK" ]; then
+                        PKGNAME=$(unzip -p $APK AndroidManifest.xml | tr -d '\0' | grep -oE '[[:alnum:].-_]+\*http' | cut -d\* -f1)
+                        if [ "$PKGNAME" ] && grep -q "overlay package=\"$PKGNAME" $CFG; then
+                            HIDECFG=$MODPATH$PREFIX$CFG
+                            if [ ! -f "$HIDECFG" ]; then
+                                mkdir -p $(dirname $HIDECFG)
+                                cp -af $CFG $HIDECFG
+                            fi
+                            sed -i 's;<overlay \(package="'"$PKGNAME"'".*\) />;<!-- overlay \1 -->;' $HIDECFG
                         fi
-                        sed -i 's;<overlay \(package="'"$PKGNAME"'".*\) />;<!-- overlay \1 -->;' $HIDECFG
                     fi
                 fi
-            fi
-        fi
+            ;;
+        esac
         if [[ -d "$APP" || "$APP" = *".apk" ]]; then
             ui_print "! $(basename $APP .apk) ROM app disabled, please uninstall any user app versions/updates after next reboot"
             [ "$HIDECFG" ] && ui_print "!  + $PKGNAME entry commented out in copied overlay config"
