@@ -50,9 +50,9 @@ for APP in $(grep -v '^#' $LIST); do
                 fi
             fi
         fi
-        if [[ -d "$APP" -o "$APP" = *".apk" ]]; then
+        if [[ -d "$APP" || "$APP" = *".apk" ]]; then
             ui_print "! $(basename $APP .apk) ROM app disabled, please uninstall any user app versions/updates after next reboot"
-            [ "$PKGNAME" ] && ui_print "! Corresponding $PKGNAME entry commented to disable in copied overlay config"
+            [ "$HIDECFG" ] && ui_print "!  + $PKGNAME entry commented out in copied overlay config"
         fi
     fi
 done
