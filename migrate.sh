@@ -15,8 +15,8 @@ esac;
 
 item() { echo "- $@"; }
 die() { [ "$INSTALL" ] || echo "$N$N! $@"; exit 1; }
-grep_get_json() { grep -m1 "$1" "$FILE" | cut -d\" -f4; }
-grep_check_json() { grep -q "$1" "$FILE" && [ "$(grep_get_json "$1")" ]; }
+grep_get_json() { cat "$FILE" | tr -d '\r\n' | grep -m1 -owE "$1"'"[^,}]+"' | cut -d\" -f3; }
+grep_check_json() { grep -q "$1" "$FILE" && [ "$(grep_get_json $1)" ]; }
 
 case "$1" in
   -f|--force|force) FORCE=1; shift;;
@@ -48,7 +48,7 @@ FPFIELDS="BRAND PRODUCT DEVICE RELEASE ID INCREMENTAL TYPE TAGS";
 ALLFIELDS="MANUFACTURER MODEL FINGERPRINT $FPFIELDS SECURITY_PATCH DEVICE_INITIAL_SDK_INT";
 
 for FIELD in $ALLFIELDS; do
-  eval $FIELD=\"$(grep_get_json \"$FIELD\")\";
+  eval $FIELD=\"$(grep_get_json $FIELD)\";
 done;
 
 if [ -n "$ID" ] && ! grep_check_json build.id; then
@@ -123,4 +123,3 @@ if [ "$ADVANCED" ]; then
 fi) | sed '$s/,/\n}/' > "$DIR/custom.pif.json";
 
 [ "$INSTALL" ] || cat "$DIR/custom.pif.json";
-
