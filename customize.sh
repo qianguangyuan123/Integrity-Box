@@ -1,10 +1,14 @@
-# Error on < Android 8
-if [ "$API" -lt 26 ]; then
-    abort "! You can't use this module on Android < 8.0"
+# Allow a scripts-only mode on older Android without Zygisk
+if [ "$API" -lt 26 -o ! -d /data/adb/modules/playintegrityfix/zygisk ]; then
+    ui_print "! Installing global scripts only for Android < 8.0; no Zygisk device spoofing possible"
+    rm -rf $MODPATH/classes.dex $MODPATH/common_setup.sh $MODPATH/custom.pif.json \
+        $MODPATH/example.app_replace.list $MODPATH/example.pif.json $MODPATH/migrate.sh $MODPATH/zygisk \
+        /data/adb/modules/playintegrityfix/custom.app_replace.list \
+        /data/adb/modules/playintegrityfix/custom.pif.json /data/adb/modules/playintegrityfix/system
 fi
 
 # Copy any disabled app files to updated module
-if [ -d "/data/adb/modules/playintegrityfix/system" ]; then
+if [ -d /data/adb/modules/playintegrityfix/system ]; then
     ui_print "- Restoring disabled ROM apps configuration"
     cp -arf /data/adb/modules/playintegrityfix/system $MODPATH
 fi
@@ -23,7 +27,7 @@ if [ -d /data/adb/modules/MagiskHidePropsConf ]; then
 fi
 
 # Run common tasks for installation and boot-time
-. $MODPATH/common_setup.sh
+[ -d "$MODPATH/zygisk" ] && . $MODPATH/common_setup.sh
 
 # Migrate custom.pif.json to latest defaults if needed
 if [ -f "$MODPATH/custom.pif.json" ] && ! grep -q "api_level" $MODPATH/custom.pif.json; then

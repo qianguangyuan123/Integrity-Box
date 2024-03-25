@@ -1,13 +1,17 @@
 MODPATH="${0%/*}"
 . $MODPATH/common_func.sh
 
-# Remove Play Services from Magisk Denylist when set to enforcing
-if magisk --denylist status; then
-    magisk --denylist rm com.google.android.gms
+if [ -d "$MODPATH/zygisk" ]; then
+    # Remove Play Services from Magisk DenyList when set to Enforce in normal mode
+    if magisk --denylist status; then
+        magisk --denylist rm com.google.android.gms
+    fi
+    # Run common tasks for installation and boot-time
+    . $MODPATH/common_setup.sh
+else
+    # Add Play Services DroidGuard process to Magisk DenyList for better results in scripts-only mode
+    magisk --denylist add com.google.android.gms com.google.android.gms.unstable
 fi
-
-# Run common tasks for installation and boot-time
-. $MODPATH/common_setup.sh
 
 # Conditional early sensitive properties
 
@@ -26,7 +30,7 @@ resetprop_if_diff ro.boot.realmebootstate green
 # OnePlus
 resetprop_if_diff ro.is_ever_orange 0
 
-# Microsoft, RootBeer
+# Microsoft
 resetprop_if_diff ro.build.tags release-keys
 
 # Other
