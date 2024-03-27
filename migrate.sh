@@ -1,7 +1,7 @@
 #!/bin/sh
 
 case "$1" in
-  -h|--help|help) echo "sh migrate.sh [-f] [-a] [file]"; exit 0;;
+  -h|--help|help) echo "sh migrate.sh [-f] [-a] [in-file] [out-file]"; exit 0;;
 esac;
 
 N="
@@ -28,7 +28,6 @@ esac;
 if [ -f "$1" ]; then
   FILE="$1";
   DIR="$1";
-  shift;
 else
   case "$0" in
     *.sh) DIR="$0";;
@@ -37,6 +36,9 @@ else
 fi;
 DIR=$(dirname "$(readlink -f "$DIR")");
 [ -z "$FILE" ] && FILE="$DIR/custom.pif.json";
+
+OUT="$2";
+[ -z "$OUT" ] && OUT="$DIR/custom.pif.json";
 
 [ -f "$FILE" ] || die "No json file found";
 
@@ -100,9 +102,9 @@ if [ -z "$DEVICE_INITIAL_SDK_INT" -o "$DEVICE_INITIAL_SDK_INT" = "null" ]; then
   DEVICE_INITIAL_SDK_INT=25;
 fi;
 
-if [ -f "$DIR/custom.pif.json" ]; then
-  item "Renaming old file to custom.pif.json.bak ...";
-  mv -f "$DIR/custom.pif.json" "$DIR/custom.pif.json.bak";
+if [ -f "$OUT" ]; then
+  item "Renaming old file to $(basename "$OUT").bak ...";
+  mv -f "$OUT" "$OUT.bak";
 fi;
 
 [ "$INSTALL" ] || item "Writing fields and properties to updated custom.pif.json ...";
@@ -120,6 +122,6 @@ echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'",';
 if [ "$ADVANCED" ]; then
   echo "$N  // Advanced Settings";
   echo '    "verboseLogs": "0",';
-fi) | sed '$s/,/\n}/' > "$DIR/custom.pif.json";
+fi) | sed '$s/,/\n}/' > "$OUT";
 
-[ "$INSTALL" ] || cat "$DIR/custom.pif.json";
+[ "$INSTALL" ] || cat "$OUT";
