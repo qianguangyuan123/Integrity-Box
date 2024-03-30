@@ -1,4 +1,4 @@
-# Allow a scripts-only mode on older Android (<10) which may not require the Zygisk components
+# Allow a scripts-only mode for older Android (<10) which may not require the Zygisk components
 if [ -f /data/adb/modules/playintegrityfix/scripts-only-mode ]; then
     ui_print "! Installing global scripts only; Zygisk attestation fallback and device spoofing disabled"
     touch $MODPATH/scripts-only-mode
