@@ -87,7 +87,7 @@ $(grep_get_json FINGERPRINT)
 EOF
   i=1;
   for FIELD in $FPFIELDS; do
-    eval [ -z "\$$FIELD" ] \&\& $FIELD=\"\$F$i\";
+    eval [ -z \"\$$FIELD\" ] \&\& $FIELD=\"\$F$i\";
     i=$((i+1));
   done;
 fi;
