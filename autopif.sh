@@ -14,12 +14,6 @@ case "$0" in
 esac;
 DIR=$(dirname "$(readlink -f "$DIR")");
 
-if [ "$DIR" = /data/adb/modules/playintegrityfix ]; then
-  DIR=$DIR/autopif;
-  mkdir -p $DIR;
-fi;
-cd "$DIR";
-
 if ! which wget >/dev/null; then
   if [ -f /data/adb/magisk/busybox ]; then
     wget() { /data/adb/magisk/busybox wget "$@"; }
@@ -34,6 +28,12 @@ if ! which wget >/dev/null; then
 fi;
 
 item() { echo "\n- $@"; }
+
+if [ "$DIR" = /data/adb/modules/playintegrityfix ]; then
+  DIR=$DIR/autopif;
+  mkdir -p $DIR;
+fi;
+cd "$DIR";
 
 if [ ! -f apktool_2.0.3-dexed.jar ]; then
   item "Downloading Apktool ...";
@@ -64,19 +64,27 @@ grep -o '<field.*' $OUT/res/xml/inject_fields.xml | sed 's;.*name=\(".*"\) type.
 echo '  "FIRST_API_LEVEL": "25",' ) | sed '$s/,/\n}/' | tee pif.json;
 
 if [ -f /data/adb/modules/playintegrityfix/migrate.sh ]; then
+  if [ -f /data/adb/modules/playintegrityfix/custom.pif.json ]; then
+    grep -qE "verboseLogs|VERBOSE_LOGS" /data/adb/modules/playintegrityfix/custom.pif.json && ARGS="-a";
+  fi;
   item "Converting pif.json to custom.pif.json with migrate.sh:";
   rm -f custom.pif.json;
-  sh /data/adb/modules/playintegrityfix/migrate.sh -i pif.json;
+  sh /data/adb/modules/playintegrityfix/migrate.sh -i $ARGS pif.json;
   cat custom.pif.json;
 fi;
 
 if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif ]; then
-  item "Installing new json ...";
   if [ -f /data/adb/modules/playintegrityfix/migrate.sh ]; then
-    cp -fv custom.pif.json "$DIR/..";
+    NEWNAME="custom.pif.json";
   else
-    cp -fv pif.json "$DIR/..";
+    NEWNAME="pif.json";
   fi;
+  if [ -f "../$NEWNAME" ]; then
+    item "Renaming old file to $NEWNAME.bak ...";
+    mv -fv ../$NEWNAME ../$NEWNAME.bak;
+  fi;
+  item "Installing new json ...";
+  cp -fv $NEWNAME ..;
 fi;
 
 if [ -f /data/adb/modules/playintegrityfix/killgms.sh ]; then
