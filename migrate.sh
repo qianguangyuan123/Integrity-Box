@@ -112,6 +112,7 @@ fi;
 if [ -f "$OUT" ]; then
   item "Renaming old file to $(basename "$OUT").bak ...";
   mv -f "$OUT" "$OUT.bak";
+  grep -qE "verboseLogs|VERBOSE_LOGS" "$OUT.bak" && ADVANCED=1;
 fi;
 
 [ "$INSTALL" ] || item "Writing fields and properties to updated custom.pif.json ...";
