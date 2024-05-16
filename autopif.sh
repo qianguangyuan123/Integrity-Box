@@ -22,7 +22,7 @@ if ! which wget >/dev/null; then
   elif [ -f /data/adb/ap/bin/busybox ]; then
     wget() { /data/adb/ap/bin/busybox wget "$@"; }
   else
-    echo "autopif: wget not found";
+    echo "Error: wget not found, install busybox!";
     exit 1;
   fi;
 fi;
@@ -54,7 +54,19 @@ OUT=$(basename $APKNAME .apk);
 if [ ! -d $OUT ]; then
   item "Extracting APK files with Apktool ...";
   DALVIKVM=dalvikvm;
-  [ "$TERMUX_VERSION" -a "$PREFIX" ] && DALVIKVM=$PREFIX/bin/dalvikvm;
+  if echo "$PREFIX" | grep -q "termux"; then
+    if [ "$TERMUX_VERSION" ]; then
+      if grep -q "apex" $PREFIX/bin/dalvikvm; then
+        DALVIKVM=$PREFIX/bin/dalvikvm;
+      else
+        echo 'Error: Outdated Termux packages, run "pkg upgrade" from a user prompt!';
+        exit 1;
+      fi;
+    else
+      echo "Error: Play Store Termux not supported, use GitHub/F-Droid Termux!";
+      exit 1;
+    fi;
+  fi;
   $DALVIKVM -Xnoimage-dex2oat -cp apktool_2.0.3-dexed.jar brut.apktool.Main d -f --no-src -p $OUT -o $OUT $APKNAME || exit 1;
 fi;
 
