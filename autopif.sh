@@ -14,7 +14,7 @@ case "$0" in
 esac;
 DIR=$(dirname "$(readlink -f "$DIR")");
 
-if ! which wget >/dev/null; then
+if ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
   if [ -f /data/adb/magisk/busybox ]; then
     wget() { /data/adb/magisk/busybox wget "$@"; }
   elif [ -f /data/adb/ksu/bin/busybox ]; then
