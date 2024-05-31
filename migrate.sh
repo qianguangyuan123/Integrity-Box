@@ -15,7 +15,7 @@ esac;
 
 item() { echo "- $@"; }
 die() { [ "$INSTALL" ] || echo "$N$N! $@"; exit 1; }
-grep_get_json() { eval set -- "$(cat "$FILE" | tr -d '\r\n' | grep -m1 -o "\"$1\""'.*' | cut -d: -f2-)"; echo "$1" | sed -e 's|"|\\\\\\"|g' -e 's|[,}]*$||'; }
+grep_get_json() { eval set -- "$(cat "$FILE" | tr -d '\r\n' | grep -m1 -o "$1"'".*' | cut -d: -f2-)"; echo "$1" | sed -e 's|"|\\\\\\"|g' -e 's|[,}]*$||'; }
 grep_check_json() { grep -q "$1" "$FILE" && [ "$(grep_get_json $1)" ]; }
 
 case "$1" in
