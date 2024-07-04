@@ -5,7 +5,7 @@ if [ -f /data/adb/modules/playintegrityfix/scripts-only-mode ]; then
     sed -i 's/\(description=\)\(.*\)/\1[Scripts-only mode] \2/' $MODPATH/module.prop
     rm -rf $MODPATH/autopif.sh $MODPATH/classes.dex $MODPATH/common_setup.sh \
         $MODPATH/custom.pif.json $MODPATH/example.app_replace.list $MODPATH/example.pif.json \
-        $MODPATH/killgms.sh $MODPATH/migrate.sh $MODPATH/zygisk \
+        $MODPATH/migrate.sh $MODPATH/pif.json $MODPATH/zygisk \
         /data/adb/modules/playintegrityfix/custom.app_replace.list \
         /data/adb/modules/playintegrityfix/custom.pif.json /data/adb/modules/playintegrityfix/system
 fi
