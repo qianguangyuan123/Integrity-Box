@@ -34,11 +34,11 @@ resetprop_if_diff ro.is_ever_orange 0
 for PROP in $(resetprop | grep -oE 'ro.*.build.tags'); do
     resetprop_if_diff $PROP release-keys
 done
+
+# Other
 for PROP in $(resetprop | grep -oE 'ro.*.build.type'); do
     resetprop_if_diff $PROP user
 done
-
-# Other
 resetprop_if_diff ro.debuggable 0
 resetprop_if_diff ro.force.debuggable 0
 resetprop_if_diff ro.secure 1

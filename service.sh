@@ -37,3 +37,6 @@ resetprop_if_diff vendor.boot.verifiedbootstate green
 resetprop_if_diff ro.boot.verifiedbootstate green
 resetprop_if_diff ro.boot.veritymode enforcing
 resetprop_if_diff vendor.boot.vbmeta.device_state locked
+
+# Other
+resetprop_if_diff sys.oem_unlock_allowed 0
