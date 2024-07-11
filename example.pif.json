@@ -2,7 +2,7 @@
 //
 // These are the current suggested defaults but you may add as many other fields/properties as needed
 //
-// See android.os.Build source for all field values' corresponding properties:
+// See android.os.Build source for all fields and field values' corresponding properties:
 // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/os/Build.java
 
 {
