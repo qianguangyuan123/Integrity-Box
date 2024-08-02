@@ -129,6 +129,10 @@ echo '    "*.security_patch": "'$SECURITY_PATCH'",';
 echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'",';
 if [ "$ADVANCED" ]; then
   echo "$N  // Advanced Settings";
+  echo '    "spoofBuild": "1",';
+  echo '    "spoofProps": "1",';
+  echo '    "spoofProvider": "1",';
+  echo '    "spoofSignature": "0",';
   echo '    "verboseLogs": "0",';
 fi) | sed '$s/,/\n}/' > "$OUT";
 
