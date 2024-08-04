@@ -23,7 +23,10 @@ fi
 # Conditional late sensitive properties
 
 # must be set after boot_completed for various OEMs
-resetprop -w sys.boot_completed 0
+{
+until [ "$(getprop sys.boot_completed)" = "1" ]; do
+    sleep 1
+done
 
 # SafetyNet/Play Integrity + OEM
 # avoid breaking Realme fingerprint scanners
@@ -40,3 +43,5 @@ resetprop_if_diff vendor.boot.vbmeta.device_state locked
 
 # Other
 resetprop_if_diff sys.oem_unlock_allowed 0
+
+}&
