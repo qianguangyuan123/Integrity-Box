@@ -15,8 +15,17 @@ esac;
 
 item() { echo "- $@"; }
 die() { [ "$INSTALL" ] || echo "$N$N! $@"; exit 1; }
-grep_get_json() { local target="$FILE"; [ -n "$2" ] && target="$2"; eval set -- "$(cat "$target" | tr -d '\r\n' | grep -m1 -o "$1"'".*' | cut -d: -f2-)"; echo "$1" | sed -e 's|"|\\\\\\"|g' -e 's|[,}]*$||'; }
-grep_check_json() { local target="$FILE"; [ -n "$2" ] && target="$2"; grep -q "$1" "$target" && [ "$(grep_get_json $1 "$target")" ]; }
+grep_get_json() {
+  local target="$FILE";
+  [ -n "$2" ] && target="$2";
+  eval set -- "$(cat "$target" | tr -d '\r\n' | grep -m1 -o "$1"'".*' | cut -d: -f2-)";
+  echo "$1" | sed -e 's|"|\\\\\\"|g' -e 's|[,}]*$||';
+}
+grep_check_json() {
+  local target="$FILE";
+  [ -n "$2" ] && target="$2";
+  grep -q "$1" "$target" && [ "$(grep_get_json $1 "$target")" ];
+}
 
 case "$1" in
   -f|--force|force) FORCE=1; shift;;
@@ -110,7 +119,12 @@ if [ -z "$DEVICE_INITIAL_SDK_INT" -o "$DEVICE_INITIAL_SDK_INT" = "null" ]; then
 fi;
 
 ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature verboseLogs";
-spoofBuild=1; spoofProps=1; spoofProvider=1; spoofSignature=0; verboseLogs=0;
+
+spoofBuild=1;
+spoofProps=1;
+spoofProvider=1;
+spoofSignature=0;
+verboseLogs=0;
 
 if [ -f "$OUT" ]; then
   item "Renaming old file to $(basename "$OUT").bak ...";
