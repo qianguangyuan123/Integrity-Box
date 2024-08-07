@@ -15,7 +15,7 @@ esac;
 DIR=$(dirname "$(readlink -f "$DIR")");
 
 if ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
-  if [ -f /data/adb/magisk/busybox ]; then
+  if [ -f /data/adb/magisk/busybox ] && /data/adb/magisk/busybox ping -c1 -s2 sourceforge.net 2>&1 | grep -vq "bad address"; then
     wget() { /data/adb/magisk/busybox wget "$@"; }
   elif [ -f /data/adb/ksu/bin/busybox ]; then
     wget() { /data/adb/ksu/bin/busybox wget "$@"; }
@@ -73,15 +73,26 @@ fi;
 item "Converting inject_fields.xml to pif.json ...";
 (echo '{';
 grep -o '<field.*' $OUT/res/xml/inject_fields.xml | sed 's;.*name=\(".*"\) type.* value=\(".*"\).*;  \1: \2,;g';
-echo '  "FIRST_API_LEVEL": "25",' ) | sed '$s/,/\n}/' | tee pif.json;
+echo '  "DEVICE_INITIAL_SDK_INT": "25",' ) | sed '$s/,/\n}/' | tee pif.json;
 
 if [ -f /data/adb/modules/playintegrityfix/migrate.sh ]; then
-  if [ -f /data/adb/modules/playintegrityfix/custom.pif.json ]; then
-    grep -qE "verboseLogs|VERBOSE_LOGS" /data/adb/modules/playintegrityfix/custom.pif.json && ARGS="-a";
+  OLDJSON=/data/adb/modules/playintegrityfix/custom.pif.json;
+  if [ -f "$OLDJSON" ]; then
+    grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
   fi;
   item "Converting pif.json to custom.pif.json with migrate.sh:";
   rm -f custom.pif.json;
   sh /data/adb/modules/playintegrityfix/migrate.sh -i $ARGS pif.json;
+  if [ -n "$ARGS" ]; then
+    grep_json() { grep -m1 "$1" $2 | cut -d\" -f4; }
+    verboseLogs=$(grep_json "VERBOSE_LOGS" $OLDJSON);
+    ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature verboseLogs";
+    for SETTING in $ADVSETTINGS; do
+      eval [ -z \"\$$SETTING\" ] \&\& $SETTING=$(grep_json "$SETTING" $OLDJSON);
+      eval TMPVAL=\$$SETTING;
+      [ -n "$TMPVAL" ] && sed -i "s;\($SETTING\": \"\).;\1$TMPVAL;" custom.pif.json;
+    done;
+  fi;
   cat custom.pif.json;
 fi;
 
