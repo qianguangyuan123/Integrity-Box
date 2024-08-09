@@ -108,9 +108,6 @@ if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif ]; then
   fi;
   item "Installing new json ...";
   cp -fv $NEWNAME ..;
-fi;
-
-if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif ]; then
   if [ -f /data/adb/modules/playintegrityfix/killgms.sh ]; then
     item "Killing any running GMS DroidGuard process ...";
     sh /data/adb/modules/playintegrityfix/killgms.sh 2>&1;
