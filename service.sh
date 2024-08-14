@@ -3,6 +3,9 @@ MODPATH="${0%/*}"
 
 # Conditional sensitive properties
 
+# Xiaomi
+resetprop_if_diff ro.secureboot.lockstate locked
+
 # Magisk Recovery Mode
 resetprop_if_match ro.boot.mode recovery unknown
 resetprop_if_match ro.bootmode recovery unknown
