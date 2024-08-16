@@ -15,7 +15,9 @@ esac;
 DIR=$(dirname "$(readlink -f "$DIR")");
 
 if ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
-  if [ -f /data/adb/magisk/busybox ] && /data/adb/magisk/busybox ping -c1 -s2 sourceforge.net 2>&1 | grep -vq "bad address"; then
+  if [ -f /data/adb/modules/busybox-ndk/system/*/busybox ]; then
+    wget() { /data/adb/modules/busybox-ndk/system/*/busybox wget "$@"; }
+  elif [ -f /data/adb/magisk/busybox ] && /data/adb/magisk/busybox ping -c1 -s2 sourceforge.net 2>&1 | grep -vq "bad address"; then
     wget() { /data/adb/magisk/busybox wget "$@"; }
   elif [ -f /data/adb/ksu/bin/busybox ]; then
     wget() { /data/adb/ksu/bin/busybox wget "$@"; }
