@@ -3,9 +3,6 @@ MODPATH="${0%/*}"
 
 # Conditional sensitive properties
 
-# Xiaomi
-resetprop_if_diff ro.secureboot.lockstate locked
-
 # Magisk Recovery Mode
 resetprop_if_match ro.boot.mode recovery unknown
 resetprop_if_match ro.bootmode recovery unknown
@@ -32,6 +29,8 @@ until [ "$(getprop sys.boot_completed)" = "1" ]; do
 done
 
 # SafetyNet/Play Integrity + OEM
+# avoid bootloop on some Xiaomi devices
+resetprop_if_diff ro.secureboot.lockstate locked
 # avoid breaking Realme fingerprint scanners
 resetprop_if_diff ro.boot.flash.locked 1
 resetprop_if_diff ro.boot.realme.lockstate 1
