@@ -65,3 +65,8 @@ if [ -n "$(resetprop ro.aospa.version)" ]; then
         resetprop | grep -q "\[$PROP\]" || resetprop -n -p "$PROP" ""
     done
 fi
+
+# Work around supported custom ROM PixelPropsUtils conflict when spoofProvider is disabled
+if [ -n "$(resetprop persist.sys.pixelprops.pi)" ]; then
+    resetprop -n -p persist.sys.pixelprops.pi false
+fi
