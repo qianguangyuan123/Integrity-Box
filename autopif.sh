@@ -14,22 +14,30 @@ case "$0" in
 esac;
 DIR=$(dirname "$(readlink -f "$DIR")");
 
+item() { echo "\n- $@"; }
+die() { echo "Error: $@!"; exit 1; }
+
+find_busybox() {
+  [ -n "$BUSYBOX" ] && return 0;
+  local path;
+  for path in /data/adb/modules/busybox-ndk/system/*/busybox /data/adb/magisk/busybox /data/adb/ksu/bin/busybox /data/adb/ap/bin/busybox; do
+    if [ -f "$path" ]; then
+      BUSYBOX="$path";
+      return 0;
+    fi;
+  done;
+  return 1;
+}
+
 if ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
-  if [ -f /data/adb/modules/busybox-ndk/system/*/busybox ]; then
-    wget() { /data/adb/modules/busybox-ndk/system/*/busybox wget "$@"; }
-  elif [ -f /data/adb/magisk/busybox ] && /data/adb/magisk/busybox ping -c1 -s2 sourceforge.net 2>&1 | grep -vq "bad address"; then
-    wget() { /data/adb/magisk/busybox wget "$@"; }
-  elif [ -f /data/adb/ksu/bin/busybox ]; then
-    wget() { /data/adb/ksu/bin/busybox wget "$@"; }
-  elif [ -f /data/adb/ap/bin/busybox ]; then
-    wget() { /data/adb/ap/bin/busybox wget "$@"; }
+  if ! find_busybox; then
+    die "wget not found, install busybox";
+  elif $BUSYBOX ping -c1 -s2 android.com 2>&1 | grep -q "bad address"; then
+    die "wget broken, install busybox";
   else
-    echo "Error: wget not found, install busybox!";
-    exit 1;
+    wget() { $BUSYBOX wget "$@"; }
   fi;
 fi;
-
-item() { echo "\n- $@"; }
 
 if [ "$DIR" = /data/adb/modules/playintegrityfix ]; then
   DIR=$DIR/autopif;
@@ -61,30 +69,31 @@ if [ ! -d $OUT ]; then
       if grep -q "apex" $PREFIX/bin/dalvikvm; then
         DALVIKVM=$PREFIX/bin/dalvikvm;
       else
-        echo 'Error: Outdated Termux packages, run "pkg upgrade" from a user prompt!';
-        exit 1;
+        die 'Outdated Termux packages, run "pkg upgrade" from a user prompt';
       fi;
     else
-      echo "Error: Play Store Termux not supported, use GitHub/F-Droid Termux!";
-      exit 1;
+      die "Play Store Termux not supported, use GitHub/F-Droid Termux";
     fi;
   fi;
   $DALVIKVM -Xnoimage-dex2oat -cp apktool_2.0.3-dexed.jar brut.apktool.Main d -f --no-src -p $OUT -o $OUT $APKNAME || exit 1;
+  [ -f $OUT/res/xml/inject_fields.xml ] || die "inject_fields.xml not found";
 fi;
 
 item "Converting inject_fields.xml to pif.json ...";
 (echo '{';
 grep -o '<field.*' $OUT/res/xml/inject_fields.xml | sed 's;.*name=\(".*"\) type.* value=\(".*"\).*;  \1: \2,;g';
 echo '  "DEVICE_INITIAL_SDK_INT": "32",' ) | sed '$s/,/\n}/' | tee pif.json;
+grep -q "FINGERPRINT" pif.json || die "Failed to extract information from inject_fields.xml";
 
-if [ -f /data/adb/modules/playintegrityfix/migrate.sh ]; then
+for MIGRATE in migrate.sh /data/adb/modules/playintegrityfix/migrate.sh; do
+  [ -f "$MIGRATE" ] && break; 
+done;
+if [ -f "$MIGRATE" ]; then
   OLDJSON=/data/adb/modules/playintegrityfix/custom.pif.json;
-  if [ -f "$OLDJSON" ]; then
-    grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
-  fi;
+  [ -f "$OLDJSON" ] && grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
   item "Converting pif.json to custom.pif.json with migrate.sh:";
   rm -f custom.pif.json;
-  sh /data/adb/modules/playintegrityfix/migrate.sh -i $ARGS pif.json;
+  sh $MIGRATE -i $ARGS pif.json;
   if [ -n "$ARGS" ]; then
     grep_json() { grep -m1 "$1" $2 | cut -d\" -f4; }
     verboseLogs=$(grep_json "VERBOSE_LOGS" $OLDJSON);
