@@ -135,6 +135,7 @@ if [ -f "$OUT" ]; then
     for SETTING in $ADVSETTINGS; do
       eval grep_check_json $SETTING \"$OUT.bak\" \&\& $SETTING=\"$(grep_get_json $SETTING "$OUT.bak")\";
     done;
+  grep -q '//"\*.security_patch"' "$OUT.bak" && SECURITY_COMMENT='//';
   fi;
 fi;
 
@@ -147,7 +148,7 @@ for FIELD in $ALLFIELDS; do
 done;
 echo "$N  // System Properties";
 echo '    "*.build.id": "'$ID'",';
-echo '    "*.security_patch": "'$SECURITY_PATCH'",';
+echo "    $SECURITY_COMMENT"'"*.security_patch": "'$SECURITY_PATCH'",';
 [ -z "$VNDK_VERSION" ] || echo '    "*.vndk.version": "'$VNDK_VERSION'",';
 echo '    "*api_level": "'$DEVICE_INITIAL_SDK_INT'",';
 if [ "$ADVANCED" ]; then
