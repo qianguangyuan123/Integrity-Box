@@ -75,7 +75,7 @@ fi;
 item "Converting inject_fields.xml to pif.json ...";
 (echo '{';
 grep -o '<field.*' $OUT/res/xml/inject_fields.xml | sed 's;.*name=\(".*"\) type.* value=\(".*"\).*;  \1: \2,;g';
-echo '  "DEVICE_INITIAL_SDK_INT": "25",' ) | sed '$s/,/\n}/' | tee pif.json;
+echo '  "DEVICE_INITIAL_SDK_INT": "32",' ) | sed '$s/,/\n}/' | tee pif.json;
 
 if [ -f /data/adb/modules/playintegrityfix/migrate.sh ]; then
   OLDJSON=/data/adb/modules/playintegrityfix/custom.pif.json;
