@@ -103,6 +103,7 @@ if [ -f "$MIGRATE" ]; then
       eval TMPVAL=\$$SETTING;
       [ -n "$TMPVAL" ] && sed -i "s;\($SETTING\": \"\).;\1$TMPVAL;" custom.pif.json;
     done;
+    grep -q '//"\*.security_patch"' $OLDJSON && sed -i 's;"\*.security_patch";//"\*.security_patch";' custom.pif.json;
   fi;
   cat custom.pif.json;
 fi;
