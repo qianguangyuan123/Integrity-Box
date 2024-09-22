@@ -1,13 +1,10 @@
 #!/bin/sh
 
-case "$1" in
-  -h|--help|help) echo "sh migrate.sh [-f] [-o] [-a] [in-file] [out-file]"; exit 0;;
-esac;
-
 N="
 ";
 
 case "$1" in
+  -h|--help|help) echo "sh migrate.sh [-f] [-o] [-a] [in-file] [out-file]"; exit 0;;
   -i|--install|install) INSTALL=1; shift;;
   *) echo "custom.pif.json migration script \
     $N  by osm0sis @ xda-developers $N";;
@@ -27,15 +24,14 @@ grep_check_json() {
   grep -q "$1" "$target" && [ "$(grep_get_json $1 "$target")" ];
 }
 
-case "$1" in
-  -f|--force|force) FORCE=1; shift;;
-esac;
-case "$1" in
-  -o|--override|override) OVERRIDE=1; shift;;
-esac;
-case "$1" in
-  -a|--advanced|advanced) ADVANCED=1; shift;;
-esac;
+until [ -z "$1" -o -f "$1" ]; do
+  case "$1" in
+    -f|--force|force) FORCE=1; shift;;
+    -o|--override|override) OVERRIDE=1; shift;;
+    -a|--advanced|advanced) ADVANCED=1; shift;;
+    *) die "Invalid argument/file not found: $1";;
+  esac;
+done;
 
 if [ -f "$1" ]; then
   FILE="$1";
