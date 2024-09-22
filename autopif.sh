@@ -5,6 +5,11 @@ if [ "$USER" != "root" -o "$(whoami 2>/dev/null)" != "root" ]; then
   exit 1;
 fi;
 
+case "$1" in
+  -h|--help|help) echo "sh autopif.sh [-a]"; exit 0;;
+  -a|--advanced|advanced) ARGS="-a";;
+esac;
+
 echo "Xiaomi.eu pif.json extractor script \
   \n  by osm0sis @ xda-developers";
 
