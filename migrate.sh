@@ -131,7 +131,7 @@ if [ -f "$OUT" ]; then
     for SETTING in $ADVSETTINGS; do
       eval grep_check_json $SETTING \"$OUT.bak\" \&\& $SETTING=\"$(grep_get_json $SETTING "$OUT.bak")\";
     done;
-  grep -q '//"\*.security_patch"' "$OUT.bak" && SECURITY_COMMENT='//';
+    grep -q '//"\*.security_patch"' "$OUT.bak" && SECURITY_COMMENT='//';
   fi;
 fi;
 
