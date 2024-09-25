@@ -20,7 +20,7 @@ esac;
 DIR=$(dirname "$(readlink -f "$DIR")");
 
 item() { echo "\n- $@"; }
-die() { echo "Error: $@!"; exit 1; }
+die() { echo "\nError: $@!"; exit 1; }
 
 find_busybox() {
   [ -n "$BUSYBOX" ] && return 0;
@@ -127,6 +127,6 @@ if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif ]; then
   cp -fv $NEWNAME ..;
   if [ -f /data/adb/modules/playintegrityfix/killgms.sh ]; then
     item "Killing any running GMS DroidGuard process ...";
-    sh /data/adb/modules/playintegrityfix/killgms.sh 2>&1;
+    sh /data/adb/modules/playintegrityfix/killgms.sh 2>&1 || true;
   fi;
 fi;
