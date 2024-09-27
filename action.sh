@@ -7,5 +7,5 @@ unset ASH_STANDALONE
 sh $MODPATH/autopif.sh || exit 1
 
 echo -e "\nDone!"
-echo -e "\nClosing dialog in 15 seconds ..."
-sleep 15
+echo -e "\nClosing dialog in 20 seconds ..."
+sleep 20
