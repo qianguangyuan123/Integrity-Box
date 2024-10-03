@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-if [ "$USER" != "root" -o "$(whoami 2>/dev/null)" != "root" ]; then
+if [ "$USER" != "root" -a "$(whoami 2>/dev/null)" != "root" ]; then
   echo "autopif: need root permissions";
   exit 1;
 fi;
