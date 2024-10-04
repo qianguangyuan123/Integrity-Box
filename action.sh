@@ -7,5 +7,9 @@ unset ASH_STANDALONE
 sh $MODPATH/autopif.sh || exit 1
 
 echo -e "\nDone!"
-echo -e "\nClosing dialog in 20 seconds ..."
-sleep 20
+
+# warn since Magisk's implementation automatically closes if successful
+if [ "$KSU" != "true" -a "$APATCH" != "true" ]; then
+    echo -e "\nClosing dialog in 20 seconds ..."
+    sleep 20
+fi
