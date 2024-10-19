@@ -1,9 +1,11 @@
 #!/system/bin/sh
 
 if [ "$USER" != "root" -a "$(whoami 2>/dev/null)" != "root" ]; then
-  echo "autopif2: need root permissions";
-  exit 1;
+  echo "autopif2: need root permissions"; exit 1;
 fi;
+case "$HOME" in
+  *termux*) echo "autopif2: need su root environment"; exit 1;;
+esac;
 
 case "$1" in
   -h|--help|help) echo "sh autopif2.sh [-a]"; exit 0;;
@@ -103,7 +105,7 @@ if [ -z "$PRODUCT" ]; then
 fi;
 echo "$MODEL ($PRODUCT)";
 
-(ulimit -f 2; wget -q -O PIXEL_ZIP_METADATA --no-check-certificate $OTA 2>/dev/null);
+(ulimit -f 2; wget -q -O PIXEL_ZIP_METADATA --no-check-certificate $OTA) 2>/dev/null;
 FINGERPRINT="$(grep -am1 'post-build=' PIXEL_ZIP_METADATA | cut -d= -f2)";
 SECURITY_PATCH="$(grep -am1 'security-patch-level=' PIXEL_ZIP_METADATA | cut -d= -f2)";
 if [ -z "$FINGERPRINT" -o -z "$SECURITY_PATCH" ]; then
