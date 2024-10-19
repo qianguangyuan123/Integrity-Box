@@ -59,27 +59,19 @@ fi;
 cd "$DIR";
 
 item "Crawling Android Developers for latest Pixel Beta ...";
-wget -q -O PIXEL_GSI_HTML --no-check-certificate https://developer.android.com/topic/generic-system-image/releases 2>&1 || exit 1;
-grep -m1 -o 'li>.*(Beta)' PIXEL_GSI_HTML | cut -d\> -f2;
+wget -q -O PIXEL_VERSIONS_HTML --no-check-certificate https://developer.android.com/about/versions 2>&1 || exit 1;
+wget -q -O PIXEL_LATEST_HTML --no-check-certificate $(grep -m1 'developer.android.com/about/versions/' PIXEL_VERSIONS_HTML | cut -d\" -f2) 2>&1 || exit 1;
+wget -q -O PIXEL_OTA_HTML --no-check-certificate https://developer.android.com$(grep -om1 'href=".*download-ota"' PIXEL_LATEST_HTML | cut -d\" -f2) 2>&1 || exit 1;
+grep -m1 -o 'data-category.*Beta' PIXEL_OTA_HTML | cut -d\" -f2;
 
-BETA_REL_DATE="$(date -D '%B %e, %Y' -d "$(grep -m1 -o 'Date:.*' PIXEL_GSI_HTML | cut -d\  -f2-4)" '+%Y-%m-%d')";
+BETA_REL_DATE="$(date -D '%B %e, %Y' -d "$(grep -m1 -A1 'Release date' PIXEL_OTA_HTML | tail -n1 | sed 's;.*<td>\(.*\)</td>.*;\1;')" '+%Y-%m-%d')";
 BETA_EXP_DATE="$(date -D '%s' -d "$(($(date -D '%Y-%m-%d' -d "$BETA_REL_DATE" '+%s') + 60 * 60 * 24 * 7 * 6))" '+%Y-%m-%d')";
 echo "Beta Released: $BETA_REL_DATE \
   \nEstimated Expiry: $BETA_EXP_DATE";
 
-RELEASE="$(grep -m1 'corresponding Google Pixel builds' PIXEL_GSI_HTML | grep -o '/versions/.*' | cut -d\/ -f3)";
-ID="$(grep -m1 -o 'Build:.*' PIXEL_GSI_HTML | cut -d\  -f2)";
-INCREMENTAL="$(grep -m1 -o "$ID-.*-" PIXEL_GSI_HTML | cut -d- -f2)";
-
-wget -q -O PIXEL_GET_HTML --no-check-certificate https://developer.android.com$(grep -m1 'corresponding Google Pixel builds' PIXEL_GSI_HTML | grep -o 'href.*' | cut -d\" -f2) 2>&1 || exit 1;
-wget -q -O PIXEL_BETA_HTML --no-check-certificate https://developer.android.com$(grep -m1 'Factory images for Google Pixel' PIXEL_GET_HTML | grep -o 'href.*' | cut -d\" -f2) 2>&1 || exit 1;
-
-MODEL_LIST="$(grep -A1 'tr id=' PIXEL_BETA_HTML | grep 'td' | sed 's;.*<td>\(.*\)</td>;\1;')";
-PRODUCT_LIST="$(grep -o 'factory/.*_beta' PIXEL_BETA_HTML | cut -d\/ -f2)";
-
-wget -q -O PIXEL_SECBULL_HTML --no-check-certificate https://source.android.com/docs/security/bulletin/pixel 2>&1 || exit 1;
-
-SECURITY_PATCH="$(grep -A15 "$(grep -m1 -o 'Security patch level:.*' PIXEL_GSI_HTML | cut -d\  -f4-)" PIXEL_SECBULL_HTML | grep -m1 -B1 '</tr>' | grep 'td' | sed 's;.*<td>\(.*\)</td>;\1;')";
+MODEL_LIST="$(grep -A1 'tr id=' PIXEL_OTA_HTML | grep 'td' | sed 's;.*<td>\(.*\)</td>;\1;')";
+PRODUCT_LIST="$(grep -o 'ota/.*_beta' PIXEL_OTA_HTML | cut -d\/ -f2)";
+OTA_LIST="$(grep 'ota/.*_beta' PIXEL_OTA_HTML | cut -d\" -f2)";
 
 case "$1" in
   -m)
@@ -88,6 +80,7 @@ case "$1" in
       *${DEVICE}_beta*)
         MODEL="$(getprop ro.product.model)";
         PRODUCT="${DEVICE}_beta";
+        OTA="$(echo "$OTA_LIST" | grep "$PRODUCT")";
       ;;
     esac;
   ;;
@@ -102,18 +95,28 @@ if [ -z "$PRODUCT" ]; then
     MODEL="$(eval echo \${$list_rand})";
     set -- $PRODUCT_LIST;
     PRODUCT="$(eval echo \${$list_rand})";
+    set -- $OTA_LIST;
+    OTA="$(eval echo \${$list_rand})";
     DEVICE="$(echo "$PRODUCT" | sed 's/_beta//')";
   }
   set_random_beta;
 fi;
 echo "$MODEL ($PRODUCT)";
 
+(ulimit -f 2; wget -q -O PIXEL_ZIP_METADATA --no-check-certificate $OTA 2>/dev/null);
+FINGERPRINT="$(grep -am1 'post-build=' PIXEL_ZIP_METADATA | cut -d= -f2)";
+SECURITY_PATCH="$(grep -am1 'security-patch-level=' PIXEL_ZIP_METADATA | cut -d= -f2)";
+if [ -z "$FINGERPRINT" -o -z "$SECURITY_PATCH" ]; then
+  echo "\nError: Failed to extract information from metadata!";
+  exit 1;
+fi;
+
 item "Dumping values to minimal pif.json ...";
 cat <<EOF | tee pif.json;
 {
   "MANUFACTURER": "Google",
   "MODEL": "$MODEL",
-  "FINGERPRINT": "google/$PRODUCT/$DEVICE:$RELEASE/$ID/$INCREMENTAL:user/release-keys",
+  "FINGERPRINT": "$FINGERPRINT",
   "PRODUCT": "$PRODUCT",
   "DEVICE": "$DEVICE",
   "SECURITY_PATCH": "$SECURITY_PATCH",
