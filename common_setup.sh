@@ -3,6 +3,12 @@ if [ -d /data/adb/modules/safetynet-fix ]; then
     touch /data/adb/modules/safetynet-fix/remove
     ui_print "! Universal SafetyNet Fix (USNF) module will be removed on next reboot"
 fi
+for BADMOD in playcurl playcurlNEXT; do
+  if [ -d /data/adb/modules/$BADMOD ]; then
+    touch /data/adb/modules/$BADMOD/remove
+    ui_print "! $BADMOD module will be removed on next reboot"
+  fi
+done
 
 # Replace/hide conflicting custom ROM injection app folders/files to disable them
 LIST=$MODPATH/example.app_replace.list
