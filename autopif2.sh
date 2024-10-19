@@ -44,7 +44,7 @@ if ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
   fi;
 fi;
 
-if date -D '%s' -d "$(date '+%s')" 2>&1 | grep -q "bad date"; then
+if date -D '%s' -d "$(date '+%s')" 2>&1 | grep -qE "bad date|invalid option"; then
   if ! find_busybox; then
     die "date broken";
   else
