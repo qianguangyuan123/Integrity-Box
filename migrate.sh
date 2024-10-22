@@ -15,7 +15,7 @@ die() { [ "$INSTALL" ] || echo "$N$N! $@"; exit 1; }
 grep_get_json() {
   local target="$FILE";
   [ -n "$2" ] && target="$2";
-  eval set -- "$(cat "$target" | tr -d '\r\n' | grep -m1 -o "$1"'".*' | cut -d: -f2-)";
+  eval set -- "$(cat "$target" | tr -d '\r\n' | grep -m1 -o "$1"'".*' | cut -d: -f2- | sed 's|//|#|g')";
   echo "$1" | sed -e 's|"|\\\\\\"|g' -e 's|[,}]*$||';
 }
 grep_check_json() {
