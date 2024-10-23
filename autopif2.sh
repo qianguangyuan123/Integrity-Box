@@ -54,6 +54,14 @@ if date -D '%s' -d "$(date '+%s')" 2>&1 | grep -qE "bad date|invalid option"; th
   fi;
 fi;
 
+if ! echo "A\nB" | grep -m1 -A1 "A" | grep -q "B"; then
+  if ! find_busybox; then
+    die "grep broken";
+  else
+    grep() { $BUSYBOX grep "$@"; }
+  fi;
+fi;
+
 if [ "$DIR" = /data/adb/modules/playintegrityfix ]; then
   DIR=$DIR/autopif2;
   mkdir -p $DIR;
