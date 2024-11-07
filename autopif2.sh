@@ -8,8 +8,9 @@ case "$HOME" in
 esac;
 
 case "$1" in
-  -h|--help|help) echo "sh autopif2.sh [-a]"; exit 0;;
+  -h|--help|help) echo "sh autopif2.sh [-a|-s]"; exit 0;;
   -a|--advanced|advanced) ARGS="-a"; shift;;
+  -s|--strong|strong) ARGS="-a"; PATCH_COMMENT=1; spoofProvider=0; shift;;
 esac;
 
 echo "Pixel Beta pif.json generator script \
@@ -139,12 +140,15 @@ for MIGRATE in migrate.sh /data/adb/modules/playintegrityfix/migrate.sh; do
 done;
 if [ -f "$MIGRATE" ]; then
   OLDJSON=/data/adb/modules/playintegrityfix/custom.pif.json;
-  [ -f "$OLDJSON" ] && grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
+  if [ -f "$OLDJSON" ]; then
+    grep -q '//"\*.security_patch"' $OLDJSON && PATCH_COMMENT=1;
+    grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
+  fi;
   item "Converting pif.json to custom.pif.json with migrate.sh:";
   rm -f custom.pif.json;
   sh $MIGRATE -i $ARGS pif.json;
   if [ -n "$ARGS" ]; then
-    grep_json() { grep -m1 "$1" $2 | cut -d\" -f4; }
+    grep_json() { [ -f "$2" ] && grep -m1 "$1" $2 | cut -d\" -f4; }
     verboseLogs=$(grep_json "VERBOSE_LOGS" $OLDJSON);
     ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature verboseLogs";
     for SETTING in $ADVSETTINGS; do
@@ -153,7 +157,7 @@ if [ -f "$MIGRATE" ]; then
       [ -n "$TMPVAL" ] && sed -i "s;\($SETTING\": \"\).;\1$TMPVAL;" custom.pif.json;
     done;
   fi;
-  grep -q '//"\*.security_patch"' $OLDJSON && sed -i 's;"\*.security_patch";//"\*.security_patch";' custom.pif.json;
+  [ "$PATCH_COMMENT" ] && sed -i 's;"\*.security_patch";//"\*.security_patch";' custom.pif.json;
   sed -i "s;};\n  // Beta Released: $BETA_REL_DATE\n  // Estimated Expiry: $BETA_EXP_DATE\n};" custom.pif.json;
   cat custom.pif.json;
 fi;
