@@ -1,3 +1,6 @@
+SKIPDELPROP=false
+[ -f "$MODPATH/skipdelprop" ] && SKIPDELPROP=true
+
 RESETPROP="resetprop -n"
 [ -f /data/adb/magisk/util_functions.sh ] && [ "$(grep MAGISK_VER_CODE /data/adb/magisk/util_functions.sh | cut -d= -f2)" -lt 27003 ] && RESETPROP=resetprop_hexpatch
 
