@@ -8,8 +8,8 @@ sh $MODPATH/autopif2.sh || exit 1
 
 echo -e "\nDone!"
 
-# warn since KernelSU's implementation automatically closes if successful
-if [ "$KSU" = "true" ]; then
+# warn since KernelSU/APatch's implementation automatically closes if successful
+if [ "$KSU" = "true" -o "$APATCH" = "true" ]; then
     echo -e "\nClosing dialog in 20 seconds ..."
     sleep 20
 fi
