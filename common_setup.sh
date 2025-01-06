@@ -59,8 +59,8 @@ for APP in $(grep -v '^#' $LIST); do
     fi
 done
 
-# Work around AOSPA PropImitationHooks conflict when their persist props don't exist
-if [ -n "$(resetprop ro.aospa.version)" ]; then
+# Work around custom ROM PropImitationHooks conflict when their persist props don't exist
+if [ -n "$(resetprop ro.aospa.version)" -o -n "$(resetprop net.pixelos.version)" -o -n "$(resetprop ro.afterlife.version)" ]; then
     for PROP in persist.sys.pihooks.first_api_level persist.sys.pihooks.security_patch; do
         resetprop | grep -q "\[$PROP\]" || resetprop -n -p "$PROP" ""
     done
