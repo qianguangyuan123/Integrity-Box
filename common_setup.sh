@@ -66,14 +66,13 @@ if [ -n "$(resetprop ro.aospa.version)" -o -n "$(resetprop net.pixelos.version)"
     done
 fi
 
-# Work around supported custom ROM PropImitationHooks conflict when spoofProvider is disabled
-if resetprop | grep -q "persist.sys.pihooks"; then
+# Work around supported custom ROM PropImitationHooks/PixelPropsUtils (and hybrids) conflict when spoofProvider is disabled
+if resetprop | grep -qE "persist.sys.pihooks|persist.sys.entryhooks|persist.sys.pixelprops"; then
     resetprop -n -p persist.sys.pihooks.disable.gms_props true
     resetprop -n -p persist.sys.pihooks.disable.gms_key_attestation_block true
-fi
-
-# Work around supported custom ROM PixelPropsUtils conflict when spoofProvider is disabled
-if resetprop | grep -q "persist.sys.pixelprops"; then
+    resetprop -n -p persist.sys.entryhooks_enabled false
     resetprop -n -p persist.sys.pixelprops.gms false
+    resetprop -n -p persist.sys.pixelprops.gapps false
+    resetprop -n -p persist.sys.pixelprops.google false
     resetprop -n -p persist.sys.pixelprops.pi false
 fi
