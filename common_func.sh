@@ -37,6 +37,13 @@ resetprop_hexpatch() {
         | dd obs=1 count=93 seek=$((NAMEOFFSET-93)) conv=notrunc of="$PROPFILE"
 }
 
+# delprop_if_exist <prop name>
+delprop_if_exist() {
+    local NAME="$1"
+
+    [ -n "$(resetprop "$NAME")" ] && resetprop --delete "$NAME"
+}
+
 # resetprop_if_diff <prop name> <expected value>
 resetprop_if_diff() {
     local NAME="$1"
