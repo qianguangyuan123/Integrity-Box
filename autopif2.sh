@@ -152,6 +152,7 @@ if [ -f "$MIGRATE" ]; then
     grep -q '//"\*.security_patch"' $OLDJSON && PATCH_COMMENT=1;
     grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
   fi;
+  [ -f /data/adb/tricky_store/security_patch.txt ] && unset PATCH_COMMENT;
   item "Converting pif.json to custom.pif.json with migrate.sh:";
   rm -f custom.pif.json;
   sh $MIGRATE -i $ARGS pif.json;
@@ -182,6 +183,14 @@ if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif2 ]; then
   fi;
   item "Installing new json ...";
   cp -fv $NEWNAME ..;
+  TS_SECPAT=/data/adb/tricky_store/security_patch.txt;
+  if [ -f "$TS_SECPAT" ]; then
+    item "Updating Tricky Store security_patch.txt ...";
+    [ ! -s "$TS_SECPAT" ] && echo "system=" > $TS_SECPAT;
+    grep -q 'all=' $TS_SECPAT && sed -i "s/all=.*/all=$SECURITY_PATCH/" $TS_SECPAT;
+    grep -q 'system=' $TS_SECPAT && sed -i "s/system=.*/system=$(echo ${SECURITY_PATCH//-} | cut -c-6)/" $TS_SECPAT;
+    cat $TS_SECPAT;
+  fi;
   if [ -f /data/adb/modules/playintegrityfix/killpi.sh ]; then
     item "Killing any running GMS DroidGuard/Play Store processes ...";
     sh /data/adb/modules/playintegrityfix/killpi.sh 2>&1 || true;
