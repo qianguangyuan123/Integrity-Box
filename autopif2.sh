@@ -186,16 +186,7 @@ if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif2 ]; then
   TS_SECPAT=/data/adb/tricky_store/security_patch.txt;
   if [ -f "$TS_SECPAT" ]; then
     item "Updating Tricky Store security_patch.txt ...";
-    if [ ! -s "$TS_SECPAT" ]; then
-      LAST_STRONG_DATE="$(($(date '+%s') - 60 * 60 * 24 * 7 * 48))";
-      CUR_BOOT_DATE="$(date -d "$(getprop ro.build.version.security_patch)" '+%s')";
-      CUR_VENDOR_DATE="$(date -d "$(getprop ro.vendor.build.security_patch)" '+%s')";
-      if [ "$CUR_BOOT_DATE" -lt "$LAST_STRONG_DATE" -o "$CUR_VENDOR_DATE" -lt "$LAST_STRONG_DATE" ]; then
-        echo "all=" > $TS_SECPAT;
-      else
-        echo "system=" > $TS_SECPAT;
-      fi;
-    fi;
+    [ -s "$TS_SECPAT" ] || echo "all=" > $TS_SECPAT;
     grep -q 'all=' $TS_SECPAT && sed -i "s/all=.*/all=$SECURITY_PATCH/" $TS_SECPAT;
     grep -q 'system=' $TS_SECPAT && sed -i "s/system=.*/system=$(echo ${SECURITY_PATCH//-} | cut -c-6)/" $TS_SECPAT;
     cat $TS_SECPAT;
