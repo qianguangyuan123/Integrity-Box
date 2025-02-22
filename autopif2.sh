@@ -7,11 +7,17 @@ case "$HOME" in
   *termux*) echo "autopif2: need su root environment"; exit 1;;
 esac;
 
-case "$1" in
-  -h|--help|help) echo "sh autopif2.sh [-a|-s]"; exit 0;;
-  -a|--advanced|advanced) ARGS="-a"; shift;;
-  -s|--strong|strong) ARGS="-a"; PATCH_COMMENT=1; spoofProvider=0; shift;;
-esac;
+FORCE_DEPTH=1;
+until [ -z "$1" ]; do
+  case "$1" in
+    -h|--help|help) echo "sh autopif2.sh [-a|-s] [-p] [-d #]"; exit 0;;
+    -a|--advanced|advanced) ARGS="-a"; shift;;
+    -s|--strong|strong) ARGS="-a"; PATCH_COMMENT=1; spoofProvider=0; shift;;
+    -p|--preview|preview) FORCE_PREVIEW=1; shift;;
+    -d|--depth|depth) FORCE_DEPTH=$2; shift 2;;
+    *) break;;
+  esac;
+done;
 
 echo "Pixel Beta pif.json generator script \
   \n  by osm0sis @ xda-developers";
@@ -72,14 +78,12 @@ cd "$DIR";
 item "Crawling Android Developers for latest Pixel Beta ...";
 wget -q -O PIXEL_VERSIONS_HTML --no-check-certificate https://developer.android.com/about/versions 2>&1 || exit 1;
 wget -q -O PIXEL_LATEST_HTML --no-check-certificate $(grep -o 'https://developer.android.com/about/versions/.*[0-9]"' PIXEL_VERSIONS_HTML | sort -ru | cut -d\" -f1 | head -n1) 2>&1 || exit 1;
-case "$1" in -p) FORCE_PREVIEW=1; shift;; esac;
 if grep -qE 'Developer Preview|tooltip>.*preview program' PIXEL_LATEST_HTML && [ ! "$FORCE_PREVIEW" ]; then
   wget -q -O PIXEL_BETA_HTML --no-check-certificate $(grep -o 'https://developer.android.com/about/versions/.*[0-9]"' PIXEL_VERSIONS_HTML | sort -ru | cut -d\" -f1 | head -n2 | tail -n1) 2>&1 || exit 1;
 else
   TITLE="Preview";
   mv -f PIXEL_LATEST_HTML PIXEL_BETA_HTML;
 fi;
-case "$1" in -d) FORCE_DEPTH=$2; shift 2;; *) FORCE_DEPTH=1;; esac;
 wget -q -O PIXEL_OTA_HTML --no-check-certificate https://developer.android.com$(grep -o 'href=".*download-ota.*"' PIXEL_BETA_HTML | cut -d\" -f2 | head -n$FORCE_DEPTH | tail -n1) 2>&1 || exit 1;
 echo "$(grep -m1 -oE 'tooltip>Android .*[0-9]' PIXEL_OTA_HTML | cut -d\> -f2) $TITLE$(grep -oE 'tooltip>QPR.* Beta' PIXEL_OTA_HTML | cut -d\> -f2 | head -n$FORCE_DEPTH | tail -n1)";
 
