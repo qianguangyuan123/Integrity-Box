@@ -43,7 +43,9 @@ find_busybox() {
   return 1;
 }
 
-if ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
+if which wget2 >/dev/null; then
+  wget() { wget2 "$@"; }
+elif ! which wget >/dev/null || grep -q "wget-curl" $(which wget); then
   if ! find_busybox; then
     die "wget not found";
   elif $BUSYBOX ping -c1 -s2 android.com 2>&1 | grep -q "bad address"; then
@@ -127,8 +129,8 @@ fi;
 echo "$MODEL ($PRODUCT)";
 
 (ulimit -f 2; wget -q -O PIXEL_ZIP_METADATA --no-check-certificate $OTA) 2>/dev/null;
-FINGERPRINT="$(grep -am1 'post-build=' PIXEL_ZIP_METADATA | cut -d= -f2)";
-SECURITY_PATCH="$(grep -am1 'security-patch-level=' PIXEL_ZIP_METADATA | cut -d= -f2)";
+FINGERPRINT="$(grep -am1 'post-build=' PIXEL_ZIP_METADATA 2>/dev/null | cut -d= -f2)";
+SECURITY_PATCH="$(grep -am1 'security-patch-level=' PIXEL_ZIP_METADATA 2>/dev/null | cut -d= -f2)";
 if [ -z "$FINGERPRINT" -o -z "$SECURITY_PATCH" ]; then
   echo "\nError: Failed to extract information from metadata!";
   exit 1;
