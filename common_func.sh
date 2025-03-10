@@ -1,6 +1,13 @@
 SKIPDELPROP=false
 [ -f "$MODPATH/skipdelprop" ] && SKIPDELPROP=true
 
+# delprop_if_exist <prop name>
+delprop_if_exist() {
+    local NAME="$1"
+
+    [ -n "$(resetprop "$NAME")" ] && resetprop --delete "$NAME"
+}
+
 RESETPROP="resetprop -n"
 [ -f /data/adb/magisk/util_functions.sh ] && [ "$(grep MAGISK_VER_CODE /data/adb/magisk/util_functions.sh | cut -d= -f2)" -lt 27003 ] && RESETPROP=resetprop_hexpatch
 
@@ -53,13 +60,6 @@ resetprop_if_match() {
     local VALUE="$3"
 
     [[ "$(resetprop "$NAME")" = *"$CONTAINS"* ]] && $RESETPROP "$NAME" "$VALUE"
-}
-
-# delprop_if_exist <prop name>
-delprop_if_exist() {
-    local NAME="$1"
-
-    [ -n "$(resetprop "$NAME")" ] && resetprop --delete "$NAME"
 }
 
 # stub for boot-time
