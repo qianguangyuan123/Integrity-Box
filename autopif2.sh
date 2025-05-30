@@ -83,7 +83,7 @@ wget -q -O PIXEL_LATEST_HTML --no-check-certificate $(grep -o 'https://developer
 if grep -qE 'Developer Preview|tooltip>.*preview program' PIXEL_LATEST_HTML && [ ! "$FORCE_PREVIEW" ]; then
   wget -q -O PIXEL_BETA_HTML --no-check-certificate $(grep -o 'https://developer.android.com/about/versions/.*[0-9]"' PIXEL_VERSIONS_HTML | sort -ru | cut -d\" -f1 | head -n2 | tail -n1) 2>&1 || exit 1;
 else
-  TITLE="Preview";
+  TITLE="Preview ";
   mv -f PIXEL_LATEST_HTML PIXEL_BETA_HTML;
 fi;
 wget -q -O PIXEL_OTA_HTML --no-check-certificate https://developer.android.com$(grep -o 'href=".*download-ota.*"' PIXEL_BETA_HTML | cut -d\" -f2 | head -n$FORCE_DEPTH | tail -n1) 2>&1 || exit 1;
@@ -156,6 +156,7 @@ if [ -f "$MIGRATE" ]; then
   OLDJSON=/data/adb/modules/playintegrityfix/custom.pif.json;
   if [ -f "$OLDJSON" ]; then
     grep -q '//"\*.security_patch"' $OLDJSON && PATCH_COMMENT=1;
+    grep -q "spoofVendingSdk" $OLDJSON && PATCH_VENDING="spoofVendingSdk";
     grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
   fi;
   [ -f /data/adb/tricky_store/security_patch.txt ] && unset PATCH_COMMENT;
@@ -163,9 +164,10 @@ if [ -f "$MIGRATE" ]; then
   rm -f custom.pif.json;
   sh $MIGRATE -i $ARGS pif.json;
   if [ -n "$ARGS" ]; then
+    [ "$PATCH_VENDING" ] && sed -i 's;\(.*verboseLogs\);    "spoofVendingSdk": "0",\n\1;' custom.pif.json;
     grep_json() { [ -f "$2" ] && grep -m1 "$1" $2 | cut -d\" -f4; }
     verboseLogs=$(grep_json "VERBOSE_LOGS" $OLDJSON);
-    ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature verboseLogs";
+    ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature $PATCH_VENDING verboseLogs";
     for SETTING in $ADVSETTINGS; do
       eval [ -z \"\$$SETTING\" ] \&\& $SETTING=$(grep_json "$SETTING" $OLDJSON);
       eval TMPVAL=\$$SETTING;
