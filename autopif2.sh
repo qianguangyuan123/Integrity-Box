@@ -14,7 +14,7 @@ until [ -z "$1" ]; do
     -a|--advanced|advanced) ARGS="-a"; shift;;
     -s|--strong|strong) ARGS="-a"; PATCH_COMMENT=1; spoofProvider=0; shift;;
     -p|--preview|preview) FORCE_PREVIEW=1; shift;;
-    -d|--depth|depth) FORCE_DEPTH=$2; shift 2;;
+    -d|--depth|depth) echo "$2" | grep -q '^[1-9]$' || exit 1; FORCE_DEPTH=$2; shift 2;;
     *) break;;
   esac;
 done;
