@@ -8,6 +8,14 @@ delprop_if_exist() {
     [ -n "$(resetprop "$NAME")" ] && resetprop --delete "$NAME"
 }
 
+# persistprop <prop name> <value>
+persistprop() {
+    local NAME="$1"
+    local VALUE="$2"
+
+    resetprop -n -p "$NAME" "$VALUE"
+}
+
 RESETPROP="resetprop -n"
 [ -f /data/adb/magisk/util_functions.sh ] && [ "$(grep MAGISK_VER_CODE /data/adb/magisk/util_functions.sh | cut -d= -f2)" -lt 27003 ] && RESETPROP=resetprop_hexpatch
 
