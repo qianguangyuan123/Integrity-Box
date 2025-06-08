@@ -16,9 +16,9 @@ persistprop() {
 
     if ! grep -q "$NAME" $MODPATH/uninstall.sh 2>/dev/null; then
         if [ "$CURVALUE" ]; then
-             [ "$NEWVALUE" = "$CURVALUE" ] || echo "resetprop -n -p \"$NAME\" \"$CURVALUE\"" >> $MODPATH/uninstall.sh
+            [ "$NEWVALUE" = "$CURVALUE" ] || echo "resetprop -n -p \"$NAME\" \"$CURVALUE\"" >> $MODPATH/uninstall.sh
         else
-             echo "resetprop --delete \"$NAME\"" >> $MODPATH/uninstall.sh
+            echo "resetprop -p --delete \"$NAME\"" >> $MODPATH/uninstall.sh
         fi
     fi
     resetprop -n -p "$NAME" "$NEWVALUE"
