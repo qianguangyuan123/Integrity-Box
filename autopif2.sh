@@ -156,7 +156,6 @@ if [ -f "$MIGRATE" ]; then
   OLDJSON=/data/adb/modules/playintegrityfix/custom.pif.json;
   if [ -f "$OLDJSON" ]; then
     grep -q '//"\*.security_patch"' $OLDJSON && PATCH_COMMENT=1;
-    grep -q "spoofVendingSdk" $OLDJSON && PATCH_VENDING="spoofVendingSdk";
     grep -qE "verboseLogs|VERBOSE_LOGS" $OLDJSON && ARGS="-a";
   fi;
   [ -f /data/adb/tricky_store/security_patch.txt ] && unset PATCH_COMMENT;
@@ -164,10 +163,9 @@ if [ -f "$MIGRATE" ]; then
   rm -f custom.pif.json;
   sh $MIGRATE -i $ARGS pif.json;
   if [ -n "$ARGS" ]; then
-    [ "$PATCH_VENDING" ] && sed -i 's;\(.*verboseLogs\);    "spoofVendingSdk": "0",\n\1;' custom.pif.json;
     grep_json() { [ -f "$2" ] && grep -m1 "$1" $2 | cut -d\" -f4; }
     verboseLogs=$(grep_json "VERBOSE_LOGS" $OLDJSON);
-    ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature $PATCH_VENDING verboseLogs";
+    ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature spoofVendingSdk verboseLogs";
     for SETTING in $ADVSETTINGS; do
       eval [ -z \"\$$SETTING\" ] \&\& $SETTING=$(grep_json "$SETTING" $OLDJSON);
       eval TMPVAL=\$$SETTING;
