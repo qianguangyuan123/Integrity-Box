@@ -40,7 +40,7 @@ if [ -f "$MODPATH/custom.pif.json" ] && ! grep -q "api_level" $MODPATH/custom.pi
     ui_print "- Running migration script on custom.pif.json:"
     ui_print " "
     chmod 755 $MODPATH/migrate.sh
-    sh $MODPATH/migrate.sh install $MODPATH/custom.pif.json
+    sh $MODPATH/migrate.sh --install --advanced $MODPATH/custom.pif.json
     ui_print " "
 fi
 
