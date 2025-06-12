@@ -10,9 +10,10 @@ esac;
 FORCE_DEPTH=1;
 until [ -z "$1" ]; do
   case "$1" in
-    -h|--help|help) echo "sh autopif2.sh [-a|-s] [-p] [-d #]"; exit 0;;
+    -h|--help|help) echo "sh autopif2.sh [-a|-s] [-m] [-p] [-d #]"; exit 0;;
     -a|--advanced|advanced) ARGS="-a"; shift;;
     -s|--strong|strong) ARGS="-a"; PATCH_COMMENT=1; spoofProvider=0; shift;;
+    -m|--match|match) FORCE_MATCH=1; shift;;
     -p|--preview|preview) FORCE_PREVIEW=1; shift;;
     -d|--depth|depth) echo "$2" | grep -q '^[1-9]$' || exit 1; FORCE_DEPTH=$2; shift 2;;
     *) break;;
@@ -98,18 +99,16 @@ MODEL_LIST="$(grep -A1 'tr id=' PIXEL_OTA_HTML | grep 'td' | sed 's;.*<td>\(.*\)
 PRODUCT_LIST="$(grep -o 'ota/.*_beta' PIXEL_OTA_HTML | cut -d\/ -f2)";
 OTA_LIST="$(grep 'ota/.*_beta' PIXEL_OTA_HTML | cut -d\" -f2)";
 
-case "$1" in
-  -m)
-    DEVICE="$(getprop ro.product.device)";
-    case "$PRODUCT_LIST" in
-      *${DEVICE}_beta*)
-        MODEL="$(getprop ro.product.model)";
-        PRODUCT="${DEVICE}_beta";
-        OTA="$(echo "$OTA_LIST" | grep "$PRODUCT")";
-      ;;
-    esac;
-  ;;
-esac;
+if [ "$FORCE_MATCH" ]; then
+  DEVICE="$(getprop ro.product.device)";
+  case "$PRODUCT_LIST" in
+    *${DEVICE}_beta*)
+      MODEL="$(getprop ro.product.model)";
+      PRODUCT="${DEVICE}_beta";
+      OTA="$(echo "$OTA_LIST" | grep "$PRODUCT")";
+    ;;
+  esac;
+fi;
 item "Selecting Pixel Beta device ...";
 if [ -z "$PRODUCT" ]; then
   set_random_beta() {
