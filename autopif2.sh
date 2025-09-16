@@ -160,6 +160,7 @@ if [ -f "$MIGRATE" ]; then
   rm -f custom.pif.json;
   sh $MIGRATE -i $ARGS pif.json;
   if [ -n "$ARGS" ]; then
+    [ "$spoofProvider" ] && item "Forcing configuration for <A13 PI Strong ...";
     grep_json() { [ -f "$2" ] && grep -m1 "$1" $2 | cut -d\" -f4; }
     verboseLogs=$(grep_json "VERBOSE_LOGS" $OLDJSON);
     ADVSETTINGS="spoofBuild spoofProps spoofProvider spoofSignature spoofVendingFinger spoofVendingSdk verboseLogs";
