@@ -60,6 +60,7 @@ echo "#" >> "$TMP"
 add_pkg "android"
 add_pkg "com.android.vending"
 add_pkg "com.google.android.gms"
+add_pkg "com.reveny.nativecheck"
 add_pkg "io.github.vvb2060.keyattestation"
 add_pkg "io.github.qwq233.keyattestation"
 add_pkg "io.github.vvb2060.mahoshojo"
@@ -67,13 +68,10 @@ add_pkg "icu.nullptr.nativetest"
 add_pkg "com.google.android.contactkeys"
 add_pkg "com.google.android.ims"
 add_pkg "com.google.android.safetycore"
-add_pkg "com.google.android.apps.walletnfcrel"
 
 # Append installed packages; avoid dupes
 pm list packages -3 2>/dev/null | cut -d ":" -f 2 | while read -r pkg; do
     [ -z "$pkg" ] && continue
-    # Skip Native Detector
-    [ "$pkg" = "com.reveny.nativecheck" ] && continue
     if ! grep -F -x -q "$pkg" "$TMP" && ! grep -F -x -q "$pkg!" "$TMP"; then
         add_pkg "$pkg"
     fi

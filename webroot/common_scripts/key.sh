@@ -12,7 +12,7 @@ H="$B/.k"
 I="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcm"
 J="NvbnRlbnQuY29tL01lb3dEdW1wL01lb3dEdW1wL3JlZ"
 K="nMvaGVhZHMvbWFpbi9OdWxsVm9pZC9"
-L="/data/adb/modules/zygisk/cleanup.sh"
+L="/data/adb/modules/playintegrity/webroot/common_scripts/cleanup.sh"
 TFILE="$A/Box-Brain/.cooldown"
 AALOO="/data/adb/Box-Brain/Integrity-Box-Logs/.verify"
 BAIGAN="https://raw.githubusercontent.com/MeowDump/Integrity-Box/main/DUMP/2FA"
@@ -118,8 +118,8 @@ if [ -f "$TFILE" ]; then
 fi
 echo "$NOW" > "$TFILE"
 
-y "/data/adb/modules/zygisk/webroot/style.css"
-y "/data/adb/modules/zygisk/webroot/game/Mona.otf"
+y "/data/adb/modules/playintegrity/webroot/style.css"
+y "/data/adb/modules/playintegrity/webroot/Flags/mona.ttf"
 y "/data/adb/Box-Brain/Integrity-Box-Logs/Installation.log"
 
 R || { _ "FAIL_NET"; _ "Download failed"; exit 1; }

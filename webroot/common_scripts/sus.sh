@@ -54,7 +54,7 @@ meow "- Scanning system for Custom ROM detection.."
 # Search for traces in the specified directories
 for dir in /system /product /data /vendor /etc /root; do
     meow "- Searching in: $dir... "
-    find "$dir" -type f 2>/dev/null | grep -i -E "lineageos|crdroid|gapps|evolution|magisk|ksu" >> "$O"
+    find "$dir" -type f 2>/dev/null | grep -i -E "lineageos|crdroid|gapps|evolution|magisk" >> "$O"
 done
 
 meow " "

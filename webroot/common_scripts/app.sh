@@ -22,8 +22,16 @@ com.google.android.hmal:Hide_My_Applist
 com.reveny.vbmetafix.service:VBmeta_Fixer
 me.twrp.twrpapp:TWRP
 com.termux:Termux
+bin.mt.plus:MT_Manager
+org.swiftapps.swiftbackup:Swift_Backup
+ru.mike.updatelocker:Update_Locker
+com.coderstory.toolkit:Core_Patch
+ru.maximoff.apktool:APK_ToolM
+io.github.muntashirakon.AppManager.debug:App_Manager
+io.github.a13e300.ksuwebui:KSU_WebUI
 com.slash.batterychargelimit:Battery_Charging_Limit
 io.github.vvb2060.keyattestation:Key_Attestation
+io.github.qwq233.keyattestation:Key_Attestation
 io.github.muntashirakon.AppManager:App_Manager
 io.github.vvb2060.mahoshojo:Momo
 com.reveny.nativecheck:Native_Detector
@@ -49,7 +57,6 @@ for entry in $RISKY_APPS; do
     fi
 done
 
-# Extra check: any app with "spoofed" in version name
 for PKG in $(pm list packages -3 | cut -d':' -f2); do
     VERSION=$(dumpsys package "$PKG" | grep versionName | head -n 1 | awk '{print $1}' | cut -d'=' -f2)
     if echo "$VERSION" | grep -qi "spoofed"; then
