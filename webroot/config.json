@@ -1,11 +1,8 @@
 {
   "title": "Integrity Box",
   "icon": "IntegrityBox.png",
-  "webui-engine": "ksu",
-  "exitConfirm": true,
-  "backInterceptor": "native",
   "pullToRefresh": true,
-  "refreshInterceptor": "native",
-  "windowResize": true,
-  "killShellWhenBackground": false
+  "refreshInterceptor": "javascript",
+  "killShellWhenBackground": false,
+  "webui-engine": "ksu"
 }

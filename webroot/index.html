@@ -13,35 +13,14 @@
   <title>Integrity-Box</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" />
   <link rel="stylesheet" href="style.css" />
-  <style>
-    .material-symbols-outlined {
-      font-size: 28px !important;
-      vertical-align: middle;
-      margin-right: 6px;
-    }
-    .btn .spinner {
-      margin-left: auto;
-    }
-  </style>
-  <style>
-    .btn {
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-  </style>
 </head>
 <body>
-  <div id="intro-overlay">
-    <div class="intro-border"></div>
-    <div class="intro-center">
-      <div class="intro-subtext" id="intro-subtext"></div>
     </div>
-  </div>
   <div class="container">
     <header class="title-bar">
       <div>
         <div id="module-name" class="title">Integrity-Box</div>
-        <div class="subtitle">Made with 🩷 by 𝗠𝗘𝗢𝗪𝗻𝗮 💅</div>
+        <div class="subtitle">ɢᴏᴅ ɢᴜɪᴅᴇꜱ ᴛʜᴇ ɢʀᴀᴛᴇꜰᴜʟ</div>
       </div>
       <label class="theme-switch">
         <input type="checkbox" id="theme-toggle" checked />
@@ -97,7 +76,7 @@
       <div class="button-group">
         <h3 class="group-title">Tricky Store</h3>
         <div class="button-grid">
-		  <button class="btn" data-script="key.sh"><span class="icon material-symbols-outlined">deployed_code_update</span>Update Keybox <div class="spinner"></div></button>
+          <button class="btn" data-script="key.sh"><span class="icon material-symbols-outlined">deployed_code_update</span>Update Keybox <div class="spinner"></div></button>
           <button class="btn" data-script="user.sh" data-type="scanner"><span class="icon material-symbols-outlined">android</span>Update Target List<div class="spinner"></div></button>
           <button class="btn" data-script="patch.sh"><span class="icon material-symbols-outlined">security</span>Spoof Boot Patch Level <div class="spinner"></div></button>
         </div>
@@ -106,24 +85,24 @@
       <div class="button-group">
         <h3 class="group-title">SusFS</h3>
         <div class="button-grid">
-          <button class="btn" data-script="sus.sh" data-type="scanner"><span class="icon material-symbols-outlined">terminal</span>Update Sus Path <div class="spinner"></div></button>
-		  <button class="btn" data-script="boot_hash.sh" data-type="hash"><span class="icon material-symbols-outlined">tag</span>Abnormal Boot Hash Fixer<div class="spinner"></div></button>
+          <button class="btn" data-script="sus.sh"><span class="icon material-symbols-outlined">terminal</span>Update Sus Path <div class="spinner"></div></button>
+          <button class="btn" data-script="boot_hash.sh" data-type="hash"><span class="icon material-symbols-outlined">tag</span>Abnormal Boot Hash Fixer<div class="spinner"></div></button>
         </div>
       </div>
 
       <div class="button-group">
         <h3 class="group-title">Shamiko & NoHello</h3>
         <div class="button-grid">
-          <button class="btn" data-script="start.sh"><span class="icon material-symbols-outlined">toggle_on</span>Enable Auto-Whitelist Mode <div class="spinner"></div></button>
-          <button class="btn" data-script="stop.sh"><span class="icon material-symbols-outlined">toggle_off</span>Disable Auto-Whitelist Mode <div class="spinner"></div></button>
-       </div>
+          <button class="btn" data-script="start.sh" onclick="ksu.exec('[ -d /data/adb/shamiko ] && touch /data/adb/shamiko/whitelist || [ -d /data/adb/nohello ] && touch /data/adb/nohello/whitelist')"><span class="icon material-symbols-outlined">toggle_on</span>Enable Whitelist Mode <div class="spinner"></div></button>
+          <button class="btn" data-script="stop.sh" onclick="ksu.exec('rm -rf /data/adb/shamiko/whitelist /data/adb/nohello/whitelist')"><span class="icon material-symbols-outlined">toggle_off</span>Disable Whitelist Mode <div class="spinner"></div></button>
+        </div>
       </div>
 
       <div class="button-group">
         <h3 class="group-title">Miscellaneous</h3>
         <div class="button-grid">
           <button class="btn" data-script="mona" data-type="flags"><span class="icon material-symbols-outlined">bolt</span>Module Settings<div class="spinner"></div></button>
-          <button class="btn" data-script="vending.sh"><span class="icon material-symbols-outlined">build_circle</span>FIX Device not Certified <div class="spinner"></div></button>
+          <button class="btn" data-script="vending.sh" onclick="ksu.exec('su -c pm clear com.android.vending; su -c pm clear com.google.android.gms')"><span class="icon material-symbols-outlined">build_circle</span>FIX Device not Certified <div class="spinner"></div></button>
           <button class="btn" data-script="kill.sh"><span class="icon material-symbols-outlined">swords</span>Kill GMS Process <div class="spinner"></div></button>
           <button class="btn" data-script="app.sh" data-type="scanner"><span class="icon material-symbols-outlined">microbiology</span>Scan Flagged Apps <div class="spinner"></div></button>
           <button class="btn" data-script="resetprop.sh"><span class="icon material-symbols-outlined">hide</span>Hide PIF Hook Detection<div class="spinner"></div></button>
@@ -134,8 +113,8 @@
         <h3 class="group-title">Community & Support</h3>
         <div class="button-grid">
           <button class="btn" data-script="support"><span class="icon material-symbols-outlined">volunteer_activism</span>Support the Developer <div class="spinner"></div></button>
-          <button class="btn" <a onclick="ksu.exec(`am start -a android.intent.action.VIEW -d https://t.me/MeowDump`)"><span class="icon material-symbols-outlined">diversity_3</span>Join Help Group<div class="spinner"></div></button>
-          <button class="btn" <a onclick="ksu.exec(`am start -a android.intent.action.VIEW -d https://t.me/TempMeow`)"><span class="icon material-symbols-outlined">report</span>Report A Bug/Problem<div class="spinner"></div></button>
+          <button class="btn" data-script="meowdump.sh"onclick="ksu.exec(`am start -a android.intent.action.VIEW -d https://t.me/MeowDump`)"><span class="icon material-symbols-outlined">diversity_3</span>Join Help Group<div class="spinner"></div></button>
+          <button class="btn" data-script="report.sh"onclick="ksu.exec(`am start -a android.intent.action.VIEW -d https://t.me/TempMeow`)"><span class="icon material-symbols-outlined">report</span>Report A Bug/Problem<div class="spinner"></div></button>
         </div>
       </div>
     </main>

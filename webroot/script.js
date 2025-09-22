@@ -84,10 +84,6 @@ function popup(msg, type) {
 }
 
 function openModal(title, content, fullscreen) {
-  modalBackdrop = modalBackdrop || document.getElementById("modal-backdrop");
-  modalTitle = modalTitle || document.getElementById("modal-title");
-  modalOutput = modalOutput || document.getElementById("modal-output");
-  modalContent = modalContent || document.getElementById("modal-content");
   if (modalTitle) modalTitle.textContent = title || "";
   if (modalOutput) modalOutput.innerHTML = content ?? "Loading...";
   if (modalBackdrop) modalBackdrop.classList.remove("hidden");
@@ -172,7 +168,6 @@ function _getLabelFromTranslations(translations, lang, index, scriptName, fallba
   if (Array.isArray(translations) && translations[index]) return translations[index];
   if (typeof translations === "object") {
     if (translations[lang] && Array.isArray(translations[lang]) && translations[lang][index]) return translations[lang][index];
-    if (translations[scriptName]) return translations[scriptName];
     if (translations[index]) return translations[index];
   }
   return fallback;
@@ -242,7 +237,6 @@ async function changeLanguage(lang) {
 
 const SCRIPT_POPUPS = {
   "kill.sh": { success: "Process Killed Successfully", type: "info" },
-  "vending.sh": { success: "Open playstore & Check/FIX", type: "info" },  
   "user.sh": { success: "I've added all user apps", type: "info" },
   "sus.sh": { start: " ", success: "Make it SUS🥷", type: "info" },
   "stop.sh": { success: "Switched to Blacklist Mode", type: "info" },
@@ -253,9 +247,7 @@ const SCRIPT_POPUPS = {
   "pif.sh": { success: "Done!", type: "info" },
   "patch.sh": { success: "Patch Status : ✅ Spoofed", type: "info" },
   "key.sh": { success: "Keybox has been updated✅", type: "info" },
-  "issue.sh": { success: "Report your problem here", type: "info" },
   "app.sh": { start: " ", success: "Detection Complete", type: "info" },
-  "meowdump.sh": { success: "Redirected to Telegram", type: "info" },
   "support": { start: "Become a Supporter", type: "info" },
   "boot_hash.sh": { success: "Boot hash operation complete", type: "success" }
 };
@@ -357,10 +349,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 .donate-header{font-size:0.9rem;font-weight:500;text-align:center;margin-bottom:1.2rem;color:var(--fg)}
 .donate-entry{display:flex;flex-direction:column;align-items:center;margin-bottom:1.5rem}
 .coin{width:170px!important;height:170px!important;margin:0 auto 0.6rem auto!important;display:block}
-.donate-address-row{display:flex;align-items:center;justify-content:space-between;background-color:var(--panel-bg);padding:0.7rem 0.9rem;border-radius:10px;font-family:monospace;font-size:0.8rem;word-break:break-all;border:1px solid var(--border-color);margin-bottom:0.5rem}
+.donate-address-row{display:flex;align-items:center;justify-content:space-between;background-color:var(--panel-bg);padding:0.7rem 0.9rem;border-radius:10px;font-family:inherit;font-size:0.8rem;word-break:break-all;border:1px solid var(--border-color);margin-bottom:0.5rem}
 .donate-address{flex-grow:1;margin-right:0.8rem}
 .copy-btn{background:var(--accent);color:var(--bg);border:none;padding:14px 12px;border-radius:8px;cursor:pointer;font-size:0.7rem;font-weight:600}
-..supporter-card {
+.supporter-card {
   display: flex;
   flex-direction: column;
   align-items: center;
