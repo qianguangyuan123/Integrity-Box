@@ -1,26 +1,18 @@
-`I originally wrote this code in Notepad and haven’t been very active on Git. I’m uploading it here mainly to keep things transparent. Feel free to inspect the code.`
-`Happy debugging`
 <details>
-<summary><strong>Why I Built This Module</strong></summary>
+<summary><strong>Pre-Requirements</strong></summary>
 
+> Please make sure you have the following **modules installed** before using Integrity Box:
 
-*I noticed a lot of people either selling leaked keyboxes or paying for modules that claim to pass strong Play Integrity but only offer leaked keyboxes. I created this module to give you **real**, **working keyboxes** completely **free**, no hidden charges, no scams, just **legit access** along with several useful features. 🚫🔑*
+- [**Play Integrity Fork**](https://github.com/osm0sis/PlayIntegrityFork/releases) or _ROM's inbuilt gms spoofing_
+- [**Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases) or [**Tricky Store OOS**](https://github.com/beakthoven/TrickyStoreOSS/releases)
+
+> Make sure to properly hide root & zygisk traces, otherwise you won't be able to pass play integrity verdicts
 </details>
 
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/footers/gray0_ctp_on_line.svg?sanitize=true" alt="Catppuccin Footer" />
-</p>
-
-<div align="center">
-  <a href="https://github.com/MeowDump/Integrity-Box/releases" target="_blank">
-    <img src="DUMP/download.png" alt="Download Button" width="600" />
-  </a>
-</div>
-
-## Module Features
-
-> **This module offers the following features:**  
+<details>
+<summary><strong>Module Features</strong></summary>
+  
+> This module offers the following features:  
 
 -  Updates valid `keybox.xml`  
 -  Updates `target.txt` as per your TEE status
@@ -45,14 +37,71 @@
 -  Detects abnormal activity to help debug issues
 -  Detects flagged & spoofed apps
 -  More feature are there, check [WebUI](https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/webui.gif)
+</details>
 
-## Pre-Requirements
+<details>
+<summary><strong>Notes</strong></summary>
 
-> Please make sure you have the following **modules installed** before using Integrity Box:
+<br>
 
-- [**Play Integrity Fork**](https://github.com/osm0sis/PlayIntegrityFork/releases) _or cROM's inbuilt gms spoofing_
-- [**Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases)
-> Make sure to properly hide root & zygisk traces, otherwise you won't be able to pass play integrity verdicts
+> Use Report a bug/issue button in WebUI to report bugs/issues
+
+- Hide root properly if play integrity isn't passing for you. If you are using a custom rom, make sure you have disabled inbuilt gms spoofing. How to disable it? Well it depends on what rom you're using. Join your rom help group & ask `how to disable it` there.  
+- Avoid conflicting or unnecessary modules that expose your root environment
+</details>
+
+<details>
+<summary><strong>Configuration</strong></summary>
+  
+> You can control certain module features by configuring module settings from WEBUI menu
+  
+![Flag](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/flag.png)
+</details>
+
+<details>
+<summary><strong>Why I Built This Module</strong></summary>
+  
+*I noticed a lot of people either selling leaked keyboxes or paying for modules that claim to pass strong Play Integrity but only offer leaked keyboxes. I created this module to give you **real**, **working keyboxes** completely **free**, no hidden charges, no scams, just **legit access** along with several useful features. 🚫🔑*
+
+![Ibox](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/ibox.png)
+</details>
+
+<details>
+<summary><strong>Why No Commit Messages?</strong></summary>
+
+I don’t write code directly on GitHub, I use Notepad locally and upload the files here for transparency. Since GitHub adds a default message like "Added files via upload", I usually leave the commit message blank to keep things clean. tbh idc
+
+The commits themselves are still visible, and you can always compare the changes anytime.
+
+![Commit](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/commit.gif)
+<!-- 
+<br/>
+
+<img 
+  src="https://raw.githubusercontent.com/MeowDump/Integrity-Box/main/DUMP/commit.gif" 
+  alt="Commit GIF" 
+  width="400"
+/>
+-->
+</details>
+
+<details>
+<summary><strong>Acknowledgement & Credit</strong></summary>
+
+- [ezme-nodebug](https://github.com/ez-me/ezme-nodebug) (dead)
+- Everyone who translated the WEBUI & supported me
+- GOD, for everything
+</details>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/catppuccin/catppuccin/main/assets/footers/gray0_ctp_on_line.svg?sanitize=true" alt="Catppuccin Footer" />
+</p>
+
+<div align="center">
+  <a href="https://github.com/MeowDump/Integrity-Box/releases" target="_blank">
+    <img src="DUMP/download2.png" alt="Download Button" width="600" />
+  </a>
+</div>
 
 ## Support
 <table align="center" cellspacing="20" style="border: none;">
@@ -74,10 +123,19 @@
 
 ## Preview
 <p align="center">
-  <img 
-    src="https://m3-markdown-badges.vercel.app/stars/7/1/MeowDump/Integrity-Box" 
-    alt="GitHub Stars" 
-  />
+  <a href="https://github.com/MeowDump/Integrity-Box/stargazers">
+    <img 
+      src="https://m3-markdown-badges.vercel.app/stars/7/1/MeowDump/Integrity-Box" 
+      alt="GitHub Stars" 
+    />
+  </a>
+  <br />
+  <a href="https://github.com/MeowDump/Integrity-Box/releases">
+    <img 
+      src="https://img.shields.io/github/downloads/MeowDump/Integrity-Box/total?label=Downloads%20%28excluding%20telegram%20release%29&color=%23ff1493&style=flat" 
+      alt="GitHub Releases" 
+    />
+  </a>
 </p>
 
 <table align="center">
@@ -102,56 +160,3 @@
     <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/1.png" alt="12" style="max-width: 100%; height: auto;" /></td>
   </tr>
 </table>
-
-# Configuration
-> You can control certain module features by configuring control center from WEBUI menu
-
-![Flag](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/flag.png)
-
-# Emoji Results Meaning in module's description
-> The main purpose of adding these was to centralize all Play Integrity-related info in one place, so users can spot issues in their setup and fix them on their own, without feeling lost or relying on others. I even saw people on Telegram charging money for this... LOL.
-
-- **SELinux**
-  - `🟢` — Enforcing  
-  - `🔴` — Permissive
-- **Kernel**
-  - `🟢` — Can pass play integrity
-  - `🔴` — [Banned Kernel](https://xdaforums.com/t/module-play-integrity-fix.4607985/page-518#post-89308909) Detected, Can't pass play integrity
-
-- **TEE (Trusted Execution Environment)**
-  - `🟢` — Intact  
-  - `🔴` — Broken
-  - `🟡` — Unknown
-
-- **ROM Sign**
-  - `🟢` — Release Key
-  - `🔴` — Test Key
-  - `🟡` — Unknown
-
-- **Risky**
-  - `This represents the number of risky/flagged apps installed in your device`
- 
-- **All**
-  - `This represents the number of modules installed in your device`
-
-- **Patch**
-  - `This represents your Android Security Patch`
-    
-- **Pstore**
-  - `This represents your Play Store Version`
- 
-- **Android**
-  - `This represents your Android Version`
-
-![Description](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/description.png)
-
-<details>
-<summary><strong>Notes</strong></summary>
-
-<br>
-> Use Report a bug/issue button in WebUI to report bugs/issues
-
-- Hide root properly if play integrity isn't passing for you. If you are using a custom rom, make sure you have disabled inbuilt gms spoofing. How to disable it? Well it depends on what rom you're using. Join your rom help group & ask `how to disable it` there.  
-- Avoid conflicting or unnecessary modules that expose your root environment
-
-</details>
