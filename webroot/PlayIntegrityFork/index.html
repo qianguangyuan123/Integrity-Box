@@ -5,19 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PlayIntegrityFork Controls</title>
 <style>
-@font-face{font-family:Mona;src:url('mona.ttf') format('truetype');font-display:swap}
 :root{
   --bg:#fff0f4;--fg:#111;--card:#fff;--muted:#6b7280;
-  --shadow:rgba(0,0,0,.12);--track:#fff0f4;--on:#34c759;--danger:#FF0E00
+  --shadow:rgba(0,0,0,.12);--track:#fff0f4;--on:#ec407a;--danger:#FF0E00
 }
 body.dark{
   --bg:#1c1c1e;--fg:#f5f5f7;--card:#2c2c2e;--muted:#a1a1aa;
-  --shadow:rgba(0,0,0,.55);--track:#3a3a3c
+  --shadow:rgba(0,0,0,.55);--track:#3a3a3c;--on:#f5d491;
 }
 *{box-sizing:border-box}
 body{
   margin:0;background:var(--bg);color:var(--fg);
-  font-family:Mona,-apple-system,BlinkMacSystemFont,"San Francisco",Arial,sans-serif;
   display:grid;place-items:center;min-height:100vh;
   transition:background .25s,color .25s
 }
@@ -114,7 +112,7 @@ body.dark  { background:#121212; color:#fff; }
 
 <script>
 const PIF_JSON="/data/adb/modules/playintegrityfix/custom.pif.json";
-const STATE_FILE="/data/adb/modules/zygisk/webroot/PlayIntegrityFork/toggle_state.json";
+const STATE_FILE="/data/adb/modules/playintegrity/webroot/PlayIntegrityFork/toggle_state.json";
 const KEYS=["spoofBuild","spoofProps","spoofProvider","spoofSignature","spoofVendingSdk"];
 const els=Object.fromEntries(KEYS.map(k=>[k,document.getElementById(k)]));
 
