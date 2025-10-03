@@ -1,0 +1,13 @@
+{
+  "PIF_JSON": "/data/adb/modules/playintegrityfix/custom.pif.json",
+  "PIF_BACKUP": "/data/adb/modules/playintegrityfix/custom.pif.json.bak",
+  "STATE_FILE": "/data/adb/modules/playintegrity/webroot/PlayIntegrityFork/toggle_state.json",
+  "restartMode": "gms",
+  "autoApply": true
+}
+
+// none : Nothing will happen when you enable/disable the toggle
+
+// gms : GMS & Playstore process will be killed when you enable/disable the toggle
+
+// reboot : Your device will reboot when you enable/disable the toggle

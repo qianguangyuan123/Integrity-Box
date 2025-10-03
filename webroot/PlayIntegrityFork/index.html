@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PlayIntegrityFork Controls</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 <style>
 :root{
   --bg:#fff0f4;--fg:#111;--card:#fff;--muted:#6b7280;
@@ -37,14 +38,12 @@ body.dark .row{border-bottom:1px solid rgba(255,255,255,.06)}
 .switch input:checked + .slider .knob{transform:translateX(20px)}
 .actions{display:flex;gap:10px;margin-top:14px}
 .btn{flex:1;border:0;border-radius:12px;padding:10px 14px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
-.btn.secondary{background:#4b5563}
 .btn.danger{background:var(--danger)}
 .status{margin-top:12px;font-size:12px;color:var(--muted);min-height:16px}
 .theme{display:flex;align-items:center;gap:10px;margin-top:6px}
 .small{font-size:12px;color:var(--muted)}
 hr{border:0;border-top:1px solid rgba(0,0,0,.06);margin:12px 0}
 body.dark hr{border-top:1px solid rgba(255,255,255,.06)}
-/* popup toast */
 .toast{
   position:fixed;top:15px;left:50%;transform:translateX(-50%);
   background:var(--card);color:var(--fg);padding:10px 16px;
@@ -54,8 +53,6 @@ body.dark hr{border-top:1px solid rgba(255,255,255,.06)}
 }
 .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-</head>
 <body>
 <div class="card">
   <div class="h">
@@ -68,65 +65,46 @@ body.dark hr{border-top:1px solid rgba(255,255,255,.06)}
       </label>
     </div>
   </div>
+
   <div class="row"><div class="left"><span class="material-icons">build</span><div class="label">spoofBuild</div></div><label class="switch"><input type="checkbox" id="spoofBuild"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons">tune</span><div class="label">spoofProps</div></div><label class="switch"><input type="checkbox" id="spoofProps"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons">developer_board</span><div class="label">Force Strong</div></div><label class="switch"><input type="checkbox" id="spoofProvider"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons">verified_user</span><div class="label">spoofSignature</div></div><label class="switch"><input type="checkbox" id="spoofSignature"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons">shop</span><div class="label">spoofVendingSdk</div></div><label class="switch"><input type="checkbox" id="spoofVendingSdk"><span class="slider"><span class="knob"></span></span></label></div>
+
   <div class="actions">
-    <button class="btn" id="applyAll"><span class="material-icons" style="vertical-align:middle;font-size:18px">done_all</span> Apply</button>
     <button class="btn danger" id="reset"><span class="material-icons" style="vertical-align:middle;font-size:18px">restart_alt</span> Reset</button>
   </div>
+
   <div class="status" id="status"></div>
   <hr />
   <div class="small">IMPORTANT: Check Play Integrity from Play store's developer options instead of using any external app.</div>
 </div>
 
 <div id="toast" class="toast"></div>
-
-<style>
-body.light { background:#fff0f4; color:#000; }
-body.dark  { background:#121212; color:#fff; }
-
-/* popup */
-#popup {
-  position: fixed;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.8);
-  color: #fff;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity 0.4s ease, top 0.4s ease;
-  white-space: nowrap;
-}
-#popup.show { opacity: 1; top: 30px; }
-</style>
-
 <div id="popup"></div>
 
 <script>
-const PIF_JSON="/data/adb/modules/playintegrityfix/custom.pif.json";
-const STATE_FILE="/data/adb/modules/playintegrity/webroot/PlayIntegrityFork/toggle_state.json";
+const CONFIG = {
+  PIF_JSON: "/data/adb/modules/playintegrityfix/custom.pif.json",
+  PIF_BACKUP: "/data/adb/modules/playintegrityfix/custom.pif.json.bak",
+  STATE_FILE: "/data/adb/modules/playintegrity/webroot/PlayIntegrityFork/toggle_state.json",
+  restartMode: "gms", // none | gms | reboot
+  autoApply: true
+};
+
 const KEYS=["spoofBuild","spoofProps","spoofProvider","spoofSignature","spoofVendingSdk"];
 const els=Object.fromEntries(KEYS.map(k=>[k,document.getElementById(k)]));
-
 const themeToggle=document.getElementById("themeToggle");
 
 function bridge(){
-  if(typeof ksu!=='undefined'&&ksu&&typeof ksu.exec==='function') return cmd=>ksu.exec(cmd);
-  if(typeof Android!=='undefined'&&Android&&typeof Android.exec==='function') return cmd=>Android.exec(cmd);
+  if(typeof ksu!=='undefined'&&ksu?.exec) return cmd=>ksu.exec(cmd);
+  if(typeof Android!=='undefined'&&Android?.exec) return cmd=>Android.exec(cmd);
   return null;
 }
 const exec=bridge();
 function safeExec(cmd){ if(exec) try{return exec(cmd)}catch(e){} return ""; }
 
-// popup
 function showPopup(msg){
   const p=document.getElementById("popup");
   p.textContent=msg;
@@ -134,63 +112,71 @@ function showPopup(msg){
   setTimeout(()=>p.classList.remove("show"),2000);
 }
 
-// update custom.pif.json
 function setField(k,v){
-  safeExec(`sh -c "sed -i -E 's/\\"${k}\\"[[:space:]]*:[[:space:]]*\\"[01]\\"/\\"${k}\\": \\"${v}\\"/' '${PIF_JSON}'"`);
+  safeExec(`sh -c "sed -i -E 's/(\\\"${k}\\\"[[:space:]]*:[[:space:]]*)\\\"[01]\\\"/\\1\\\"${v}\\\"/' '${CONFIG.PIF_JSON}'"`);
 }
 
-// save toggles
-function saveToggles(){
-  const state={};
-  let fileContent="";
-  KEYS.forEach(k=>{
-    const val=els[k].checked?1:0;
-    state[k]=val;
-    fileContent+=`${k}=${val}\n`;
-    setField(k,val);   // <-- update PIF JSON with 1/0
+function killProcesses(){
+  const busyboxPath = safeExec(`
+    for Q in /data/adb/modules/busybox-ndk/system/*/busybox \
+             /data/adb/ksu/bin/busybox \
+             /data/adb/ap/bin/busybox \
+             /data/adb/magisk/busybox; do
+      [ -x "$Q" ] && echo $Q && return
+    done
+  `);
+  if(!busyboxPath) return;
+  ["com.google.android.gms","com.android.vending","com.google.android.gms.unstable"].forEach(p=>{
+    safeExec(`${busyboxPath} pkill ${p}`);
   });
-  localStorage.setItem("toggleState",JSON.stringify(state));
-  safeExec(`echo "${fileContent}" > "${STATE_FILE}"`);
 }
 
-// load toggles
+function saveToggles(){
+  KEYS.forEach(k=>{
+    const val = els[k].checked?1:0;
+    setField(k,val);
+  });
+  if(CONFIG.restartMode==="gms") killProcesses();
+  else if(CONFIG.restartMode==="reboot" && confirm("Mode is set to REBOOT. Reboot now?")) safeExec("reboot");
+
+  const state=Object.fromEntries(KEYS.map(k=>[k,els[k].checked?1:0]));
+  safeExec(`echo '${JSON.stringify(state)}' > '${CONFIG.STATE_FILE}'`);
+
+  KEYS.forEach(k=>showPopup(`${k} ${els[k].checked?"enabled":"disabled"}`));
+}
+
 function loadToggles(){
-  const saved=localStorage.getItem("toggleState");
+  const saved = safeExec(`cat '${CONFIG.STATE_FILE}'`);
   if(saved){
-    const state=JSON.parse(saved);
-    KEYS.forEach(k=>{
-      els[k].checked=(state[k]===1);
-    });
+    let state;
+    try{ state = JSON.parse(saved); } catch(e){ return; }
+    KEYS.forEach(k=>{ els[k].checked=(state[k]==1); });
   }
 }
 
-// save theme
 function saveTheme(mode){
   localStorage.setItem("theme",mode);
   document.body.className=mode;
-  safeExec(`echo "theme=${mode}" >> "${STATE_FILE}"`);
 }
 
-// load theme
 function loadTheme(){
-  const saved=localStorage.getItem("theme") || "light";
-  document.body.className=saved;
-  themeToggle.checked=(saved==="dark");
+  const saved = localStorage.getItem("theme") || "light";
+  document.body.className = saved;
+  themeToggle.checked = (saved==="dark");
 }
 
-// wire toggles
 KEYS.forEach(k=>{
-  els[k].addEventListener('change',()=>{
-    saveToggles();
-    showPopup(`${k} ${els[k].checked?"enabled":"disabled"}`);
-  });
+  els[k].addEventListener('change', saveToggles);
 });
 
-// wire theme
 themeToggle.addEventListener("change",()=>{
   const mode=themeToggle.checked?"dark":"light";
   saveTheme(mode);
-  showPopup(`Theme set to ${mode}`);
+});
+
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("Restore backup config?")) safeExec(`cp -f '${CONFIG.PIF_BACKUP}' '${CONFIG.PIF_JSON}'`);
+  loadToggles();
 });
 
 // init
