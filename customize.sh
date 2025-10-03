@@ -9,22 +9,68 @@ PIF_PROP="$PIF_DIR/module.prop"
 
 # create dirs
 mkdir -p "$LOG_DIR" 2>/dev/null || true
-echo " "
+echo "
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀
+⠀⠀⠀⠀⢀⡴⣆⠀⠀⠀⠀⠀⣠⡀⠀⠀⠀⠀⠀⠀⣼⣿⡗⠀⠀⠀⠀
+⠀⠀⠀⣠⠟⠀⠘⠷⠶⠶⠶⠾⠉⢳⡄⠀⠀⠀⠀⠀⣧⣿⠀⠀⠀⠀⠀
+⠀⠀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣤⣤⣤⣤⣤⣿⢿⣄⠀⠀⠀⠀
+⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧⠀⠀⠀⠀⠀⠀⠙⣷⡴⠶⣦
+⠀⠀⢱⡀⠀⠉⠉⠀⠀⠀⠀⠛⠃⠀⢠⡟⠀⠀⠀⢀⣀⣠⣤⠿⠞⠛⠋
+⣠⠾⠋⠙⣶⣤⣤⣤⣤⣤⣀⣠⣤⣾⣿⠴⠶⠚⠋⠉⠁⠀⠀⠀⠀⠀⠀
+⠛⠒⠛⠉⠉⠀⠀⠀⣴⠟⢃⡴⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠛⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+"
 
 # Quote of the day 
 cat <<EOF > $LOG_DIR/.verify
 YourMindIsAWeaponTrainItToSeeOpportunityNotObstacles
 EOF
 
-# Delete old fingerprint files with advanced settings if they exist
-[ -f /data/adb/modules/playintegrityfix/custom.pif.json ] && rm -f /data/adb/modules/playintegrityfix/custom.pif.json
-[ -f /data/adb/modules/playintegrityfix/custom.pif.json.bak ] && rm -f /data/adb/modules/playintegrityfix/custom.pif.json.bak
-[ -f /data/adb/modules/playintegrity/webroot/PlayIntegrityFork/toggle_state.json ] && rm -f /data/adb/modules/playintegrity/webroot/PlayIntegrityFork/toggle_state.json
-
 # logger
 log() {
     echo "$1"
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_DIR/installation.log"
+}
+
+# Network check 
+check_network() {
+  ATTEMPT=1
+  MAX_ATTEMPTS=10
+  TARGET="8.8.8.8"
+
+  while [ "$ATTEMPT" -le "$MAX_ATTEMPTS" ]; do
+    # Try ping first
+    if command -v ping >/dev/null 2>&1; then
+      if ping -c 1 -w 1 "$TARGET" >/dev/null 2>&1; then
+        log " ✦ Network connectivity confirmed on attempt $ATTEMPT"
+        return 0
+      fi
+    fi
+
+    # Fallback: wget or curl
+    if command -v wget >/dev/null 2>&1; then
+      if wget -q --spider --timeout=2 http://connectivitycheck.gstatic.com/generate_204; then
+        log " ✦ Network connectivity confirmed on attempt $ATTEMPT"
+        return 0
+      fi
+    elif command -v curl >/dev/null 2>&1; then
+      if curl -fs --max-time 2 http://connectivitycheck.gstatic.com/generate_204 >/dev/null; then
+        log " ✦ Network connectivity confirmed on attempt $ATTEMPT"
+        return 0
+      fi
+    fi
+
+    # Failed attempt
+    log " ✦ Network connectivity attempt $ATTEMPT failed"
+    if [ "$ATTEMPT" -eq "$MAX_ATTEMPTS" ]; then
+      log " ✦ Network unreachable after $MAX_ATTEMPTS attempts"
+      return 1
+    fi
+
+    ATTEMPT=$((ATTEMPT + 1))
+    sleep 1
+  done
 }
 
 chup() {
@@ -97,11 +143,14 @@ batman() {
   if [ -d "$PIF_DIR" ] && [ -f "$PIF_PROP" ]; then
     if grep -q "name=Play Integrity Fork" "$PIF_PROP" 2>/dev/null; then
       log " ✦ Detected: PIF by @osm0sis"
-      log " ✦ Refreshing fingerprint using PIF"
-      [ -f "$PIF_DIR/autopif2.sh" ] && chmod 755 "$PIF_DIR/autopif2.sh" && sh "$PIF_DIR/autopif2.sh" >/dev/null 2>&1 || true
+      log " ✦ Downloading fingerprint using PIF"
+      if [ -f "$PIF_DIR/autopif2.sh" ]; then
+          [ -x "$PIF_DIR/autopif2.sh" ] || chmod +x "$PIF_DIR/autopif2.sh"
+          sh "$PIF_DIR/autopif2.sh" -s -m -p >/dev/null 2>&1 || true
+      fi
     elif grep -q "name=Play Integrity Fix" "$PIF_PROP" 2>/dev/null; then
       log " ✦ Detected: Unofficial PIF"
-      log " ✦ Refreshing fingerprint using PIF module"
+      log " ✦ Downloading fingerprint using PIF module"
       [ -x "$PIF_DIR/autopif.sh" ] && sh "$PIF_DIR/autopif.sh" >/dev/null 2>&1 || true
     else
       log " ✦ Unknown PIF module detected (not recommended)"
@@ -109,7 +158,7 @@ batman() {
     fi
   else
     log " ✦ PIF is not installed"
-    log "    Maybe you're using ROM's inbuilt spoofing"
+    log " ✦ Maybe you're using ROM's inbuilt spoofing"
   fi
 }
 
@@ -118,9 +167,11 @@ release_source() {
     nohup am start -a android.intent.action.VIEW -d https://t.me/MeowDump >/dev/null 2>&1 &
 }
 
-# Delete old fingerprint with advance settings if they exists
-[ -f /data/adb/modules/playintegrityfix/custom.pif.json ] && rm -f /data/adb/modules/playintegrityfix/custom.pif.json
-[ -f /data/adb/modules/playintegrityfix/custom.pif.json.bak ] && rm -f /data/adb/modules/playintegrityfix/custom.pif.json.bak
+# Network connectivity check 
+if ! check_network; then
+  log " ✦ Network check failed, exiting"
+  exit 1
+fi
 
 # Entry point
 batman
@@ -161,6 +212,9 @@ if [ ! -f /data/adb/Box-Brain/hash.txt ]; then
 else
     log " ✦ File already exists, skipping"
 fi
+
+#Create flag
+touch /data/adb/Box-Brain/advanced
 
 # Force stop Playstore 
 am force-stop com.android.vending
