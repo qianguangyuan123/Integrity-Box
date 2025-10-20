@@ -1,8 +1,10 @@
 {
-  "title": "Integrity Box",
+  "webui-engine": "ksu",
+  "killShellWhenBackground": false,
+  "exitConfirm": false,
   "icon": "IntegrityBox.png",
+  "title": "Integrity Box",
   "pullToRefresh": true,
   "refreshInterceptor": "javascript",
-  "killShellWhenBackground": false,
-  "webui-engine": "ksu"
+  "historyFallback": false
 }

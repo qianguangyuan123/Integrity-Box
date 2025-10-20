@@ -137,20 +137,20 @@ async function updateDashboard() {
   try {
     let result = await runShell("getprop | grep -i lineage");
     if (result && result.trim() !== "") {
-      if (statusLineageProp) { 
-        statusLineageProp.textContent = "N/A"; 
-        statusLineageProp.className = "status-indicator disabled"; 
+      if (statusLineageProp) {
+        statusLineageProp.textContent = "Detected";
+        statusLineageProp.className = "status-indicator enabled";
       }
     } else {
-      if (statusLineageProp) { 
-        statusLineageProp.textContent = "Detected"; 
-        statusLineageProp.className = "status-indicator enabled"; 
+      if (statusLineageProp) {
+        statusLineageProp.textContent = "Spoofed";
+        statusLineageProp.className = "status-indicator enabled";
       }
     }
-  } catch {
-    if (statusLineageProp) { 
-      statusLineageProp.textContent = "Spoofed"; 
-      statusLineageProp.className = "status-indicator enabled"; 
+  } catch (error) {
+    if (statusLineageProp) {
+      statusLineageProp.textContent = "Spoofed";
+      statusLineageProp.className = "status-indicator enabled";
     }
   }
 }
