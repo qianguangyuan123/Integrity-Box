@@ -1,12 +1,25 @@
 <details>
-<summary><strong>Pre-Requirements</strong></summary>
+<summary><strong>Notes</strong></summary>
 
 > Please make sure you have the following **modules installed** before using Integrity Box:
 
-- [**Play Integrity Fork**](https://github.com/osm0sis/PlayIntegrityFork/releases) or _ROM's inbuilt gms spoofing_
 - [**Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases) or [**Tricky Store OOS**](https://github.com/beakthoven/TrickyStoreOSS/releases)
 
-> Make sure to properly hide root & zygisk traces, otherwise you won't be able to pass play integrity verdicts
+- [**Play Integrity Fork**](https://github.com/osm0sis/PlayIntegrityFork/releases) (optional)
+
+Integrity Box has inbuilt PIF for users who are not able to pass Play Integrity with PIF module or don’t want to use Zygisk. This lets you pass Play Integrity without PIF or Zygisk modules. However, It’s still recommended to use Play Integrity Fork (PIF)
+
+`Que: Won't it conflict with PIF?`
+
+`Ans: No, because it works only when PIF module is not installed`
+
+`Note:` 
+- Play Integrity checks can fail on outdated or heavily modified systems. To reduce false negatives, run a ROM with SELinux set to `enforcing`, keep Google Play Store and Google Play Services up to date, and avoid Xposed modules or other system-level hooks that modify Play Store or Play Services.
+
+- Use Report a bug/issue button in WebUI to report bugs/issues
+  
+- Avoid conflicting or unnecessary modules that expose your root environment
+> 
 </details>
 
 <details>
@@ -14,6 +27,7 @@
   
 > This module offers the following features:  
 
+-  Spoofs security patch ( android + boot)
 -  Spoofs LineageOS props detection
 -  Spoofs debug fingerprint detection
 -  Fixes abnormal boot hash
@@ -24,7 +38,9 @@
 -  Spoofs custom recovery detection
 -  Updates valid `keybox.xml`  
 -  Updates `target.txt` as per your TEE status
+-  Blacklists unnecessary packages from target.txt
 -  Re-freshes fingerprint on every reboot for seamless exprience
+-  Re-freshes TS target packages on every reboot
 -  Switch Shamiko & Nohello modes
 -  Disables EU injector by default  
 -  Disables GMS ROM spoofing for various cROMs 
@@ -34,26 +50,28 @@
 -  Fixes Device not certified error
 -  Kills GMS Vending process
 -  Detects flagged & spoofed apps
-### NOTE: Every single feature is customisable, you can choose what to use and what to skip as per your requirements
+> `NOTE:` Every single feature is customisable, you can choose what to use and what to skip as per your requirements
+
 </details>
 
 <details>
-<summary><strong>Notes</strong></summary>
+<summary><strong>About Module Settings</strong></summary>
 
-<br>
+- `PIF Advanced :` Controls play integrity fork behaviour, `ON=` fetch fingerprint with advanced settings & automatically spoof values to pass strong integrity verdicts. `OFF=` fetch fingerprint without advanced settings & disable incorrect spoofing values to pass strong integrity verdicts.
 
-> Use Report a bug/issue button in WebUI to report bugs/issues
-
-- Hide root properly if play integrity isn't passing for you. If you are using a custom rom, make sure you have disabled inbuilt gms spoofing. How to disable it? Well it depends on what rom you're using. Join your rom help group & ask `how to disable it` there.  
-- Avoid conflicting or unnecessary modules that expose your root environment
-</details>
-
-<details>
-<summary><strong>Configuration</strong></summary>
+- `Playstore Pixelify :` Disables Play Store spoofing as a Pixel device (the Play Store used to be spoofed even when inbuilt GMS spoofing was disabled on some A16 ROMs)
   
-> You can control certain module features by configuring module settings from WEBUI menu
+- `Spoof Lineage Props :` hides lineageos props detection
   
-![Flag](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/flag.png)
+- `Override Lineage Props :` force hide lineageos props detection via reset prop
+- `Debug Fingerprint :` cleans debug tag from fingerprint to bypass custom rom detection and pass play integrity with stock fingerprint
+- `Debug Build :` spoofs developement build as user
+- `Build Tag :` spoofs build tag to bypass custom rom detection
+- `Storage Encryption :` spoofs device storage as encrypted to fool banking apps
+- `Selinux Status :` spoofs selinux status enforcing to pass play integrity on ROMs with permissive selinux
+- `TWRP detection :` spoofs custom recovery folder to bypass root detection
+- `Pif.json on boot :` download latest pixel fingerprint on device restart
+- `Target.txt on boot :` update tricky store's package list on device restart
 </details>
 
 <details>
@@ -67,7 +85,9 @@
 <details>
 <summary><strong>Why No Commit Messages?</strong></summary>
 
-I don’t write code directly on GitHub. I use Notepad locally and upload the files when they’re ready, for transpirancy. If you’re expecting handcrafted commit messages or spotless diffs, you’ve confused this repo with a museum exhibit. I focus on getting things done, not polishing every line for spectators. The commits are visible, and you can compare changes anytime. There’s even a [changelog](https://raw.githubusercontent.com/MeowDump/MeowDump/refs/heads/main/playintegrity/changelog.md), for those brave enough to read. If that’s still too much effort, feel free to rewrite the commit messages and send a pull request. Otherwise, Save the drama and look elsewhere
+**The entire purpose of this repository is transparency.
+I upload my code here because some people believe that anything on GitHub is automatically open source. HAHA and honestly, I don’t have the time (or patience) to debate that. So, I joined this beautiful platform and decided to let the code speak for itself** 
+I don’t write code directly on GitHub. I use Notepad++ locally and upload the files on Github when they’re ready, **for transparency.** I focus on getting things done, not polishing every line for spectators. **Every commits is visible**, and you can compare changes anytime. There’s even a [changelog](https://raw.githubusercontent.com/MeowDump/MeowDump/refs/heads/main/playintegrity/changelog.md), for those brave enough to read. If that’s still too much effort, feel free to rewrite the commit messages and send a pull request. Otherwise, $#@%&*
 
 ![Commit](https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/commit.gif)
 
@@ -77,6 +97,7 @@ I don’t write code directly on GitHub. I use Notepad locally and upload the fi
 <summary><strong>Acknowledgement & Credit</strong></summary>
 
 - [ezme-nodebug](https://github.com/ez-me/ezme-nodebug) (dead)
+- [PlayIntegrityFork](https://github.com/osm0sis/PlayIntegrityFork)
 - Everyone who translated the WEBUI & supported me
 - GOD, for everything
 </details>
@@ -128,23 +149,23 @@ I don’t write code directly on GitHub. I use Notepad locally and upload the fi
 
 <table align="center">
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/installation.gif" alt="1" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/webui.gif" alt="2" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/webui2.gif" alt="3" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/PreviewHome.gif" alt="1" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview2.png" alt="2" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview7.png" alt="3" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/5.gif" alt="4" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/action.png" alt="5" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/prop.png" alt="6" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview5.png" alt="4" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview4.png" alt="5" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview8.png" alt="6" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/8.png" alt="7" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/2.png" alt="8" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/3.png" alt="9" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview3.png" alt="7" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview6.png" alt="8" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview13.png" alt="9" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/4.png" alt="10" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/pif.png" alt="11" style="max-width: 100%; height: 2400;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/raw/main/DUMP/1.png" alt="12" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview9.png" alt="10" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/Preview14.png" alt="11" style="max-width: 100%; height: 2400;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/DUMP/8.png" alt="12" style="max-width: 100%; height: auto;" /></td>
   </tr>
 </table>
