@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Target Box</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+:root {
+  --bg: #1f2233;
+  --fg: #e6e6e6;
+  --accent: #1592FF;
+  --panel-bg: #232637D9;
+  --btn-hover: #2d3240F2;
+  --border-color: #ffffff14;
+  --card-bg: #232637E6;
+  --card-border: #ffffff0D;
+  --shadow-color: #00000066;
+  --transition-speed: 0.3s;
+  --border-radius: 16px;
+  --glow-color: #1592FF;
+  --status-width: 90px;
+  --status-height: 28px;
+}
+
+/* Body & Layout */
+body {
+  margin: 0;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #1f2233, #14172b);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Header */
+.header .title {
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(21,146,255,0.4);
+  animation: fadeInDown 0.8s ease;
+}
+
+/* Card */
+.card {
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 6px 20px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.card::before {
+  content:"";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+  opacity: 0.1;
+  filter: blur(18px);
+  z-index: 0;
+  pointer-events: none;
+  animation: softPulse 8s ease-in-out infinite;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px var(--shadow-color);
+}
+
+/* Search Bar */
+.search {
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--fg);
+  font-size: 0.95rem;
+  transition: all var(--transition-speed);
+}
+.search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--glow-color);
+}
+
+/* List Items */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--border-radius);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 14px var(--shadow-color);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed), background var(--transition-speed);
+  position: relative;
+  animation: fadeInUp 0.4s ease;
+}
+.item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px var(--shadow-color);
+}
+.item.blacklisted {
+  background: #FF0000;
+  border-color: #00000066;
+}
+
+/* Info */
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.name {
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.pkg {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
+  word-break: break-all;
+}
+
+/* Actions */
+.actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Toggle */
+.toggle {
+  width: 48px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.68,-0.55,0.27,1.55);
+}
+.toggle::before {
+  content:"";
+  position: absolute;
+  left:4px;
+  top:3px;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:#fff;
+  transition: transform 0.25s cubic-bezier(0.68,-0.55,0.27,1.55);
+}
+.toggle.active {
+  background: var(--accent);
+}
+.toggle.active::before {
+  transform: translateX(22px) scale(1.05);
+}
+.toggle.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Icon Button */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--border-radius);
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+.icon-btn:hover {
+  transform: scale(1.15);
+}
+.icon-btn .material-icons {
+  font-size: 22px;
+  color: var(--accent);
+}
+
+/* Buttons (Backup/Restore) */
+.btn {
+  position: relative;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--fg);
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 6px 20px var(--shadow-color);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.btn:hover {
+  background: var(--btn-hover);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 28px var(--shadow-color);
+}
+.btn:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* Toast */
+#snack {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;
+  transform: translateX(-50%) translateY(24px);
+  background: #222;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: var(--border-radius);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9999;
+}
+#snack.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Scrollbar */
+.list::-webkit-scrollbar {
+  width: 8px;
+}
+.list::-webkit-scrollbar-track { background: var(--panel-bg); }
+.list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+/* Animations */
+@keyframes softPulse {
+  0%,100% { opacity:0.08; transform: scale(1); }
+  50% { opacity:0.14; transform: scale(1.02); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+/* Responsive */
+@media(max-width:600px){
+  .btn { height: 48px; font-size: 0.85rem; }
+  .item { padding: 10px; }
+  .toggle { width: 42px; }
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title"><span class="material-icons">apps</span>Target Box</div>
+    </div>
+
+    <div class="card">
+      <input id="search" class="search" placeholder="Filter packages or labels..." />
+      <div class="list" id="list"></div>
+      <button class="btn" onclick="backupTargets()">Backup Targets</button>
+      <button class="btn" onclick="restoreTargets()">Restore Targets</button>
+    </div>
+  </div>
+
+  <div id="snack"><span id="snackText"></span></div>
+
+<script>
+const TARGET_FILE="/data/adb/tricky_store/target.txt";
+const BLACK_FILE="/data/adb/Box-Brain/blacklist.txt";
+const BACKUP_FILE="/sdcard/Download/blacklist_backup.txt.bak";
+
+// IFRAME runShell
+function runShell(cmd, cb){
+  if(window.parent?.runShell){
+    window.parent.runShell(cmd).then(out=>cb?.(0,out,"")).catch(err=>cb?.(1,"",err));
+  } else if(window.ksu?.exec){
+    const id="cb_"+Date.now()+"_"+Math.floor(Math.random()*9999);
+    window[id]=(code,stdout,stderr)=>{ try{ delete window[id] }catch(e){}; cb?.(code,stdout||"",stderr||""); };
+    ksu.exec(cmd,"{}",id);
+  } else cb?.(1,"","ksu/runShell not found");
+}
+
+function esc(s){return "'"+String(s).replace(/'/g,"'\\''")+"'";}
+function toast(t){const s=document.getElementById("snack");document.getElementById("snackText").textContent=t; s.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>s.classList.remove("show"),2200);}
+
+function readLines(path, cb){
+  runShell(`if [ -f ${esc(path)} ]; then cat ${esc(path)}; fi`, (c,o)=> cb((o||"").split("\n").map(l=>l.trim()).filter(l=>l)));
+}
+
+function writeLines(path, lines, cb){
+  const args = lines.map(l=>esc(l)).join(" ");
+  runShell(`mkdir -p $(dirname ${esc(path)}) && printf "%s\\n" ${args} > ${esc(path)}`, c=> cb?.(c===0));
+}
+
+function normalizeTargets(lines){ return lines.map(l=> l.endsWith("!") ? l.slice(0,-1) : l); }
+
+let cachedApps = [];
+function fetchInstalled(cb){
+  runShell("pm list packages -3 -f", (c,out)=> {
+    if(!out) return cb([]);
+    const apps = out.trim().split("\n").map(l=>{
+      const m = l.match(/package:(.+)=(.+)$/);
+      return m ? {pkg:m[2],apk:m[1],label:m[2]} : null;
+    }).filter(Boolean);
+    cb(apps);
+  });
+}
+
+function buildList(){
+  readLines(TARGET_FILE, tLines=>{
+    readLines(BLACK_FILE, bLines=>{
+      const targets = normalizeTargets(tLines), blacks = bLines;
+      fetchInstalled(apps=>{
+        cachedApps = apps;
+        render(apps, targets, blacks);
+      });
+    });
+  });
+}
+
+function render(apps, targets, blacks){
+  const q=(document.getElementById("search").value||"").toLowerCase();
+  const list=document.getElementById("list"); list.innerHTML="";
+  apps.forEach(a=>{
+    if(q && !a.pkg.toLowerCase().includes(q) && !a.label.toLowerCase().includes(q)) return;
+    const isTarget = targets.includes(a.pkg);
+    const isBlack = blacks.includes(a.pkg);
+    const item = document.createElement("div");
+    item.className="item"+(isBlack?" blacklisted":"");
+    item.innerHTML=`
+      <div class="info">
+        <div class="name">${a.label}</div>
+        <div class="pkg">${a.pkg}</div>
+      </div>
+      <div class="actions">
+        <div class="toggle ${isTarget?'active':''} ${isBlack?'disabled':''}" data-pkg="${a.pkg}"></div>
+        <button class="icon-btn black" data-pkg="${a.pkg}"><span class="material-icons">${isBlack?"block":"block_flipped"}</span></button>
+      </div>`;
+    list.appendChild(item);
+  });
+  attachListeners();
+}
+
+function attachListeners(){
+  document.querySelectorAll(".toggle").forEach(btn=>{
+    btn.onclick = ()=>{
+      if(btn.classList.contains("disabled")){ toast("Package is blacklisted"); return; }
+      const pkg=btn.getAttribute("data-pkg");
+      readLines(TARGET_FILE, lines=>{
+        let normalized = normalizeTargets(lines);
+        if(btn.classList.contains("active")) normalized=normalized.filter(p=>p!==pkg);
+        else if(!normalized.includes(pkg)) normalized.push(pkg);
+        writeLines(TARGET_FILE, normalized, ok=>{ toast(ok? (btn.classList.contains("active")?"Removed":"Added"):"Write failed"); buildList(); });
+      });
+    };
+  });
+
+  document.querySelectorAll(".icon-btn.black").forEach(b=>{
+    b.onclick = ()=>{
+      const pkg=b.getAttribute("data-pkg");
+      readLines(BLACK_FILE, lines=>{
+        if(lines.includes(pkg)) lines=lines.filter(p=>p!==pkg);
+        else lines.push(pkg);
+        writeLines(BLACK_FILE, lines, ok=>{ toast(ok? (lines.includes(pkg)?"Added":"Removed"):"Write failed"); buildList(); });
+      });
+    };
+  });
+}
+
+document.getElementById("search").addEventListener("input", buildList);
+
+// Backup / Restore
+function backupTargets(){
+  readLines(BLACK_FILE, lines=>{
+    writeLines(BACKUP_FILE, lines, ok=>toast(ok?"Backup saved":"Backup failed"));
+  });
+}
+function restoreTargets(){
+  readLines(BACKUP_FILE, lines=>{
+    writeLines(BLACK_FILE, lines, ok=>toast(ok?"Restore done":"Restore failed"));
+    buildList();
+  });
+}
+
+async function init(){
+  runShell(`mkdir -p $(dirname ${esc(TARGET_FILE)}) && touch ${esc(TARGET_FILE)} && mkdir -p $(dirname ${esc(BLACK_FILE)}) && touch ${esc(BLACK_FILE)}`, ()=>buildList());
+}
+
+init();
+</script>
+</body>
+</html>
