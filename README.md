@@ -3,7 +3,7 @@
 
 > Please make sure you have the following **modules installed** before using Integrity Box:
 
-- [**Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases) or [**Tricky Store OOS**](https://github.com/beakthoven/TrickyStoreOSS/releases)
+- [**Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases) or [**Tricky Store OOS**](https://github.com/beakthoven/TrickyStoreOSS/releases) or [**Tricky Store FOSS**](https://github.com/qwq233/TrickyStore/releases) or [**TEE Simulator**](https://github.com/JingMatrix/TEESimulator/releases) (use any one)
 
 - [**Play Integrity Fork**](https://github.com/osm0sis/PlayIntegrityFork/releases) (optional)
 
