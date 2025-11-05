@@ -1,10 +1,10 @@
 # Build Fields
 MANUFACTURER=Google
-MODEL=Pixel 7a
-FINGERPRINT=google/lynx_beta/lynx:16/BP41.250916.012.A1/14330953:user/release-keys
+MODEL=Pixel 9
+FINGERPRINT=google/tokay_beta/tokay:16/BP41.250916.012.A1/14330953:user/release-keys
 BRAND=google
-PRODUCT=lynx_beta
-DEVICE=lynx
+PRODUCT=tokay_beta
+DEVICE=tokay
 RELEASE=16
 ID=BP41.250916.012.A1
 INCREMENTAL=14330953
@@ -17,15 +17,6 @@ DEVICE_INITIAL_SDK_INT=32
 *.build.id=BP41.250916.012.A1
 *.security_patch=2025-10-05
 *api_level=32
-
-# Advanced Settings
-spoofBuild=1
-spoofProps=1
-spoofProvider=1
-spoofSignature=0
-spoofVendingFinger=1
-spoofVendingSdk=0
-verboseLogs=0
 
 # Beta Released: 2025-10-28
 # Estimated Expiry: 2025-12-09
