@@ -1,138 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>PlayIntegrityFork Controls</title>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
-:root {
-  --accent-light: #ec407a;
-  --accent-dark: #f5d491;
-  --bg-light: #fff0f4;
-  --bg-dark: #1c1c1e;
-  --card-light: #fff;
-  --card-dark: #2c2c2e;
-  --text-light: #111;
-  --text-dark: #f5f5f7;
-  --shadow-light: rgba(0,0,0,0.12);
-  --shadow-dark: rgba(0,0,0,0.55);
-  --transition: 0.3s ease;
+/*glow, blur, animations */
+:root{
+  --bg:#1f2233; --fg:#e6e6e6; --accent:#1592FF;
+  --panel-bg:#232637D9; --card-bg:#232637E6;
+  --border-radius:14px; --shadow: rgba(0,0,0,0.5);
+  --transition:0.3s;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui;
+  background:linear-gradient(135deg,#1f2233,#14172b);
+  color:var(--fg);
+  -webkit-font-smoothing:antialiased;
+}
+.card{
+  width:360px; max-width:94%;
+  background:var(--panel-bg);
+  border-radius:var(--border-radius);
+  padding:22px;
+  box-shadow:0 18px 48px var(--shadow);
+  position:relative; overflow:hidden;
+  transform: translateY(0);
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.card::before{
+  content:"";
+  position:absolute; inset:0;
+  background:radial-gradient(circle,var(--accent) 0%, transparent 60%);
+  filter:blur(14px); opacity:.14; pointer-events:none; z-index:0;
+  animation: cardGlow 10s ease-in-out infinite;
+}
+@keyframes cardGlow{0%,100%{opacity:.12}50%{opacity:.28}}
+h1{position:relative;z-index:2;margin:0 0 12px 0;text-align:center;font-size:18px;color:var(--accent)}
+.row{
+  position:relative; z-index:2;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:12px 6px;border-radius:10px;
+  transition:background var(--transition), transform var(--transition);
+}
+.row + .row { margin-top:6px; }
+.row:hover{ transform: translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,0.35); }
+
+/* switch */
+.switch{position:relative;width:56px;height:32px;flex-shrink:0}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;border-radius:999px;background:#2f3138;transition:background var(--transition), box-shadow var(--transition)}
+.knob{position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.2,.9,.2,1);}
+.switch input:checked + .slider{background:var(--accent); box-shadow:0 6px 24px rgba(21,146,255,0.18)}
+.switch input:checked + .slider .knob{transform:translateX(24px)}
+
+/* disabled look */
+.switch input:disabled + .slider{ background: rgba(255,255,255,0.06); box-shadow:none; cursor:not-allowed; }
+.switch input:disabled + .slider .knob{ background: rgba(255,255,255,0.65); }
+
+/* inline note */
+.warning-line{
+  margin-top:12px;padding:10px;border-radius:10px;
+  background: linear-gradient(90deg, rgba(255,120,120,0.06), rgba(255,120,120,0.02));
+  color:#ffb3b3;font-weight:600;font-size:13px;text-align:center;
+  display:none;
+  box-shadow:0 6px 20px rgba(0,0,0,0.25);
 }
 
-body {
-  margin:0; padding:0;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  min-height:100vh;
-  font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: var(--bg-dark);
-  color: var(--text-dark);
-  transition: background var(--transition), color var(--transition);
+/* toast */
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(90deg,#12c48b,#0aa1ff);color:#fff;padding:10px 16px;border-radius:999px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.45);opacity:0;pointer-events:none;transition:transform .36s ease,opacity .36s ease;z-index:9999;font-weight:700;
 }
+.toast.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
 
-body.light {
-  background: var(--bg-light);
-  color: var(--text-light);
-}
+/* helper */
+.input-label {display:flex;align-items:center;gap:8px;font-weight:700}
+.keyname {font-size:12px;color:rgba(255,255,255,0.65)}
+.footer {margin-top:14px;text-align:center;color:rgba(255,255,255,0.45);font-size:12px}
 
-.card {
-  width: 260px; max-width:90vw;
-  background: var(--card-dark);
-  border-radius: 28px;
-  padding: 24px;
-  box-shadow:0 12px 28px var(--shadow-dark);
-  transition: background var(--transition), box-shadow var(--transition);
-}
-
-body.light .card {
-  background: var(--card-light);
-  box-shadow:0 12px 28px var(--shadow-light);
-}
-
-h1 {text-align:center; font-size:20px; font-weight:700; margin-bottom:18px; transition:color var(--transition);}
-body.light h1 {color:var(--accent-light);}
-h1 .material-icons {vertical-align:middle; font-size:22px;}
-
-.row {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.08); font-weight:700;
-  transition:border-color var(--transition);
-}
-body.light .row {border-bottom:1px solid rgba(0,0,0,0.08);}
-.row label {display:flex; align-items:center; gap:8px;}
-
-.switch {position:relative; width:52px; height:32px;}
-.switch input {opacity:0; width:0; height:0;}
-.slider {position:absolute; inset:0; border-radius:34px; background:#3a3a3c; transition:background var(--transition);}
-body.light .slider {background:#fff0f4;}
-.knob {position:absolute; left:3px; bottom:3px; width:26px; height:26px; background:#fff; border-radius:50%; transition:transform var(--transition);}
-input:checked + .slider {background:var(--accent-dark);}
-body.light input:checked + .slider {background:var(--accent-light);}
-input:checked + .slider .knob {transform:translateX(20px);}
-
-button {
-  margin-top:16px; width:100%;
-  padding:12px; border:none; border-radius:16px;
-  font-weight:700; cursor:pointer; transition:background var(--transition), transform 0.2s;
-  display:flex; align-items:center; justify-content:center; gap:6px;
-  background:var(--accent-dark); color:#111;
-}
-body.light button {background:var(--accent-light); color:#fff;}
-button:hover {transform:scale(1.02); opacity:0.9;}
-
-.theme-toggle {display:flex; justify-content:center; margin-bottom:18px;}
-
-footer {margin-top:24px; font-size:12px; color:#888; text-align:center;}
+/* responsive */
+@media(max-width:420px){ .card{width:92%;padding:18px} .switch{width:52px;height:30px} .switch input:checked + .slider .knob{transform:translateX(22px)} }
 </style>
 </head>
 <body>
+  <div class="card" role="region" aria-label="Play Integrity Fork Controls">
+    <h1><span class="material-icons" style="vertical-align:middle;font-size:18px;margin-right:6px">android</span> Play Integrity Fork Controls</h1>
 
-<div class="theme-toggle">
-  <label class="switch">
-    <input type="checkbox" id="themeToggle">
-    <span class="slider"><span class="knob"></span></span>
-  </label>
-</div>
+    <div id="warningLine" class="warning-line" role="alert"></div>
 
-<div class="card">
-  <h1><span class="material-icons">android</span> Play Integrity Fork Controls</h1>
+    <div id="rows" aria-live="polite">
+      <div class="row"><div class="input-label"><span class="material-icons">build</span> <div>Spoof Build <div class="keyname">spoofBuild</div></div></div>
+        <label class="switch"><input id="spoofBuild" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-  <div class="row"><label><span class="material-icons">build</span> Spoof Build</label><label class="switch"><input type="checkbox" id="spoofBuild"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><label><span class="material-icons">public</span> Spoof Props</label><label class="switch"><input type="checkbox" id="spoofProps"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><label><span class="material-icons">send_time_extension</span> Spoof Provider</label><label class="switch"><input type="checkbox" id="spoofProvider"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><label><span class="material-icons">api</span> Spoof Signature</label><label class="switch"><input type="checkbox" id="spoofSignature"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><label><span class="material-icons">verified_user</span> Spoof Vending Finger</label><label class="switch"><input type="checkbox" id="spoofVendingFinger"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><label><span class="material-icons">shop</span> Spoof Vending SDK</label><label class="switch"><input type="checkbox" id="spoofVendingSdk"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><label><span class="material-icons">bug_report</span> Verbose Logs</label><label class="switch"><input type="checkbox" id="verboseLogs"><span class="slider"><span class="knob"></span></span></label></div>
+      <div class="row"><div class="input-label"><span class="material-icons">public</span> <div>Spoof Props <div class="keyname">spoofProps</div></div></div>
+        <label class="switch"><input id="spoofProps" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-  <button id="restartBtn"><span class="material-icons">restart_alt</span> Restart GMS</button>
-</div>
+      <div class="row"><div class="input-label"><span class="material-icons">settings_ethernet</span> <div>Force Strong <div class="keyname">spoofProvider</div></div></div>
+        <label class="switch"><input id="spoofProvider" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-<footer>IntegrityBox &copy; 2025 - Use responsibly</footer>
+      <div class="row"><div class="input-label"><span class="material-icons">vpn_key</span> <div>Spoof Signature <div class="keyname">spoofSignature</div></div></div>
+        <label class="switch"><input id="spoofSignature" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
+
+      <div class="row"><div class="input-label"><span class="material-icons">fingerprint</span> <div>Spoof Fingerprint <div class="keyname">spoofVendingFinger</div></div></div>
+        <label class="switch"><input id="spoofVendingFinger" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
+
+      <div class="row"><div class="input-label"><span class="material-icons">storefront</span> <div>Spoof to A12 <div class="keyname">spoofVendingSdk</div></div></div>
+        <label class="switch"><input id="spoofVendingSdk" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
+
+      <div class="row"><div class="input-label"><span class="material-icons">bug_report</span> <div>Generate Logs <div class="keyname">verboseLogs</div></div></div>
+        <label class="switch"><input id="verboseLogs" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
+    </div>
+
+    <div class="footer">IntegrityBox • 2025</div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Done ✅</div>
 
 <script>
-const modulePaths = [
-  "/data/adb/modules/playintegrityfix/custom.pif.json",
+const PROP_CANDIDATES = [
   "/data/adb/modules/playintegrityfix/custom.pif.prop",
-  "/data/adb/modules/playintegrityfix/pif.prop"
+  "/data/adb/modules/playintegrityfix/pif.prop",
+  "/data/adb/pif.prop",
+  "/data/adb/custom.pif.prop"
 ];
-const props = ["spoofBuild","spoofProps","spoofProvider","spoofSignature","spoofVendingFinger","spoofVendingSdk","verboseLogs"];
 
-async function runShell(cmd){try{await ksu.exec(cmd);}catch(e){}}
-async function findConfigFile(){for(const path of modulePaths){const exists=await ksu.exec(`[ -f "${path}" ] && echo found || echo missing`); if(exists.trim()==="found") return path;} return null;}
-async function getCurrentValues(file){const content=await ksu.exec(`cat "${file}"`); const map={}; props.forEach(p=>{const match=content.match(new RegExp(`${p}=(\\d+)`)); if(match) map[p]=match[1];}); return map;}
-async function updateValue(file,key,value){await runShell(`su -c 'if grep -q "^${key}=" "${file}"; then sed -i "s/^${key}=.*/${key}=${value}/" "${file}"; else echo "${key}=${value}" >> "${file}"; fi'`);}
-async function killProcesses(){await runShell("su -c 'am force-stop com.google.android.gms.unstable; am force-stop com.android.vending'");}
-async function applyToggle(key,value){const file=await findConfigFile(); if(!file)return alert("⚠️ Config file not found!"); await updateValue(file,key,value); await killProcesses(); localStorage.setItem(`toggle_${key}`,value);}
-async function initToggles(){const file=await findConfigFile(); if(!file)return; const values=await getCurrentValues(file); props.forEach(key=>{const toggle=document.getElementById(key); if(!toggle)return; const saved=localStorage.getItem(`toggle_${key}`); const currentValue=saved??values[key]??"0"; toggle.checked=currentValue==="1"||currentValue==="100"; toggle.addEventListener("change",()=>{const newValue=toggle.checked?(key==="verboseLogs"?100:1):0; applyToggle(key,newValue);});});}
+const KEYS = ["spoofBuild","spoofProps","spoofProvider","spoofSignature","spoofVendingFinger","spoofVendingSdk","verboseLogs"];
 
-document.getElementById("restartBtn").addEventListener("click",async()=>{await killProcesses(); alert("✅ GMS & Play Store restarted!");});
+/* helper for UI */
+const toastEl = document.getElementById('toast');
+function showToast(msg, timeout=1400){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  setTimeout(()=>toastEl.classList.remove('show'), timeout);
+}
+function showWarning(text){
+  const w = document.getElementById('warningLine');
+  if(!text){ w.style.display='none'; w.textContent=''; return; }
+  w.style.display='block'; w.textContent = text;
+}
 
-const themeToggle=document.getElementById("themeToggle");
-themeToggle.addEventListener("change",()=>{document.body.classList.toggle("light",themeToggle.checked); localStorage.setItem("themeMode",themeToggle.checked?"light":"dark");});
+/* execute shell and return trimmed stdout as string */
+async function sh(cmd){
+  try{
+    if(typeof ksu?.exec === 'function'){
+      const maybe = ksu.exec(cmd);
+      if(maybe && typeof maybe.then === 'function') return (await maybe).toString().trim();
+      if(typeof maybe === 'string') return maybe.toString().trim();
+      return await new Promise((resolve, reject) => {
+        const cb = `cb_${Date.now()}_${Math.random()*10000|0}`;
+        window[cb] = (code, stdout, stderr) => {
+          try{ delete window[cb]; }catch(e){}
+          if(code === 0) resolve((stdout||'').toString().trim());
+          else resolve(((stdout||'') + (stderr||'')).toString().trim());
+        };
+        try{
+          ksu.exec(cmd, "{}", cb);
+        }catch(e){
+          resolve('');
+        }
+      });
+    } else {
+      return '';
+    }
+  }catch(e){
+    return '';
+  }
+}
 
-document.addEventListener("DOMContentLoaded",()=>{const theme=localStorage.getItem("themeMode"); if(theme==="light"){document.body.classList.add("light"); themeToggle.checked=true;} initToggles();});
+/* find the first existing prop file */
+async function findPropFile(){
+  for(const p of PROP_CANDIDATES){
+    const out = await sh(`sh -c 'if [ -f "${p}" ]; then echo found; else echo missing; fi'`);
+    if(out.trim() === 'found') return p;
+  }
+  return null;
+}
+
+/* check advanced settings presence */
+async function hasAdvancedSettings(file){
+  if(!file) return false;
+  const out = await sh(`sh -c 'grep -q \"^spoofProvider=\" \"${file}\" && echo 1 || echo 0'`);
+  return out.trim() === '1';
+}
+
+/* read key value */
+async function readKey(file, key){
+  if(!file) return '';
+  const cmd = `sh -c 'grep -m1 \"^${key}=\" \"${file}\" | cut -d\"=\" -f2- || echo \"\"'`;
+  const out = await sh(cmd);
+  return (out ?? '').toString().trim();
+}
+
+/* write key value: if exists replace, else append */
+async function writeKey(file, key, value){
+  if(!file) return false;
+  const cmd = `sh -c 'if grep -q \"^${key}=\" \"${file}\"; then sed -i \"s/^${key}=.*/${key}=${value}/\" \"${file}\"; else printf \"\\n${key}=${value}\\n\" >> \"${file}\"; fi'`;
+  await sh(cmd);
+  return true;
+}
+
+/* restart GMS */
+async function restartGMS(){
+  await sh(`sh -c 'am force-stop com.google.android.gms.unstable 2>/dev/null || true; am force-stop com.android.vending 2>/dev/null || true'`);
+}
+
+/* set toggles from file */
+async function init(){
+  const file = await findPropFile();
+  if(!file){
+    showWarning("⚠️ Fingerprint not found. Expected one of: custom.pif.prop, pif.prop");
+    // disable all toggles visually
+    KEYS.forEach(k => {
+      const el = document.getElementById(k);
+      if(el) { el.disabled = true; el.checked = false; }
+    });
+    return;
+  }
+
+  const adv = await hasAdvancedSettings(file);
+  if(!adv){
+    showWarning("⚠️ Advanced Settings not detected. Enable Advanced Settings & click on action button");
+    KEYS.forEach(k => {
+      const el = document.getElementById(k);
+      if(el) { el.disabled = true; el.checked = false; }
+      const parent = document.getElementById(k)?.closest('.row');
+      if(parent) parent.title = "Advanced Settings missing, 'spoofProvider is unavailable";
+    });
+    return;
+  }
+
+  // Hide warning if advanced settings exist
+  showWarning('');
+
+  // For each key, read its value and set toggle
+  for(const key of KEYS){
+    const el = document.getElementById(key);
+    if(!el) continue;
+    el.disabled = false;
+    const val = await readKey(file, key);
+    // treat "1" as enabled, "100" as enabled (for verboseLogs), everything else disabled
+    el.checked = (val === '1' || val === '100');
+    el.addEventListener('change', async (ev) => {
+      el.parentElement.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.03)' }, { transform: 'scale(1)' }], { duration: 240, easing: 'ease' });
+      const newVal = (key === 'verboseLogs') ? (el.checked ? '100' : '0') : (el.checked ? '1' : '0');
+      await writeKey(file, key, newVal);
+      await restartGMS();
+      try { localStorage.setItem(`toggle_${key}`, newVal); } catch(e){}
+      showToast('Done ✅');
+    }, { passive:true });
+  }
+}
+
+/* DOM loaded */
+document.addEventListener('DOMContentLoaded', ()=>{ init().catch(e=>{ console.error(e); showWarning("⚠️ Initialization Failed check KSU is available."); }) });
 </script>
 </body>
 </html>
