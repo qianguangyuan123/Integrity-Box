@@ -4,27 +4,24 @@ LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
 INSTALL_LOG="$LOG_DIR/Installation.log"
 SCRIPT="$MODPATH/webroot/common_scripts"
 PIF_DIR="/data/adb/modules/playintegrityfix"
-PIF_PROP="$PIF_DIR/module.prop"
 
 # create dirs
 mkdir -p "$LOG_DIR" 2>/dev/null || true
+
 echo "
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀
-⠀⠀⠀⠀⢀⡴⣆⠀⠀⠀⠀⠀⣠⡀⠀⠀⠀⠀⠀⠀⣼⣿⡗⠀⠀⠀⠀
-⠀⠀⠀⣠⠟⠀⠘⠷⠶⠶⠶⠾⠉⢳⡄⠀⠀⠀⠀⠀⣧⣿⠀⠀⠀⠀⠀
-⠀⠀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣤⣤⣤⣤⣤⣿⢿⣄⠀⠀⠀⠀
-⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣧⠀⠀⠀⠀⠀⠀⠙⣷⡴⠶⣦
-⠀⠀⢱⡀⠀⠉⠉⠀⠀⠀⠀⠛⠃⠀⢠⡟⠀⠀⠀⢀⣀⣠⣤⠿⠞⠛⠋
-⣠⠾⠋⠙⣶⣤⣤⣤⣤⣤⣀⣠⣤⣾⣿⠴⠶⠚⠋⠉⠁⠀⠀⠀⠀⠀⠀
-⠛⠒⠛⠉⠉⠀⠀⠀⣴⠟⢃⡴⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠛⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-
+    ____      __                  _ __       
+   /  _/___  / /____  ____ ______(_) /___  __
+   / // __ \/ __/ _ \/ __ / ___/ / __/  / / /
+ _/ // / / / /_/  __/ /_/ / /  / / /_/ /_/ / 
+/___/_/ /_/\__/\___/\__, /_/  /_/\__/\__, /  
+                   /____/           /____/           
+             ____            
+            / __ )____  _  __
+           / __  / __ \| |/_/
+          / /_/ / /_/ />  <  
+         /_____/\____/_/|_|  
+                    
 "
-
-# Quote of the day 
-cat <<EOF > $LOG_DIR/.verify
-YourMindIsAWeaponTrainItToSeeOpportunityNotObstacles
-EOF
 
 # logger
 log() {
@@ -76,7 +73,6 @@ chup() {
 echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_DIR/pixel.log"
 }
 
-
 set_resetprop() {
     PROP="$1"
     VALUE="$2"
@@ -105,7 +101,6 @@ set_simpleprop() {
 
 # Run actions
 batman() {
-
   if [ -n "$ZIPFILE" ] && [ -f "$ZIPFILE" ]; then
     log " "
     log " ✦ Checking Module Integrity..."
@@ -124,41 +119,11 @@ batman() {
   fi
 
   log " "
-  log " ✦ Preparing keybox downloader"
-  chmod +x "$SCRIPT/key.sh"
-  sh "$SCRIPT/key.sh" # >/dev/null 2>&1
+  log " ✦ Setting-up Environment..."
+  chmod +x "$MODPATH/action.sh"
+  sh "$MODPATH/action.sh" >/dev/null 2>&1
+  log " ✦ Setup Completed"
   log " "
-  log " ✦ Updating target list as per TEE"
-  chmod +x "$SCRIPT/user.sh"
-  sh "$SCRIPT/user.sh" >/dev/null 2>&1
-  log " ✦ Target list has been updated "
-  log " "
-  log " ✦ Updating Boot patch file"
-  chmod +x "$SCRIPT/patch.sh"
-  sh "$SCRIPT/patch.sh" >/dev/null 2>&1
-  log " ✦ TrickyStore spoof applied "
-  log " "
-  log " ✦ Scanning Play Integrity Fix"
-  if [ -d "$PIF_DIR" ] && [ -f "$PIF_PROP" ]; then
-    if grep -q "name=Play Integrity Fork" "$PIF_PROP" 2>/dev/null; then
-      log " ✦ Detected: PIF by @osm0sis"
-      log " ✦ Downloading fingerprint using PIF"
-      if [ -f "$PIF_DIR/autopif2.sh" ]; then
-          [ -x "$PIF_DIR/autopif2.sh" ] || chmod +x "$PIF_DIR/autopif2.sh"
-          sh "$PIF_DIR/autopif2.sh" -s -m -p >/dev/null 2>&1 || true
-      fi
-    elif grep -q "name=Play Integrity Fix" "$PIF_PROP" 2>/dev/null; then
-      log " ✦ Detected: Unofficial PIF"
-      log " ✦ Downloading fingerprint using PIF module"
-      [ -x "$PIF_DIR/autopif.sh" ] && sh "$PIF_DIR/autopif.sh" >/dev/null 2>&1 || true
-    else
-      log " ✦ Unknown PIF module detected (not recommended)"
-      log "    🙏PLEASE USE PIF FORK BY @osm0sis🙏"
-    fi
-  else
-    log " ✦ PIF is not installed"
-    log " ✦ Maybe you're using ROM's inbuilt spoofing"
-  fi
 }
 
 release_source() {
@@ -172,32 +137,30 @@ if ! check_network; then
   exit 1
 fi
 
+# Quote of the day 
+cat <<EOF > $LOG_DIR/.verify
+YourMindIsAWeaponTrainItToSeeOpportunityNotObstacles
+EOF
+
+# Force pif to use advanced settings
+touch "/data/adb/Box-Brain/advanced"
+
 # Entry point
 batman
 
-# Delete old logs & trash generated integrity box
-chmod +x "$SCRIPT/cleanup.sh"
-sh "$SCRIPT/cleanup.sh"
-
-# delete old integrity box module ID if exists
-if [ -e /data/adb/modules/zygisk/module.prop ]; then
-    rm -rf /data/adb/modules/zygisk
-fi
-
-log " "
 log " ✦ Analyzing GMS spoofing"
 # Check for gms flag, skip if found
 if [ -f "/data/adb/Box-Brain/gms" ]; then
     log " ✦ Skipping, GMS flag found"
 elif [ -f "$PIF_DIR/module.prop" ]; then
-    log " ✦ Disabling inbuilt GMS spoofing"
+    log " ✦ Optimizing inbuilt GMS spoofing"
     # Set/reset props if they exist
     set_resetprop persist.sys.pihooks.disable.gms_key_attestation_block true
     set_resetprop persist.sys.pihooks.disable.gms_props true
     set_simpleprop persist.sys.pihooks.disable 1
     set_simpleprop persist.sys.kihooks.disable 1
 else
-    log " ✦ Skipping operations, PIF not found"
+    log " ✦ Enabled PIF Standalone Mode"
 fi
 
 # Abnormal boot hash fixer
@@ -212,11 +175,12 @@ else
     log " ✦ File already exists, skipping"
 fi
 
-# Force stop Playstore & force action to use advanced settings
-am force-stop com.android.vending
-touch "/data/adb/Box-Brain/advanced"
+# Delete old logs & trash generated integrity box
+chmod +x "$SCRIPT/cleanup.sh"
+sh "$SCRIPT/cleanup.sh"
 
 release_source
+touch "/data/adb/Box-Brain/noredirect"
 log " "
 log " "
 log "        ••• Installation Completed ••• "
