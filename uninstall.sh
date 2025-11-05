@@ -1,94 +1,94 @@
 #!/system/bin/sh
-LOGFILE="/sdcard/uninstall.log"
+set -x
+
+# Log file & Logger
+LOGFILE="/data/local/tmp/uninstall.log"
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') | $*" >> "$LOGFILE" 2>&1
+}
+
+# Safely delete files & directories
+delete_file() {
+    local FILE="$1"
+    if [ -e "$FILE" ]; then
+        rm -rf "$FILE" >> "$LOGFILE" 2>&1
+        if [ $? -eq 0 ]; then
+            log "Deleted $FILE"
+        else
+            log "Failed to delete $FILE"
+        fi
+    else
+        log "Skipped $FILE (not found)"
+    fi
+}
+
+# Safely restore backups
+restore_backup() {
+    local BACKUP="$1"
+    local ORIGINAL="$2"
+    if [ -e "$BACKUP" ]; then
+        mv "$BACKUP" "$ORIGINAL" >> "$LOGFILE" 2>&1
+        if [ $? -eq 0 ]; then
+            log "Restored $ORIGINAL from backup"
+        else
+            log "Failed to restore $ORIGINAL from backup"
+        fi
+    else
+        log "No $BACKUP found"
+    fi
+}
+
+# Revert system properties if modified
+revert_prop_if_modified() {
+    local PROP="$1"
+    local MODIFIED="$2"
+    local DEFAULT="$3"
+    local CURRENT
+    CURRENT="$(getprop "$PROP" 2>/dev/null)"
+
+    if [ "$CURRENT" = "$MODIFIED" ]; then
+        resetprop -n "$PROP" "$DEFAULT" >> "$LOGFILE" 2>&1
+        if [ $? -eq 0 ]; then
+            log "Reverted $PROP to $DEFAULT (was $MODIFIED)"
+        else
+            log "Failed to revert $PROP (was $MODIFIED)"
+        fi
+    else
+        log "Skipped $PROP (current=$CURRENT)"
+    fi
+}
+
+# Start logging
+log "•••••• Integrity-Box Uninstall Started ••••••"
+
+# Define paths
 TRICKY_STORE="/data/adb/tricky_store"
 KEYBOX="$TRICKY_STORE/keybox.xml"
 KEYBOX_BACKUP="$TRICKY_STORE/keybox.xml.bak"
 TARGET="$TRICKY_STORE/target.txt"
 TARGET_BACKUP="$TRICKY_STORE/target.txt.bak"
 
-log() {
-  echo "$*" >> "$LOGFILE"
-}
-
-log "•••••• Integrity-Box Uninstall Started ••••••"
-
-# Remove files
-if [ -e "$KEYBOX" ]; then
-  rm -rf "$KEYBOX"
-  log "Deleted $KEYBOX"
-else
-  log "Skipped $KEYBOX (not found)"
-fi
-
-if [ -e "$TARGET" ]; then
-  rm -rf "$TARGET"
-  log "Deleted $TARGET"
-else
-  log "Skipped $TARGET (not found)"
-fi
-
-if [ -e /data/adb/shamiko/whitelist ]; then
-  rm -rf /data/adb/shamiko/whitelist
-  log "Deleted /data/adb/shamiko/whitelist"
-fi
-
-if [ -e /data/adb/nohello/whitelist ]; then
-  rm -rf /data/adb/nohello/whitelist
-  log "Deleted /data/adb/nohello/whitelist"
-fi
-
-if [ -e /data/adb/modules/playintegrity ]; then
-  rm -rf /data/adb/modules/playintegrity
-  log "Deleted /data/adb/modules/playintegrity"
-fi
-
-if [ -e /data/adb/Box-Brain ]; then
-  rm -rf /data/adb/Box-Brain
-  log "Deleted /data/adb/Box-Brain"
-fi
-
-if [ -e /data/adb/service.d/hash.sh ]; then
-  rm -rf /data/adb/service.d/hash.sh
-  log "Deleted /data/adb/service.d/hash.sh"
-fi
+# Delete files and directories
+delete_file "$KEYBOX"
+delete_file "$TARGET"
+delete_file /data/adb/shamiko/whitelist
+delete_file /data/adb/nohello/whitelist
+delete_file /data/adb/modules/playintegrity
+delete_file /data/adb/Box-Brain
+delete_file /data/adb/service.d/hash.sh
+delete_file /data/adb/service.d/prop.sh
 
 # Restore backups
-if [ -e "$TARGET_BACKUP" ]; then
-  mv "$TARGET_BACKUP" "$TARGET"
-  log "Restored $TARGET from backup"
-else
-  log "No $TARGET_BACKUP found"
-fi
+restore_backup "$TARGET_BACKUP" "$TARGET"
+restore_backup "$KEYBOX_BACKUP" "$KEYBOX"
 
-if [ -e "$KEYBOX_BACKUP" ]; then
-  mv "$KEYBOX_BACKUP" "$KEYBOX"
-  log "Restored $KEYBOX from backup"
-else
-  log "No $KEYBOX_BACKUP found"
-fi
-
-# Revert props only if modified
-revert_prop_if_modified() {
-  PROP="$1"
-  MODIFIED="$2"
-  DEFAULT="$3"
-  CURRENT="$(resetprop "$PROP" 2>/dev/null)"
-  if [ "$CURRENT" = "$MODIFIED" ]; then
-    resetprop -n "$PROP" "$DEFAULT" 2>/dev/null
-    if [ $? -eq 0 ]; then
-      log "Reverted $PROP to $DEFAULT (was $MODIFIED)"
-    else
-      log "Failed to revert $PROP (was $MODIFIED)"
-    fi
-  else
-    log "Skipped $PROP (current=$CURRENT)"
-  fi
-}
-
+# Revert props
 revert_prop_if_modified "persist.sys.pihooks.disable.gms_key_attestation_block" "true" "false"
 revert_prop_if_modified "persist.sys.pihooks.disable.gms_props" "true" "false"
 revert_prop_if_modified "persist.sys.pihooks.disable" "1" "0"
 revert_prop_if_modified "persist.sys.kihooks.disable" "1" "0"
 
+# Finish
 log "•••••• Integrity-Box Uninstall Completed ••••••"
 sync
