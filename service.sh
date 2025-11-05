@@ -1,14 +1,20 @@
 #!/system/bin/sh
+MODPATH="${0%/*}"
+. $MODPATH/common_func.sh
 
 # Module path and file references
 LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
 PROP="/data/adb/modules/playintegrity/system.prop"
 LINE="ro.crypto.state=encrypted"
+LINE2="ro.build.tags=release-keys"
+LINE3="ro.build.type=user"
 PIF="/data/adb/modules/playintegrityfix"
 LOG="$LOG_DIR/service.log"
 LOG2="$LOG_DIR/encrypt.log"
 LOG3="$LOG_DIR/autopif.log"
 LOG4="$LOG_DIR/twrp.log"
+LOG5="$LOG_DIR/tag.log"
+LOG6="$LOG_DIR/build.log"
 
 # Log folder
 mkdir -p "$LOGDIR"
@@ -32,13 +38,14 @@ fi
 # Module install path
 export MODPATH="/data/adb/modules/playintegrity"
 
+# Flag files
 NO_LINEAGE_FLAG="/data/adb/Box-Brain/NoLineageProp"
 NODEBUG_FLAG="/data/adb/Box-Brain/nodebug"
 TAG_FLAG="/data/adb/Box-Brain/tag"
 
+# Temp and system props
 TMP_PROP="$MODPATH/tmp.prop"
 SYSTEM_PROP="$MODPATH/system.prop"
-> "$TMP_PROP" # clear old temp file
 
 # Build summary of active flags
 FLAGS_ACTIVE=""
@@ -46,23 +53,21 @@ FLAGS_ACTIVE=""
 [ -f "$NODEBUG_FLAG" ] && FLAGS_ACTIVE="$FLAGS_ACTIVE nodebug"
 [ -f "$TAG_FLAG" ] && FLAGS_ACTIVE="$FLAGS_ACTIVE tag"
 
+# Only prepare TMP_PROP if any flags exist
 if [ -n "$FLAGS_ACTIVE" ]; then
-    log "Prop sanitization flags active: $FLAGS_ACTIVE"
-    log "Preparing temporary prop file..."
-    getprop | grep "userdebug" >> "$TMP_PROP"
-    getprop | grep "test-keys" >> "$TMP_PROP"
-    getprop | grep "lineage_" >> "$TMP_PROP"
+    lineage "Prop sanitization flags active: $FLAGS_ACTIVE"
+    lineage "Preparing temporary prop file..."
+    > "$TMP_PROP"  # clear old temp file
 
-    # Basic cleanup
-    sed -i 's///g' "$TMP_PROP"
-    sed -i 's/: /=/g' "$TMP_PROP"
+    getprop | grep -E "userdebug|test-keys|lineage_" >> "$TMP_PROP" 2>/dev/null || true
+    sed -i 's///g; s/: /=/g' "$TMP_PROP" 2>/dev/null || true
 else
-    log "No prop sanitization flags found. Skipping."
+    lineage "No prop sanitization flags found. TMP_PROP skipped."
 fi
 
 # LineageOS cleanup
 if [ -f "$NO_LINEAGE_FLAG" ]; then
-    log "NoLineageProp flag detected. Deleting LineageOS props..."
+    lineage "NoLineageProp detected. Deleting LineageOS props..."
     for prop in \
         ro.lineage.build.version \
         ro.lineage.build.version.plat.rev \
@@ -72,68 +77,60 @@ if [ -f "$NO_LINEAGE_FLAG" ]; then
         ro.lineage.releasetype \
         ro.lineage.version \
         ro.lineagelegal.url; do
-        resetprop --delete "$prop"
+        resetprop --delete "$prop" 2>/dev/null || true
     done
-    sed -i 's/lineage_//g' "$TMP_PROP"
-    log "LineageOS props sanitized."
+    [ -f "$TMP_PROP" ] && sed -i 's/lineage_//g' "$TMP_PROP" 2>/dev/null || true
+    lineage "LineageOS props sanitized."
 fi
 
-# userdebug → user
-if [ -f "$NODEBUG_FLAG" ]; then
-    if grep -q "userdebug" "$TMP_PROP"; then
-        sed -i 's/userdebug/user/g' "$TMP_PROP"
-    fi
-    log "userdebug → user sanitization applied."
-fi
+# userdebug to user
+[ -f "$NODEBUG_FLAG" ] && [ -f "$TMP_PROP" ] && sed -i 's/userdebug/user/g' "$TMP_PROP" 2>/dev/null || true
+[ -f "$NODEBUG_FLAG" ] && lineage "userdebug to user sanitization applied."
 
-# test-keys → release-keys
-if [ -f "$TAG_FLAG" ]; then
-    if grep -q "test-keys" "$TMP_PROP"; then
-        sed -i 's/test-keys/release-keys/g' "$TMP_PROP"
-    fi
-    log "test-keys → release-keys sanitization applied."
-fi
+# test-keys to release-keys
+[ -f "$TAG_FLAG" ] && [ -f "$TMP_PROP" ] && sed -i 's/test-keys/release-keys/g' "$TMP_PROP" 2>/dev/null || true
+[ -f "$TAG_FLAG" ] && lineage "test-keys to release-keys sanitization applied."
 
 # Finalize system.prop
-if [ -s "$TMP_PROP" ]; then
-    log "Sorting and creating final system.prop..."
-    sort -u "$TMP_PROP" > "$SYSTEM_PROP"
+if [ -f "$TMP_PROP" ] && [ -s "$TMP_PROP" ]; then
+    lineage "Sorting and creating final system.prop..."
+    sort -u "$TMP_PROP" > "$SYSTEM_PROP" 2>/dev/null || true
     rm -f "$TMP_PROP"
-    log "system.prop created at $SYSTEM_PROP."
+    lineage "system.prop created at $SYSTEM_PROP."
 
-    log "Waiting 30 seconds before applying props..."
+    lineage "Waiting 30 seconds before applying props..."
     sleep 30
 
-    log "Applying props via resetprop..."
-    resetprop -n --file "$SYSTEM_PROP"
-    log "Prop sanitization applied from system.prop"
+    lineage "Applying props via resetprop..."
+    resetprop -n --file "$SYSTEM_PROP" 2>/dev/null || true
+    lineage "Prop sanitization applied from system.prop"
 fi
 
 # Explicit fingerprint sanitization
 if [ -f "$NODEBUG_FLAG" ] || [ -f "$TAG_FLAG" ]; then
-    fp=$(getprop ro.build.fingerprint)
+    fp=$(getprop ro.build.fingerprint 2>/dev/null || echo "")
     fp_clean="$fp"
 
     [ -f "$NODEBUG_FLAG" ] && fp_clean=${fp_clean/userdebug/user}
-    [ -f "$TAG_FLAG" ] && {
+    if [ -f "$TAG_FLAG" ]; then
         fp_clean=${fp_clean/test-keys/release-keys}
         fp_clean=${fp_clean/dev-keys/release-keys}
-    }
+    fi
 
-    if [ "$fp" != "$fp_clean" ]; then
-        resetprop ro.build.fingerprint "$fp_clean"
-        [ -f "$NODEBUG_FLAG" ] && resetprop ro.build.type "user"
-        [ -f "$TAG_FLAG" ] && resetprop ro.build.tags "release-keys"
-        log "Fingerprint sanitized → $fp_clean"
+    if [ -n "$fp" ] && [ "$fp" != "$fp_clean" ]; then
+        resetprop ro.build.fingerprint "$fp_clean" 2>/dev/null || true
+        [ -f "$NODEBUG_FLAG" ] && resetprop ro.build.type "user" 2>/dev/null || true
+        [ -f "$TAG_FLAG" ] && resetprop ro.build.tags "release-keys" 2>/dev/null || true
+        lineage "Fingerprint sanitized to $fp_clean"
     else
-        log "Fingerprint already clean. No changes applied."
+        lineage "Fingerprint already clean, No changes applied."
     fi
 fi
 
-if [ -e "/data/adb/Box-Brain/target" ]; then
-    sleep 69
-    /data/adb/modules/playintegrity/webroot/common_scripts/user.sh
-fi
+###if [ -e "/data/adb/Box-Brain/target" ]; then
+###    sleep 69
+###    /data/adb/modules/playintegrity/webroot/common_scripts/user.sh
+###fi
 
 # Spoof Encryption 
 {
@@ -158,92 +155,58 @@ fi
   echo
 } >> "$LOG2" 2>&1
 
+# Spoof Tag 
+{
+  echo "TAG CHECK ($(date))"
+
+  if [ -f /data/adb/Box-Brain/tag ]; then
+    if grep -qxF "$LINE2" "$PROP"; then
+      echo "Line already exists, no action needed"
+    else
+      echo "$LINE2" >> "$PROP"
+      echo "Spoofed prop: $LINE"
+    fi
+  else
+    if grep -qxF "$LINE2" "$PROP"; then
+      sed -i "\|^$LINE2\$|d" "$PROP"
+      echo "Removed line: $LINE2"
+    else
+      echo "Line not present, no action needed"
+    fi
+  fi
+
+  echo
+} >> "$LOG5" 2>&1
+
+# Spoof Build 
+{
+  echo "BUILD CHECK ($(date))"
+
+  if [ -f /data/adb/Box-Brain/build ]; then
+    if grep -qxF "$LINE3" "$PROP"; then
+      echo "Line already exists, no action needed"
+    else
+      echo "$LINE3" >> "$PROP"
+      echo "Spoofed prop: $LINE3"
+    fi
+  else
+    if grep -qxF "$LINE3" "$PROP"; then
+      sed -i "\|^$LINE3\$|d" "$PROP"
+      echo "Removed line: $LINE3"
+    else
+      echo "Line not present, no action needed"
+    fi
+  fi
+
+  echo
+} >> "$LOG6" 2>&1
+
 # Rename twrp folder to avoid root detection
 {
   echo "TWRP/FOX RENAME ($(date))"
   echo
-
-  rename_recovery_folder() {
-    local MARKER="$1"
-    local FOLDER="$2"
-    local ALT="$3"
-    local NAME="$4"
-
-    # Resolve accessible folder path
-    if [ -d "$FOLDER" ]; then
-      PATH_TO_USE="$FOLDER"
-    elif [ -d "$ALT" ]; then
-      PATH_TO_USE="$ALT"
-    else
-      echo " $NAME folder not found at $FOLDER or $ALT"
-      return
-    fi
-
-    # Verify marker
-    if [ ! -f "$MARKER" ]; then
-      echo " FLAG $MARKER missing for $NAME  skipping"
-      return
-    fi
-
-    # Rename or delete
-    if [ -z "$(ls -A "$PATH_TO_USE")" ]; then
-      rm -rf "$PATH_TO_USE"
-      echo " Deleted empty $PATH_TO_USE"
-    else
-      TARGET="/sdcard/renamed-${NAME,,}-folder-$(date +%Y%m%d-%H%M%S)"
-      mv "$PATH_TO_USE" "$TARGET"
-      echo " Renamed non-empty $PATH_TO_USE → $TARGET"
-    fi
-    echo
-  }
-
   # Run for both TWRP and Fox
-  rename_recovery_folder "/data/adb/Box-Brain/twrp" "/sdcard/TWRP" "/storage/emulated/0/TWRP" "TWRP"
-  rename_recovery_folder "/data/adb/Box-Brain/fox" "/sdcard/Fox" "/storage/emulated/0/Fox" "Fox"
+  rename_recovery_folder "/data/adb/Box-Brain/twrp" "/sdcard/TWRP" "TWRP"
+  rename_recovery_folder "/data/adb/Box-Brain/fox" "/sdcard/Fox" "Fox"
 
 } >> "$LOG4" 2>&1
-
-# Download PIF fingerprint on boot (will fail automatically wen no internet xD)
-{
-  echo "AUTO PIF EXECUTION"
-  echo "Timestamp: $(date)"
-  echo "Checking prerequisite: /data/adb/Box-Brain/pif"
-
-  PIF="/data/adb/Box-Brain/pif"
-
-  if [ -f "$PIF" ]; then
-    echo "Detected PIF on boot"
-    sleep 69
-
-    run_temp_exec() {
-      local script="$1"
-      if [ ! -r "$script" ]; then
-        echo "Script $script not readable ❌"
-        return 1
-      fi
-      local orig_mode
-      orig_mode=$(stat -c "%a" "$script")
-      echo "Original permission: $orig_mode"
-      chmod +x "$script"
-      echo "Temporary +x granted, executing..."
-      "$script"
-      echo "Execution finished, reverting permission"
-      chmod "$orig_mode" "$script"
-    }
-
-    if [ -f "$PIF/autopif2.sh" ]; then
-      echo "Found autopif2.sh"
-      run_temp_exec "$PIF/autopif2.sh"
-    elif [ -f "$PIF/autopif.sh" ]; then
-      echo "Found autopif.sh"
-      run_temp_exec "$PIF/autopif.sh"
-    else
-      echo "No autopif2.sh or autopif.sh found ❌"
-    fi
-  else
-    echo "PIF on boot toggle is disabled"
-  fi
-
-  echo "========================================"
-  echo " "
-} >> "$LOG3" 2>&1
