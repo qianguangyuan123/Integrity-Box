@@ -38,14 +38,13 @@ fi
 # Module install path
 export MODPATH="/data/adb/modules/playintegrity"
 
-# Flag files
 NO_LINEAGE_FLAG="/data/adb/Box-Brain/NoLineageProp"
 NODEBUG_FLAG="/data/adb/Box-Brain/nodebug"
 TAG_FLAG="/data/adb/Box-Brain/tag"
 
-# Temp and system props
 TMP_PROP="$MODPATH/tmp.prop"
 SYSTEM_PROP="$MODPATH/system.prop"
+> "$TMP_PROP" # clear old temp file
 
 # Build summary of active flags
 FLAGS_ACTIVE=""
@@ -53,21 +52,23 @@ FLAGS_ACTIVE=""
 [ -f "$NODEBUG_FLAG" ] && FLAGS_ACTIVE="$FLAGS_ACTIVE nodebug"
 [ -f "$TAG_FLAG" ] && FLAGS_ACTIVE="$FLAGS_ACTIVE tag"
 
-# Only prepare TMP_PROP if any flags exist
 if [ -n "$FLAGS_ACTIVE" ]; then
-    lineage "Prop sanitization flags active: $FLAGS_ACTIVE"
-    lineage "Preparing temporary prop file..."
-    > "$TMP_PROP"  # clear old temp file
+    log "Prop sanitization flags active: $FLAGS_ACTIVE"
+    log "Preparing temporary prop file..."
+    getprop | grep "userdebug" >> "$TMP_PROP"
+    getprop | grep "test-keys" >> "$TMP_PROP"
+    getprop | grep "lineage_" >> "$TMP_PROP"
 
-    getprop | grep -E "userdebug|test-keys|lineage_" >> "$TMP_PROP" 2>/dev/null || true
-    sed -i 's///g; s/: /=/g' "$TMP_PROP" 2>/dev/null || true
+    # Basic cleanup
+    sed -i 's///g' "$TMP_PROP"
+    sed -i 's/: /=/g' "$TMP_PROP"
 else
-    lineage "No prop sanitization flags found. TMP_PROP skipped."
+    log "No prop sanitization flags found. Skipping."
 fi
 
 # LineageOS cleanup
 if [ -f "$NO_LINEAGE_FLAG" ]; then
-    lineage "NoLineageProp detected. Deleting LineageOS props..."
+    log "NoLineageProp flag detected. Deleting LineageOS props..."
     for prop in \
         ro.lineage.build.version \
         ro.lineage.build.version.plat.rev \
@@ -77,60 +78,63 @@ if [ -f "$NO_LINEAGE_FLAG" ]; then
         ro.lineage.releasetype \
         ro.lineage.version \
         ro.lineagelegal.url; do
-        resetprop --delete "$prop" 2>/dev/null || true
+        resetprop --delete "$prop"
     done
-    [ -f "$TMP_PROP" ] && sed -i 's/lineage_//g' "$TMP_PROP" 2>/dev/null || true
-    lineage "LineageOS props sanitized."
+    sed -i 's/lineage_//g' "$TMP_PROP"
+    log "LineageOS props sanitized."
 fi
 
 # userdebug to user
-[ -f "$NODEBUG_FLAG" ] && [ -f "$TMP_PROP" ] && sed -i 's/userdebug/user/g' "$TMP_PROP" 2>/dev/null || true
-[ -f "$NODEBUG_FLAG" ] && lineage "userdebug to user sanitization applied."
+if [ -f "$NODEBUG_FLAG" ]; then
+    if grep -q "userdebug" "$TMP_PROP"; then
+        sed -i 's/userdebug/user/g' "$TMP_PROP"
+    fi
+    log "userdebug to user sanitization applied."
+fi
 
 # test-keys to release-keys
-[ -f "$TAG_FLAG" ] && [ -f "$TMP_PROP" ] && sed -i 's/test-keys/release-keys/g' "$TMP_PROP" 2>/dev/null || true
-[ -f "$TAG_FLAG" ] && lineage "test-keys to release-keys sanitization applied."
+if [ -f "$TAG_FLAG" ]; then
+    if grep -q "test-keys" "$TMP_PROP"; then
+        sed -i 's/test-keys/release-keys/g' "$TMP_PROP"
+    fi
+    log "test-keys to release-keys sanitization applied."
+fi
 
 # Finalize system.prop
-if [ -f "$TMP_PROP" ] && [ -s "$TMP_PROP" ]; then
-    lineage "Sorting and creating final system.prop..."
-    sort -u "$TMP_PROP" > "$SYSTEM_PROP" 2>/dev/null || true
+if [ -s "$TMP_PROP" ]; then
+    log "Sorting and creating final system.prop..."
+    sort -u "$TMP_PROP" > "$SYSTEM_PROP"
     rm -f "$TMP_PROP"
-    lineage "system.prop created at $SYSTEM_PROP."
+    log "system.prop created at $SYSTEM_PROP."
 
-    lineage "Waiting 30 seconds before applying props..."
+    log "Waiting 30 seconds before applying props..."
     sleep 30
 
-    lineage "Applying props via resetprop..."
-    resetprop -n --file "$SYSTEM_PROP" 2>/dev/null || true
-    lineage "Prop sanitization applied from system.prop"
+    log "Applying props via resetprop..."
+    resetprop -n --file "$SYSTEM_PROP"
+    log "Prop sanitization applied from system.prop"
 fi
 
 # Explicit fingerprint sanitization
 if [ -f "$NODEBUG_FLAG" ] || [ -f "$TAG_FLAG" ]; then
-    fp=$(getprop ro.build.fingerprint 2>/dev/null || echo "")
+    fp=$(getprop ro.build.fingerprint)
     fp_clean="$fp"
 
     [ -f "$NODEBUG_FLAG" ] && fp_clean=${fp_clean/userdebug/user}
-    if [ -f "$TAG_FLAG" ]; then
+    [ -f "$TAG_FLAG" ] && {
         fp_clean=${fp_clean/test-keys/release-keys}
         fp_clean=${fp_clean/dev-keys/release-keys}
-    fi
+    }
 
-    if [ -n "$fp" ] && [ "$fp" != "$fp_clean" ]; then
-        resetprop ro.build.fingerprint "$fp_clean" 2>/dev/null || true
-        [ -f "$NODEBUG_FLAG" ] && resetprop ro.build.type "user" 2>/dev/null || true
-        [ -f "$TAG_FLAG" ] && resetprop ro.build.tags "release-keys" 2>/dev/null || true
-        lineage "Fingerprint sanitized to $fp_clean"
+    if [ "$fp" != "$fp_clean" ]; then
+        resetprop ro.build.fingerprint "$fp_clean"
+        [ -f "$NODEBUG_FLAG" ] && resetprop ro.build.type "user"
+        [ -f "$TAG_FLAG" ] && resetprop ro.build.tags "release-keys"
+        log "Fingerprint sanitized to $fp_clean"
     else
-        lineage "Fingerprint already clean, No changes applied."
+        log "Fingerprint already clean. No changes applied."
     fi
 fi
-
-###if [ -e "/data/adb/Box-Brain/target" ]; then
-###    sleep 69
-###    /data/adb/modules/playintegrity/webroot/common_scripts/user.sh
-###fi
 
 # Spoof Encryption 
 {
