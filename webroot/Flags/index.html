@@ -138,7 +138,8 @@ body{
   <div class="h">Control Centre</div>
 
   <div class="row"><div class="left"><span class="material-icons icon">adb</span><div class="label">PIF Advanced</div></div><label class="switch"><input type="checkbox" id="advanced"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">PlayStore Pixelify</div></div><label class="switch"><input type="checkbox" id="playstore"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">Disable GMS Spoofing</div></div><label class="switch"><input type="checkbox" id="gms"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">Disable PlayStore Spoofing</div></div><label class="switch"><input type="checkbox" id="playstore"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">android</span><div class="label">Spoof Lineage Props</div></div><label class="switch"><input type="checkbox" id="NoLineageProp"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">android</span><div class="label">Override Lineage Props</div></div><label class="switch"><input type="checkbox" id="override"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">bug_report</span><div class="label">Spoof Debug Fingerprint</div></div><label class="switch"><input type="checkbox" id="nodebug"><span class="slider"><span class="knob"></span></span></label></div>
@@ -147,6 +148,8 @@ body{
   <div class="row"><div class="left"><span class="material-icons icon">lock</span><div class="label">Spoof Encryption</div></div><label class="switch"><input type="checkbox" id="encrypt"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">bolt</span><div class="label">Spoof Selinux</div></div><label class="switch"><input type="checkbox" id="selinux"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">healing</span><div class="label">Spoof Custom Recovery</div></div><label class="switch"><input type="checkbox" id="twrp"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">delete</span><div class="label">Nuke Gapp Logs</div></div><label class="switch"><input type="checkbox" id="gapps"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">delete</span><div class="label">Nuke Module Logs</div></div><label class="switch"><input type="checkbox" id="root"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">Fetch FP on boot</div></div><label class="switch"><input type="checkbox" id="pif"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">ads_click</span><div class="label">Update Target.txt on boot</div></div><label class="switch"><input type="checkbox" id="target"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">do_not_touch</span><div class="label">No Redirect</div></div><label class="switch"><input type="checkbox" id="noredirect"><span class="slider"><span class="knob"></span></span></label></div>
@@ -159,13 +162,14 @@ body{
 
 <script>
 const DIR="/data/adb/Box-Brain";
-const FILES=["noredirect","advanced","playstore","override","NoLineageProp","target","nodebug","encrypt","twrp","pif","build","tag","selinux"];
+const FILES=["noredirect","advanced","gms","playstore","override","NoLineageProp","gapps","root","target","nodebug","encrypt","twrp","pif","build","tag","selinux"];
 const els=Object.fromEntries(FILES.map(f=>[f,document.getElementById(f)]));
 const popup=document.getElementById("popup");
 const messages={
   noredirect:{on:"You won't be redirected",off:"Redirect enabled"},
   NoLineageProp:{on:"Disable if camera fails",off:"Lineage props unchanged"},
   playstore:{on:"Reboot to apply changes",off:"Do resetprop manually"},
+  gms:{on:"Reboot to apply changes",off:"Do resetprop manually"},
   override:{on:"Click on action button",off:"Force props disabled"},
   target:{on:"target.txt updates on boot",off:"No auto-update"},
   pif:{on:"pif.prop updates on boot",off:"No auto-update"},
@@ -174,6 +178,8 @@ const messages={
   nodebug:{on:"Reboot to apply changes",off:"Disabled"},
   build:{on:"Reboot to apply changes",off:"Disabled"},
   tag:{on:"Reboot to apply changes",off:"Disabled"},
+  gapps:{on:"Click on Action button",off:"Disabled"},
+  root:{on:"Click on Action button",off:"Disabled"},
   advanced:{on:"Pro Mode enabled",off:"Default settings"},
   selinux:{on:"Reboot to apply changes",off:"Disabled"}
 };
