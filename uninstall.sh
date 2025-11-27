@@ -77,6 +77,7 @@ delete_file /data/adb/nohello/whitelist
 delete_file /data/adb/modules/playintegrity
 delete_file /data/adb/Box-Brain
 delete_file /data/adb/service.d/hash.sh
+delete_file /data/adb/service.d/lineage.sh
 delete_file /data/adb/service.d/prop.sh
 
 # Restore backups
