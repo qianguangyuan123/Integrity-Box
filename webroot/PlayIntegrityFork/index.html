@@ -125,8 +125,6 @@ h1{position:relative;z-index:2;margin:0 0 12px 0;text-align:center;font-size:18p
 <script>
 const PROP_CANDIDATES = [
   "/data/adb/modules/playintegrityfix/custom.pif.prop",
-  "/data/adb/modules/playintegrityfix/pif.prop",
-  "/data/adb/pif.prop",
   "/data/adb/custom.pif.prop"
 ];
 
@@ -214,7 +212,7 @@ async function restartGMS(){
 async function init(){
   const file = await findPropFile();
   if(!file){
-    showWarning("⚠️ Fingerprint not found. Expected one of: custom.pif.prop, pif.prop");
+    showWarning("⚠️ Fingerprint not found. Kindly click on PlayIntegrityFork module's action button");
     // disable all toggles visually
     KEYS.forEach(k => {
       const el = document.getElementById(k);
@@ -225,7 +223,7 @@ async function init(){
 
   const adv = await hasAdvancedSettings(file);
   if(!adv){
-    showWarning("⚠️ Advanced Settings not detected. Enable Advanced Settings & click on action button");
+    showWarning("⚠️ Advanced Settings not detected. Enable PIF Advanced toggle & click on action button");
     KEYS.forEach(k => {
       const el = document.getElementById(k);
       if(el) { el.disabled = true; el.checked = false; }
