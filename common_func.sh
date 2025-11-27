@@ -1,11 +1,61 @@
+RECORD="/data/adb/Box-Brain/Integrity-Box-Logs"
+OUT="/storage/emulated/0/Download/IntegrityModules"
+WIDTH=55
+
 # Logger function
 pif() {
-    echo "$1" | tee -a "/data/adb/Box-Brain/Integrity-Box-Logs/PlayIntegrityScript.log"
+    echo "$1" | tee -a "$RECORD/PlayIntegrityScript.log"
 }
 
 # Logger function
 denylog() {
-    echo "$1" | tee -a "/data/adb/Box-Brain/Integrity-Box-Logs/denylist.log"
+    echo "$1" | tee -a "$RECORD/denylist.log"
+}
+
+center() { printf "%*s\n" $(((${#1}+$WIDTH)/2)) "$1"; }
+
+banner() {
+  printf "%${WIDTH}s\n" | tr ' ' '='
+  center "INTEGRITY-SAFE DOWNLOADER"
+  printf "%${WIDTH}s\n" | tr ' ' '='
+}
+
+print_row() {
+  printf "%-22s %-12s %-20s\n" "$1" "$2" "$3"
+}
+
+sha_ok() {
+  echo "$2  $1" | sha256sum -c - >/dev/null 2>&1
+}
+
+get_size() {
+  du -h "$1" 2>/dev/null | awk '{print $1}'
+}
+
+download() {
+  url="$1"
+  file="$2"
+  sum="$3"
+
+  tmp="$OUT/$file.tmp"
+  final="$OUT/$file"
+
+  rm -f "$tmp" "$final"
+
+  a=1
+  while [ $a -le 3 ]; do
+    curl -L --fail --retry 3 --connect-timeout 10 -o "$tmp" "$url" 2>/dev/null
+    [ $? -ne 0 ] && { a=$((a+1)); continue; }
+
+    sha_ok "$tmp" "$sum" || { rm -f "$tmp"; a=$((a+1)); continue; }
+    sha_ok "$tmp" "$sum" || { rm -f "$tmp"; a=$((a+1)); continue; }
+
+    mv "$tmp" "$final"
+    return 0
+  done
+
+  rm -f "$tmp"
+  return 1
 }
 
 # Configure DenyList
@@ -22,12 +72,12 @@ add_if_missing() {
 setval() { grep -q "^$2=" "$1" && sed -i "s/^$2=.*/$2=$3/" "$1" && log "$2 → $3" || log "$2 not found"; }
 
 lineage() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "/data/adb/Box-Brain/Integrity-Box-Logs/lineage.log"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$RECORD/lineage.log"
 #    echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
 }
 
 chup() {
-echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_DIR/pixel.log"
+echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$RECORD/pixel.log"
 }
 
 set_resetprop() {
@@ -129,7 +179,7 @@ handle_delay() {
 }
 
 log_patch() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "/data/adb/Box-Brain/Integrity-Box-Logs/patch.log"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$RECORD/patch.log"
 }
 
 # Kill GMS / Vending Processes
@@ -146,38 +196,39 @@ kill_process() {
   fi
 }
   
-rename_recovery_folder() {
-    local MARKER="$1"
-    local FOLDER="$2"
-    local ALT="$3"
-    local NAME="$4"
+hide_recovery_folders() {
+    [ -f /data/adb/Box-Brain/twrp ] || return
 
-    # Resolve accessible folder path
-    if [ -d "$FOLDER" ]; then
-        PATH_TO_USE="$FOLDER"
-    elif [ -d "$ALT" ]; then
-        PATH_TO_USE="$ALT"
-    else
-        echo " $NAME folder not found at $FOLDER or $ALT"
-        return
-    fi
+    SRC="/sdcard"
+    DEST="/data/adb/recovery_backups"
+    mkdir -p "$DEST"
 
-    # Verify marker
-    if [ ! -f "$MARKER" ]; then
-        echo " FLAG $MARKER missing for $NAME  skipping"
-        return
-    fi
+    FOLDERS="TWRP OrangeFox FOX PBRP PitchBlack Recovery"
 
-    # Rename or delete
-    if [ -z "$(ls -A "$PATH_TO_USE")" ]; then
-        rm -rf "$PATH_TO_USE"
-        echo " Deleted empty $PATH_TO_USE"
-    else
-        TARGET="/sdcard/renamed-${NAME,,}-folder-$(date +%Y%m%d-%H%M%S)"
-        mv "$PATH_TO_USE" "$TARGET"
-        echo " Renamed non-empty $PATH_TO_USE → $TARGET"
-    fi
-    echo
+    random_str() { head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12; }
+
+    for F in $FOLDERS; do
+        DIR="$SRC/$F"
+        [ -d "$DIR" ] || continue
+
+        if [ -f "$DIR/.twrps" ]; then
+            rm -f "$DIR/.twrps" 2>/dev/null
+            if [ -f "$DIR/.twrps" ]; then
+                NEWF=".$(random_str)_$(date +%s)"
+                mv "$DIR" "$SRC/$NEWF" 2>/dev/null
+                DIR="$SRC/$NEWF"
+                rm -f "$DIR/.twrps" 2>/dev/null
+            fi
+        fi
+
+        SUB=$(find "$DIR" -mindepth 1 -maxdepth 1 -type d ! -name ".*" 2>/dev/null | wc -l)
+
+        if [ "$SUB" -gt 0 ]; then
+            mv "$DIR" "$DEST/$(random_str)" 2>/dev/null
+        else
+            rm -rf "$DIR" 2>/dev/null
+        fi
+    done
 }
 
 run_temp_exec() {
