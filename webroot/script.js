@@ -96,45 +96,90 @@ async function updateDashboard() {
     "status-android": "getprop ro.build.version.release || echo Unknown",
     "status-patch": "getprop ro.build.version.security_patch || echo Unknown",
     "status-whitelist": "[ -f /data/adb/nohello/whitelist ] || [ -f /data/adb/shamiko/whitelist ] && echo Enabled || echo Disabled",
-    "status-gms": "getprop persist.sys.pihooks.disable.gms_props || echo ''",
-    "status-LineageProp": "getprop | grep -i lineage || echo ''"
+
+    "status-gms": `
+      props=(
+        persist.sys.pihooks.disable.gms_key_attestation_block
+        persist.sys.pihooks.disable.gms_props
+        persist.sys.pihooks.disable
+        persist.sys.kihooks.disable
+      );
+      found_any=0; disabled=0; enabled=0;
+      for p in "\${props[@]}"; do
+        val=$(getprop "$p" 2>/dev/null);
+        if [ -n "$val" ]; then
+          found_any=1;
+          if [ "$val" = "true" ] || [ "$val" = "1" ]; then
+            disabled=$((disabled+1));
+          elif [ "$val" = "false" ] || [ "$val" = "0" ]; then
+            enabled=$((enabled+1));
+          fi;
+        fi;
+      done;
+      if [ $found_any -eq 0 ]; then echo "PIF";
+      elif [ $enabled -gt 0 ]; then echo "ENABLED";
+      else echo "DISABLED"; fi
+    `,
+
+    "status-LineageProp": `if getprop | grep -iq 'lineage'; then echo FOUND; else echo NONE; fi`
   };
 
   for (const [id, cmd] of Object.entries(statusItems)) {
-    const el=document.getElementById(id);
+    const el = document.getElementById(id);
     if (!el) continue;
     try {
-      let out=(await runShell(cmd)).trim();
-      if (!out) out=id==="status-whitelist"?"Disabled":"Unknown";
+      let out = (await runShell(cmd)).trim();
+      if (!out) out = id === "status-whitelist" ? "Disabled" : "Unknown";
+
       switch (id) {
         case "status-selinux":
-          el.textContent=out;
-          el.className=`status-indicator ${out==="Enforcing"?"enabled":out==="Permissive"?"disabled":"neutral"}`;
+          el.textContent = out;
+          el.className = `status-indicator ${
+            out === "Enforcing" ? "enabled" : out === "Permissive" ? "disabled" : "neutral"
+          }`;
           break;
+
         case "status-target":
-          el.textContent=`${out} apps`;
-          el.className=`status-indicator ${out==="0"?"disabled":"enabled"}`;
+          el.textContent = `${out} apps`;
+          el.className = `status-indicator ${out === "0" ? "disabled" : "enabled"}`;
           break;
+
         case "status-gms":
-          const spoof=out==="true"?"Disabled":"Enabled";
-          el.textContent=spoof;
-          el.className=`status-indicator ${spoof==="Enabled"?"enabled":"disabled"}`;
+          if (out === "DISABLED") {
+            el.textContent = "Disabled";
+            el.className = "status-indicator disabled";
+          } else if (out === "ENABLED") {
+            el.textContent = "Enabled";
+            el.className = "status-indicator enabled";
+          } else if (out === "PIF") {
+            el.textContent = "PIF";
+            el.className = "status-indicator neutral";
+          } else {
+            el.textContent = "Unknown";
+            el.className = "status-indicator neutral";
+          }
           break;
+
         case "status-LineageProp":
-          el.textContent=out?"Detected":"Spoofed";
-          el.className=`status-indicator ${out?"disabled":"enabled"}`;
+          if (out === "FOUND") {
+            el.textContent = "Detected";
+            el.className = "status-indicator disabled";
+          } else {
+            el.textContent = "Spoofed";
+            el.className = "status-indicator enabled";
+          }
           break;
+
         default:
-          el.textContent=out;
-          el.className=`status-indicator ${out==="Unknown"?"disabled":"neutral"}`;
+          el.textContent = out;
+          el.className = `status-indicator ${out === "Unknown" ? "disabled" : "neutral"}`;
       }
     } catch {
-      el.textContent="Unknown";
-      el.className="status-indicator disabled";
+      el.textContent = "Unknown";
+      el.className = "status-indicator disabled";
     }
   }
 }
-
 
 /* Button actions */
 btns.forEach(btn=>{
