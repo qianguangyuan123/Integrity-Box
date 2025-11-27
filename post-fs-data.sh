@@ -3,6 +3,7 @@ MODPATH="${0%/*}"
 . $MODPATH/common_func.sh
 
 boot="/data/adb/service.d"
+toolbox="/data/adb/modules/playintegrity/toolbox"
 placeholder="/data/adb/modules/playintegrity/webroot/common_scripts"
 PLAYSTORE="/data/adb/Box-Brain/playstore"
 mkdir -p "$boot"
@@ -31,6 +32,13 @@ touch "$placeholder/kill.sh"
 touch "$placeholder/report"
 touch "$placeholder/start"
 touch "$placeholder/stop"
+
+if [ -f "/data/adb/Box-Brain/gms" ]; then
+    set_resetprop persist.sys.pihooks.disable.gms_key_attestation_block true
+    set_resetprop persist.sys.pihooks.disable.gms_props true
+    set_simpleprop persist.sys.pihooks.disable 1
+    set_simpleprop persist.sys.kihooks.disable 1
+fi
 
 if [ ! -f "$placeholder/override_lineage.sh" ]; then
   cat <<'EOF' > "$placeholder/override_lineage.sh"
@@ -201,6 +209,8 @@ EOF
 fi
 
 chmod 777 "$boot/hash.sh"
+chmod 777 "$toolbox/meow.py"
+chmod 777 "$toolbox/run-python"
 
 if [ ! -f "$boot/prop.sh" ]; then
   cat <<'EOF' > "$boot/prop.sh"
@@ -269,10 +279,10 @@ fi
 chmod 777 "$boot/prop.sh"
 
 if [ -e "$PLAYSTORE" ]; then
-    echo "Disabling PixelPlaystore" >> /data/adb/Box-Brain/PixelStore.log
+    echo "Disabling PixelPlaystore" >> /data/adb/Box-Brain/Integrity-Box-Logs/PixelStore.log
     resetprop -n persist.sys.pixelprops.vending false
 else
-    echo "Playstore flag is disabled, no action needed" >> /data/adb/Box-Brain/PixelStore.log
+    echo "Playstore flag is disabled, no action needed" >> /data/adb/Box-Brain/Integrity-Box-Logs/PixelStore.log
 fi
 
 if [ -d "/data/adb/modules/playintegrityfix" ]; then
