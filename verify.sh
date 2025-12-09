@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-UPDATE="/data/adb/modules_update/playintegrity"
+UPDATE="/data/adb/modules_update/playintegrityfix"
 HASHFILE="$UPDATE/hash"
 
 # Check if hash file exists
