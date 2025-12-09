@@ -208,21 +208,4 @@ if [ "$DIR" = /data/adb/modules/playintegrityfix/autopif2 ]; then
   done;
   item "Installing new prop ...";
   cp -fv $NEWNAME ..;
-  TS_DIR=/data/adb/tricky_store;
-  if [ -d "$TS_DIR" ]; then
-    item "Updating Tricky Store security_patch.txt ...";
-    TS_SECPAT=$TS_DIR/security_patch.txt;
-    touch $TS_SECPAT;
-    [ -s "$TS_SECPAT" ] || echo "all=" > $TS_SECPAT;
-    grep -qE '^[0-9]{8}$' $TS_SECPAT && sed -i "s/^.*$/${SECURITY_PATCH//-}/" $TS_SECPAT;
-    grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' $TS_SECPAT && sed -i "s/^.*$/$SECURITY_PATCH/" $TS_SECPAT;
-    grep -q 'all=' $TS_SECPAT && sed -i "s/all=.*/all=$SECURITY_PATCH/" $TS_SECPAT;
-    grep -q 'system=' $TS_SECPAT && sed -i "s/system=.*/system=$(echo ${SECURITY_PATCH//-} | cut -c-6)/" $TS_SECPAT;
-    sed -i '$a\' $TS_SECPAT;
-    cat $TS_SECPAT;
-  fi;
-  if [ -f /data/adb/modules/playintegrityfix/killpi.sh ]; then
-    item "Killing any running GMS DroidGuard/Play Store processes ...";
-    sh /data/adb/modules/playintegrityfix/killpi.sh 2>&1 || true;
-  fi;
 fi;
