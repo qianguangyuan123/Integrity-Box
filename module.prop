@@ -1,9 +1,7 @@
-id=playintegrity
-name=.𝙄𝙣𝙩𝙚𝙜𝙧𝙞𝙩𝙮 𝘽𝙤𝙭 📦
-version=v27
-versionCode=27000
-author=𝗠𝗘𝗢𝗪𝗻𝗮 💅 || tg@MeowDump
-updateJson=https://raw.githubusercontent.com/MeowDump/MeowDump/refs/heads/main/playintegrity/release.json
-support=https://t.me/MeowDump
-banner=https://picfiles.alphacoders.com/939/thumb-9393.jpg
-description=As long as I'm alive, there are infinite possibilities 
+id=playintegrityfix
+name=Play Integrity Fork
+version=v15
+versionCode=150000
+author=osm0sis & chiteroman @ xda-developers
+description=Fix <A13 Play Integrity DEVICE verdict
+updateJson=https://raw.githubusercontent.com/osm0sis/PlayIntegrityFork/main/update.json
