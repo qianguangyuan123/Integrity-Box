@@ -74,11 +74,12 @@ delete_file "$KEYBOX"
 delete_file "$TARGET"
 delete_file /data/adb/shamiko/whitelist
 delete_file /data/adb/nohello/whitelist
-delete_file /data/adb/modules/playintegrity
+delete_file /data/adb/modules/playintegrityfix
 delete_file /data/adb/Box-Brain
 delete_file /data/adb/service.d/hash.sh
 delete_file /data/adb/service.d/lineage.sh
 delete_file /data/adb/service.d/prop.sh
+delete_file /data/adb/service.d/shamiko.sh
 
 # Restore backups
 restore_backup "$TARGET_BACKUP" "$TARGET"
@@ -93,3 +94,9 @@ revert_prop_if_modified "persist.sys.kihooks.disable" "1" "0"
 # Finish
 log "•••••• Integrity-Box Uninstall Completed ••••••"
 sync
+resetprop -p --delete "persist.sys.entryhooks_enabled"
+resetprop -p --delete "persist.sys.spoof.gms"
+resetprop -p --delete "persist.sys.pixelprops.gms"
+resetprop -p --delete "persist.sys.pixelprops.gapps"
+resetprop -p --delete "persist.sys.pixelprops.google"
+resetprop -p --delete "persist.sys.pixelprops.pi"
