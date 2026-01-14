@@ -1,28 +1,33 @@
-### Pre-Built Zygisk Shared Libraries
+### Pre-Built Zygisk Shared Libraries & .dex
 ```Completely untouched, no modification at all```
-- **Imported from:** [PlayIntegrityFork](https://github.com/osm0sis/PlayIntegrityFork/releases/tag/v15) | **v15 release**
+- **Imported from:** [PlayIntegrityFork](https://github.com/osm0sis/PlayIntegrityFork/releases/tag/v15) | **v16 HOTFIX [162000] release**
 - **Author:** [osm0sis](https://github.com/osm0sis)
 - **License:** GPL-3.0
-- **Credit:** Full credit to [@osm0sis](https://github.com/osm0sis) for the original Zygisk implementation
+- **Credit:** Full credit to [@chiteroman](https://xdaforums.com/t/module-play-integrity-fix.4607985) for the original Zygisk implementation & [@osm0sis](https://github.com/osm0sis) for improving it
 
 ### SHA256
 
 **arm64-v8a**
 ```txt
-fa973d713f45cabdbe6d6279491c13fcbbac75ef0265dd3efa11fab1d2fe70f9
+ef15bcdc7f9683fd03dc216068c0589724d2b73e5c4f905636d59e5be63fb9b3
 ```
 
 **armeabi-v7a**
 ```txt
-c681234ec94299fd9b8119736e0ffec295d4cb0a16c1e67a93168c2d33a92821
+e02d85d362534eebfed060cd6e8471c8956a16464881b5a2378070d6b9df23ae
 ```
 
 **x86**
 ```txt
-2320da759ddc9e96534b0fba29ae69db431ed256b1f4dad1240e24f9094d93f2
+c4b91bece69be5f5ca8a6a6983ef0e17bc085b0f92026bd6957a70662b8ce381
 ```
 
 **x86_64**
 ```txt
-f467657560f50a0cfe33e7cda50c096c07d67bfab3eb17e2e7a6619f8bfa69ba
+32883f3ef85994030c4beeae60c259aa4ef61f94e8f28cde53ff1ef13da390de
+```
+
+**classes.dex**
+```txt
+efa3554b84c47c0902eed3222d7c43d4e63adb383a5689da96804e6199e2b21f
 ```
