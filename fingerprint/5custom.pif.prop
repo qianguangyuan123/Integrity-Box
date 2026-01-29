@@ -1,21 +1,21 @@
 # Build Fields
 MANUFACTURER=Google
 MODEL=Pixel 10
-FINGERPRINT=google/frankel_beta/frankel:16/BP41.250916.015.A1/14394230:user/release-keys
+FINGERPRINT=google/frankel_beta/frankel:CANARY/ZP11.251212.007/14649019:user/release-keys
 BRAND=google
 PRODUCT=frankel_beta
 DEVICE=frankel
-RELEASE=16
-ID=BP41.250916.015.A1
-INCREMENTAL=14394230
+RELEASE=CANARY
+ID=ZP11.251212.007
+INCREMENTAL=14649019
 TYPE=user
 TAGS=release-keys
-SECURITY_PATCH=2025-10-05
+SECURITY_PATCH=2025-12-05
 DEVICE_INITIAL_SDK_INT=32
 
 # System Properties
-*.build.id=BP41.250916.015.A1
-*.security_patch=2025-10-05
+*.build.id=ZP11.251212.007
+*.security_patch=2025-12-05
 *api_level=32
 
 # Advanced Settings
@@ -25,7 +25,6 @@ spoofProvider=1
 spoofSignature=0
 spoofVendingFinger=1
 spoofVendingSdk=0
-verboseLogs=0
-
-# Beta Released: 2025-11-10
-# Estimated Expiry: 2025-12-22
+ 
+# Released On: 2025-12-31
+# Estimated Expiry: 2026-02-11
