@@ -1,0 +1,500 @@
+#!/system/bin/sh
+MODPATH="${0%/*}"
+. $MODPATH/common_func.sh
+
+# Paths
+BOX="/data/adb/Box-Brain"
+LOGDIR="$BOX/Integrity-Box-Logs"
+
+LOGFILEZ="$LOGDIR/PIF.log"
+CPP="$LOGDIR/spoofing.log"
+PATCH_LOG="$LOGDIR/patch.log"
+LOG="$LOGDIR/root.log"
+LOGFILE="$LOGDIR/gapps.log"
+LOGZ="$LOGDIR/integrity_downloader.log"
+
+SCRIPT_DIR="$MODPATH/webroot/common_scripts"
+UPDATE="$SCRIPT_DIR/key.sh"
+
+PROP="$MODPATH/module.prop"
+BAK="$PROP.bak"
+
+URL="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/notice.md"
+INSTALLATION="/data/adb/modules_update/playintegrityfix/webroot/common_scripts/key.sh"
+
+FLAG="$BOX/advanced"
+PATCH_FLAG="$BOX/patch"
+
+P="$MODPATH/custom.pif.prop"
+SKIP_FILE="/data/adb/Box-Brain/skip"
+
+PATCH_DATE="2025-12-05"
+PROP_MAIN="ro.build.version.security_patch"
+
+TARGET_DIR="/data/adb/tricky_store"
+FILE_PATH="$TARGET_DIR/security_patch.txt"
+
+DIR="/sdcard/Download"
+OUTJSON="/sdcard/meow.json"
+
+URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.3.1/Zygisk-Next-1.3.1-665-7e5b533-release.zip"
+SUM_ZN="7ab5f6bb06c60c960f62fdbf2312e56b094ee91e44105a734a57c763c274b5c3"
+URL_TS="https://github.com/5ec1cff/TrickyStore/releases/download/1.4.1/Tricky-Store-v1.4.1-245-72b2e84-release.zip"
+SUM_TS="2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9"
+URL_IB="https://github.com/MeowDump/Integrity-Box/releases/download/v27/v27-Integrity-Box-25-11-2025.zip"
+SUM_IB="3ce56bd3a3dd27bc77dbfbf3990b2a580cd8cab0fb67710c6a7db75ea01ab6e5"
+URL_KA="https://github.com/qwq233/KeyAttestation/releases/download/1.8.4/key-attestation-v1.8.4-release.apk"
+SUM_KA="c9bbc118c75b11bfca7d99b67470d68b5505e1959b6a5f0b298b38ba8104c93a"
+URL_UL="https://github.com/Xposed-Modules-Repo/ru.mike.updatelocker/releases/download/19-1.4.2/updatelocker_v1.4.2_icon.apk"
+SUM_UL="7e157f7847e4ac1e7a2262f9865740f405c3a6346108d08dec835f3e7cae12ee"
+URL_HMA="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/toolbox/HMAL_Config.json"
+SUM_HMA="7614a3fad184cb53eeca7c94706391c4ef9ec29abd27c1d0a22c643509bfcd78"
+URL_HMA2="https://github.com/frknkrc44/HMA-OSS/releases/download/oss-151/HMA-OSS-oss-151-release.apk"
+SUM_HMA2="9f17f0569cb0192d4fefe6171965c49af5d80d13270ded97ed5fc3d854bab8e3"
+URL_RP="https://github.com/uragiristereo/Reverse_Pixelify/releases/download/v1.0/Reverse_Pixelify_v1.0.apk"
+SUM_RP="d7c69f958bfdec13f8d3ded5cf34705cf3743645aad713813f463aefab9d971a"
+PIPE="$RECORD/integrity_downloader.pipe"
+OUT="/storage/emulated/0/Download/IntegrityModules"
+WIDTH=55
+BRAND_PROP=$(getprop ro.product.system.brand)
+
+mkdir -p "$BOX" "$LOGDIR"
+print_quote
+ensure_exec_permissions
+recommended_settings
+ensure_blacklist_entries
+
+AUTOPIF_OK=0
+MIGRATE_OK=0
+INPUT_PROP=""
+
+if [ -f $BOX/download ]; then
+
+    rm -f "$LOGZ" "$PIPE"
+    mkdir -p "$OUT"
+
+    if command -v mkfifo >/dev/null 2>&1; then
+        mkfifo "$PIPE"
+        tee -a "$LOGZ" < "$PIPE" &
+        exec 1> "$PIPE" 2>&1
+    else
+        exec >> "$LOGZ" 2>&1
+    fi
+
+    banner
+    printf "Module                  Size         Status\n"
+    printf "%${WIDTH}s\n" | tr ' ' '-'
+
+    download "$URL_ZN" "ZygiskNext.zip" "$SUM_ZN"
+    [ -f "$OUT/ZygiskNext.zip" ] &&
+        print_row "ZygiskNext" "$(get_size "$OUT/ZygiskNext.zip")" "Verified" ||
+        print_row "ZygiskNext" "-" "Failed"
+
+    download "$URL_TS" "TrickyStore.zip" "$SUM_TS"
+    [ -f "$OUT/TrickyStore.zip" ] &&
+        print_row "TrickyStore" "$(get_size "$OUT/TrickyStore.zip")" "Verified" ||
+        print_row "TrickyStore" "-" "Failed"
+
+    download "$URL_IB" "Old-IntegrityBox.zip" "$SUM_IB"
+    [ -f "$OUT/Old-IntegrityBox.zip" ] &&
+        print_row "IntegrityBox" "$(get_size "$OUT/Old-IntegrityBox.zip")" "Verified" ||
+        print_row "IntegrityBox" "-" "Failed"
+
+    download "$URL_KA" "KeyAttestation.apk" "$SUM_KA"
+    [ -f "$OUT/KeyAttestation.apk" ] &&
+        print_row "KeyAttestation" "$(get_size "$OUT/KeyAttestation.apk")" "Verified" ||
+        print_row "KeyAttestation" "-" "Failed"
+
+    download "$URL_UL" "UpdateLocker.apk" "$SUM_UL"
+    [ -f "$OUT/UpdateLocker.apk" ] &&
+        print_row "UpdateLocker" "$(get_size "$OUT/UpdateLocker.apk")" "Verified" ||
+        print_row "UpdateLocker" "-" "Failed"
+
+    download "$URL_HMA" "HMA_Config.json" "$SUM_HMA"
+    [ -f "$OUT/HMA_Config.json" ] &&
+        print_row "HMA_Config" "$(get_size "$OUT/HMA_Config.json")" "Verified" ||
+        print_row "HMA_Config" "-" "Failed"
+
+    download "$URL_HMA2" "HMA_lsposed.apk" "$SUM_HMA2"
+    [ -f "$OUT/HMA_lsposed.apk" ] &&
+        print_row "HideMyApplist" "$(get_size "$OUT/HMA_lsposed.apk")" "Verified" ||
+        print_row "HideMyApplist" "-" "Failed"
+
+    download "$URL_RP" "Disable_ROM_spoofing_lsposed.apk" "$SUM_RP"
+    [ -f "$OUT/Disable_ROM_spoofing_lsposed.apk" ] &&
+        print_row "Reverse Pixelify" "$(get_size "$OUT/Disable_ROM_spoofing_lsposed.apk")" "Verified" ||
+        print_row "Reverse Pixelify" "-" "Failed"
+
+    printf "%${WIDTH}s\n" | tr ' ' '='
+    center "DONE"
+    printf "%${WIDTH}s\n" | tr ' ' '='
+
+    rm -rf "$BOX/download"
+    echo 
+    echo "Saved to $OUT"
+    handle_delay
+    exit 0
+fi
+
+if [ -f "$BOX/root" ]; then
+  rm -f "$BOX/root"
+  find "$DIR" -type f \( -name "*_install_log_2025*" -o -name "*_action_log_2025*" \) | while read -r f; do
+    echo "$(date '+%F %T') Deleted: $f" | tee -a "$LOG"
+    rm -f "$f"
+  done
+  handle_delay
+  exit 0
+fi
+
+if [ -f "$BOX/gapps" ]; then
+  rm -f "$BOX/gapps"
+  echo "====================================" | tee -a "$LOGFILE"
+  echo "Starting Log Cleanup" | tee -a "$LOGFILE"
+  echo "====================================" | tee -a "$LOGFILE"
+  echo "" | tee -a "$LOGFILE"
+
+  TARGETS="
+/sdcard/Android/litegapps/litegapps_controller.log
+/tmp/NikGapps
+/tmp/NikGapps/logfiles
+/tmp/NikGapps/addonscripts
+/tmp/NikGapps/logfiles/package_log
+/sdcard/NikGapps
+/tmp/recovery.log
+/tmp/NikGapps.log
+/tmp/Mount.log
+/tmp/installation_size.log
+/tmp/busybox.log
+/tmp/Logs-*.tar.gz
+/tmp/bitgapps_debug_logs_*.tar.gz
+/sdcard/bitgapps_debug_logs_*.tar.gz
+/system/etc/bitgapps_debug_logs_*.tar.gz
+/sdcard/Download/*_install_log_2025*
+/sdcard/Download/*_action_log_2025*
+"
+
+  for path in $TARGETS; do
+    if echo "$path" | grep -q '\*'; then
+      files=$(find "$(dirname "$path")" -type f -name "$(basename "$path")" 2>/dev/null)
+    else
+      files=$(find "$path" -type f 2>/dev/null)
+    fi
+
+    if [ -n "$files" ]; then
+      echo "Found: $path" | tee -a "$LOGFILE"
+      echo "$files" | tee -a "$LOGFILE"
+      echo "$files" | while read -r f; do
+        echo "Deleting: $f" | tee -a "$LOGFILE"
+        rm -rf "$f" 2>&1 | tee -a "$LOGFILE"
+      done
+    elif [ -d "$path" ]; then
+      echo "Deleting directory: $path" | tee -a "$LOGFILE"
+      rm -rf "$path" 2>&1 | tee -a "$LOGFILE"
+    fi
+  done
+
+  echo "" | tee -a "$LOGFILE"
+  echo "Cleanup complete." | tee -a "$LOGFILE"
+  echo "====================================" | tee -a "$LOGFILE"
+  handle_delay
+  exit 0
+fi
+
+# Ensure log directory/file exists
+mkdir -p "$(dirname "$CPP")" 2>/dev/null || true
+touch "$CPP" 2>/dev/null || true
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >>"$CPP"; }
+
+# Exit if offline
+#if ! megatron; then exit 1; fi
+
+# Show header
+print_header
+
+# Description content update
+{
+  for p in /data/adb/modules/busybox-ndk/system/*/busybox \
+           /data/adb/ksu/bin/busybox \
+           /data/adb/ap/bin/busybox \
+           /data/adb/magisk/busybox \
+           /system/bin/busybox \
+           /system/xbin/busybox; do
+    [ -x "$p" ] && bb=$p && break
+  done
+  [ -z "$bb" ] && return 0
+
+  C=$($bb wget -qO- "$URL" 2>/dev/null)
+  if [ -n "$C" ]; then
+    [ ! -f "$BAK" ] && $bb cp "$PROP" "$BAK"
+    $bb sed -i '/^description=/d' "$PROP"
+    echo "description=$C" >> "$PROP"
+  else
+    [ -f "$BAK" ] && $bb cp "$BAK" "$PROP"
+  fi
+} || true
+
+# Run steps
+
+# Ensure log file exists
+mkdir -p "$(dirname "$CPP")" 2>/dev/null || true
+touch "$CPP" 2>/dev/null || true
+
+
+# Mode
+ARGDESC=""
+ARGS=""
+
+[ -f "$BOX/use_qpr2" ]       && ARGS="$ARGS -q" && ARGDESC="$ARGDESC QPR2 "
+[ -f "$BOX/use_advanced" ]   && ARGS="$ARGS -a" && ARGDESC="$ARGDESC ADVANCED "
+[ -f "$BOX/use_strong" ]     && ARGS="$ARGS -s" && ARGDESC="$ARGDESC STRONG "
+[ -f "$BOX/use_match" ]      && ARGS="$ARGS -m" && ARGDESC="$ARGDESC MATCH "
+[ -f "$BOX/skip_json" ]      && ARGS="$ARGS -n" && ARGDESC="$ARGDESC SKIP_JSON "
+[ -f "$BOX/skip_patch" ]     && ARGS="$ARGS -x" && ARGDESC="$ARGDESC SKIP_PATCH " && SKIP_PATCH=1
+[ -f "$BOX/skip_keybox" ]    && ARGS="$ARGS -k" && ARGDESC="$ARGDESC SKIP_KEYBOX " && SKIP_KEYBOX=1
+[ -f "$BOX/verbose_mode" ]   && ARGS="$ARGS -v" && ARGDESC="$ARGDESC VERBOSE "
+[ -f "$BOX/force_spoof_off" ]&& ARGS="$ARGS -S" && ARGDESC="$ARGDESC NO_SPOOF "
+
+for i in {1..9}; do
+    [ -f "$BOX/top_$i" ]   && ARGS="$ARGS -t $i" && ARGDESC="$ARGDESC top=$i" && break
+done
+
+for i in {1..9}; do
+    [ -f "$BOX/depth_$i" ] && ARGS="$ARGS -d $i" && ARGDESC="$ARGDESC depth=$i" && break
+done
+
+[ -n "$ARGDESC" ] && log_step "MODE" "$ARGDESC"
+
+# Update keybox
+sh "$UPDATE" >/dev/null 2>&1 && log_step "UPDATED" "Valid keybox"
+
+# Keybox Handling
+for f in keybox keybox2; do
+    FLAG="/data/adb/Box-Brain/$f"
+    SRC="/data/adb/tricky_store/$f.xml"
+
+    [ "$f" = "keybox2" ] && DEST="/sdcard/aosp.xml" || DEST="/sdcard/$f.xml"
+
+    su -c "[ -e \"$FLAG\" ] && [ -r \"$SRC\" ] && cat \"$SRC\" > \"$DEST\" && sync" >/dev/null 2>&1
+done
+
+# Migrate
+MARGS=""
+MDESC=""
+
+[ -f "$BOX/migrate_force" ]    && MARGS="$MARGS -f" && MDESC="$MDESC force "
+[ -f "$BOX/migrate_override" ] && MARGS="$MARGS -o" && MDESC="$MDESC override "
+[ -f "$BOX/migrate_advanced" ] && MARGS="$MARGS -a" && MDESC="$MDESC advanced "
+
+HAS_JSON=0
+HAS_PROP=0
+[ -f "$BOX/migrate_json" ] && HAS_JSON=1
+[ -f "$BOX/migrate_prop" ] && HAS_PROP=1
+
+if [ "$HAS_JSON" -eq 1 ] && [ "$HAS_PROP" -eq 1 ]; then
+    log_step "WARNING" "Migrate Format Conflict"
+    MARGS="$MARGS -p"
+    MDESC="$MDESC prop"
+elif [ "$HAS_JSON" -eq 1 ]; then
+    MARGS="$MARGS -j"
+    MDESC="$MDESC json"
+elif [ "$HAS_PROP" -eq 1 ]; then
+    MARGS="$MARGS -p"
+    MDESC="$MDESC prop"
+fi
+
+if [ -f "$BOX/run_migrate" ]; then
+    if sh "$MODPATH/migrate.sh" $MARGS "$INPUT_PROP" >>"$CPP" 2>&1; then
+        MIGRATE_OK=1
+        log_step "MIGRATE" "Fingerprint File processed"
+    else
+        log_step "WARNING" "migrate.sh failed ($MDESC)"
+    fi
+else
+    log_step "SKIPPED" "migrate.sh disabled"
+fi
+
+
+# Expiry Handling
+if [ "$MIGRATE_OK" -eq 1 ] && [ -f "$BOX/remove_expiry" ]; then
+    sed -i '/Released On:/d;/Estimated Expiry:/d' "$P"
+#    log_step "REMOVED" "Expiry comment removed"
+#else
+#    log_step "SKIPPED" "Expiry handling"
+fi
+
+
+# JSON Export
+if [ "$MIGRATE_OK" -eq 1 ] && [ -f "$BOX/json" ] && [ ! -f "$BOX/skip_json" ] && [ -f "$P" ]; then
+    {
+        echo "{"
+        echo '  "BuildFields": {'
+        first=1
+        skip_section=0
+        while IFS= read -r line; do
+            case "$line" in
+                "# Advanced Settings"*) skip_section=1; continue ;;
+                "# Build Fields"*|"# System Properties"*) skip_section=0; continue ;;
+                \#*|"") continue ;;
+            esac
+            [ "$skip_section" -eq 1 ] && continue
+            [[ "$line" != *=* ]] && continue
+            key="${line%%=*}"
+            val="${line#*=}"
+            key="${key#*.}"
+            key="${key#*}"
+            [ "$first" -eq 0 ] && echo ","
+            printf '    "%s": "%s"' "$key" "$val"
+            first=0
+        done < "$P"
+        echo
+        echo "  }"
+        echo "}"
+    } > "$OUTJSON"
+    log_step "CREATED" "JSON exported to $OUTJSON"
+else
+    log_step "SKIPPED" "JSON export"
+fi
+
+
+# Blacklist
+mkdir -p "$TARGET_DIR" 2>/dev/null
+#log_step "CREATED" "Tricky Store folder"
+
+TARGET="$TARGET_DIR/target.txt"
+BACKUP="$TARGET.bak"
+TMP="${TARGET}.new.$$"
+success=0
+made_backup=0
+orig_selinux="$(getenforce 2>/dev/null || echo Permissive)"
+
+if [ ! -f "$SKIP_FILE" ] && [ "$orig_selinux" = "Enforcing" ]; then
+    setenforce 0
+fi
+
+[ -f "$TARGET" ] && mv -f "$TARGET" "$BACKUP" && made_backup=1 && log_step "BACKUP" "$BACKUP"
+
+teeBroken="false"
+TEE_STATUS="$TARGET_DIR/tee_status"
+[ -f "$TEE_STATUS" ] && [ "$(grep -E '^teeBroken=' "$TEE_STATUS" | cut -d '=' -f2)" = "true" ] && teeBroken="true"
+
+for pkg in com.android.vending com.google.android.gms com.google.android.gsf; do
+    echo "$pkg" >> "$TMP"
+done
+
+cmd package list packages -3 2>/dev/null | cut -d ":" -f2 | while read -r pkg; do
+    [ -z "$pkg" ] && continue
+    grep -Fxq "$pkg" "$TMP" || echo "$pkg" >> "$TMP"
+done
+
+sed -i 's/^[[:space:]]*//;s/[[:space:]]*$//' "$TMP"
+sort -u "$TMP" -o "$TMP"
+
+BLACKLIST="$BOX/blacklist.txt"
+if [ -s "$BLACKLIST" ]; then
+    sed -i 's/^[[:space:]]*//;s/[[:space:]]*$//' "$BLACKLIST"
+    grep -Fvxf "$BLACKLIST" "$TMP" > "${TMP}.filtered" || true
+    mv -f "${TMP}.filtered" "$TMP"
+    log_step "CLEANED" "Blacklisted Apps removed"
+else
+    log_step "SKIPPED" "Blacklist not configured"
+fi
+
+[ "$teeBroken" = "true" ] && sed -i 's/$/!/' "$TMP" && log_step "SUPPORT" "TEE Broken detected"
+
+mv -f "$TMP" "$TARGET" && success=1 && log_step "UPDATED" "Target Packages updated"
+
+if [ ! -f "$SKIP_FILE" ] && [ "$orig_selinux" = "Enforcing" ]; then
+    setenforce 1
+fi
+
+# Spoofing
+if [ -f "$FLAG" ] && [ -f "$MODPATH/osm0sis.sh" ]; then
+    sh "$MODPATH/osm0sis.sh" >/dev/null 2>&1 && log_step "UPDATED" "Advanced Fingerprint" || log_step "FAILED" "osm0sis.sh"
+else
+    FP_SCRIPT="$MODPATH/osm0sis.sh"
+    [ ! -f "$FP_SCRIPT" ] && FP_SCRIPT="$MODPATH/osm0sis.sh"
+    if [ -n "$FP_SCRIPT" ]; then
+        sh "$FP_SCRIPT" >/dev/null 2>&1 && log_step "UPDATED" "Pixel Fingerprint" || log_step "FAILED" "Fingerprint update"
+    else
+        log_step "WARNING" "PLEASE RE-FLASH THE MODULE"
+    fi
+fi
+
+# Check if Google Wallet is installed
+#if command -v pm >/dev/null 2>&1 && pm list packages | grep -q com.google.android.apps.walletnfcrel; then
+#    WALLET_INSTALLED=true
+#else
+#    WALLET_INSTALLED=false
+#fi
+
+#log_step "INFO" "Wallet installed: $WALLET_INSTALLED"
+
+# Enable spoofing only when Wallet is NOT installed
+#if [ "$WALLET_INSTALLED" != "true" ] \
+#   && [ ! -f "$BOX/force_spoof_off" ] \
+#   && [ -f "$P" ]; then
+
+    # Backup once per run (overwrite is intentional)
+#    cp -f "$P" "$P.bak" && log_step "BACKUP" "Fingerprint backup created"
+
+#    for k in spoofProvider spoofProps spoofBuild spoofVendingFinger; do
+#        setval "$P" "$k" "1"
+#    done
+
+#    if grep -q "^spoofProvider=1" "$P"; then
+#        log_step "UPDATED" "Spoofing Props enabled"
+#    else
+#        log_step "WARNING" "Spoofing failed"
+#    fi
+#else
+#    log_step "SKIPPED" "Spoofing Props update"
+#fi
+
+# Write security_patch.txt based on patch flag
+if [ -f "$PATCH_FLAG" ]; then
+  echo "system=prop" > "$FILE_PATH" 2>>"$PATCH_LOG"
+  log_step "UPDATED" "Patch to Stock"
+
+else
+  echo "all=$PATCH_DATE" > "$FILE_PATH" 2>>"$PATCH_LOG"
+  log_step "SPOOFED" "Security Patch to $PATCH_DATE"
+
+  CURRENT_PROP="$(getprop "$PROP_MAIN" | tr -d ' \t\r\n')"
+  log_patch "Current $PROP_MAIN: $CURRENT_PROP"
+
+  # Skip resetprop if skip file exists
+  if [ -f "$SKIP_FILE" ]; then
+    log_step "SKIPPED" "Skip file present, resetprop disabled"
+
+  # Skip resetprop only for Oplus devices
+  elif [ "$BRAND_PROP" = "oplus" ]; then
+    log_step "ONEPLUS" "Avoiding due to hardware issues"
+
+  else
+    if [ "$CURRENT_PROP" != "$PATCH_DATE" ]; then
+      if command -v resetprop >/dev/null 2>&1; then
+        resetprop "$PROP_MAIN" "$PATCH_DATE"
+        log_step "PATCHED" "$PROP_MAIN to $PATCH_DATE"
+      else
+        log_step "FAILED" "resetprop not found"
+      fi
+    else
+      log_step "SKIPPED" "All Good, Resetprop not Required"
+    fi
+  fi
+fi
+
+log_patch "Patch handling complete"
+log_patch " "
+
+for proc in com.google.android.gms.unstable com.google.android.gms com.android.vending; do
+  kill_process "$proc"
+done
+
+log_step "STOPPED" "Droidguard Processes"
+
+echo " "
+echo " "
+handle_delay
+exit 0

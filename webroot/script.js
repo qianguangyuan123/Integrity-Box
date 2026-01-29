@@ -1,5 +1,5 @@
-const MODDIR = `/data/adb/modules/playintegrity/webroot/common_scripts`;
-const PROP = `/data/adb/modules/playintegrity/module.prop`;
+const MODDIR = `/data/adb/modules/playintegrityfix/webroot/common_scripts`;
+const PROP = `/data/adb/modules/playintegrityfix/module.prop`;
 
 const modalBackdrop = document.getElementById("modal-backdrop");
 const modalTitle = document.getElementById("modal-title");
@@ -10,19 +10,26 @@ const btns = Array.from(document.querySelectorAll(".btn"));
 
 /* Toast messages */
 const messageMap = {
-  "kill.sh":       { success: "Process Killed Successfully", type: "info" },
-  "user.sh":       { start: "Blacklist Unnecessary Apps", type: "info" },
+  "kill":       { success: "Process Killed Successfully", type: "info" },
+  "user":       { start: "Blacklist Unnecessary Apps", type: "info" },
   "stop":       { success: "Switched to Blacklist Mode", type: "info" },
   "start":      { success: "Switched to Whitelist Mode", type: "info" },
-  "spoof.sh":      { success: "Applied", type: "info" },
+  "xml":       { start: "Scanning xml files..", type: "info" },
+  "patch":       { start: "Opening configuration..", type: "info" },
+  "aosp":       { success: "Switched to AOSP Keybox", type: "info" },
   "resetprop.sh":  { success: "Done, Reopen detector to check", type: "info" },
+  "selinux":  { success: "Spoofed to Enforcing", type: "info" },
   "piffork":       { start: "All changes will be applied immediately", type: "info" },
-  "pif.sh":        { success: "Done!", type: "info" },
-  "vending":       { start: "Let's Go 😋", type: "info" },
-  "patch.sh":      { success: "Patch Status : ✅ Spoofed", type: "info" },
+  "nogms":        { success: "Reboot to apply changes", type: "info" },
+  "yesgms":       { start: "Reboot to apply changes", type: "info" },
   "key.sh":        { success: "Keybox has been updated✅", type: "info" },
-  "app.sh":        { start: " ", success: "Detection Complete", type: "info" },
+  "hma.sh":        { success: "Done", type: "info" },
+  "app.sh":        { start: " Let's Go 😉", success: "Detection Complete", type: "info" },
   "support":       { start: "Become a Supporter", type: "info" },
+  "report":       { start: "What's wrong buddy?", type: "info" },
+  "assistant":       { start: "Let me guide you to the right path", type: "info" },
+  "hma":       { success: "Done", type: "info" },
+  "ulock":      { success: "Done", type: "info" },
   "boot_hash":     { start: "Paste your boot hash buddy", success: "Boot hash operation complete", type: "success" }
 };
 
@@ -74,28 +81,146 @@ function enableFullScreen() {
   } catch {}
 }
 
-/* Iframe opener */
-function openIframe(url,label=""){
-  const iframe=document.createElement("iframe");
-  iframe.src=url;
-  Object.assign(iframe.style,{position:"fixed",top:0,left:0,width:"100vw",height:"100vh",border:"none",zIndex:9998,background:"black"});
-  const btn=document.createElement("button");
-  btn.textContent="⟵ Back";
-  Object.assign(btn.style,{position:"fixed",top:"10px",left:"10px",zIndex:9999,padding:"8px 14px",background:"transparent",color:"white",border:"none",cursor:"pointer"});
-  btn.onclick=()=>{iframe.remove();btn.remove();};
-  document.body.append(iframe,btn);
+/* iFrame */
+function openIframe(url) {
+  const iframe = document.createElement("iframe");
+  iframe.src = url;
+
+  Object.assign(iframe.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    border: "none",
+    zIndex: 9998,
+    background: "black"
+  });
+
+  document.body.appendChild(iframe);
+
+  /* Left-Edge Gesture */
+  const edge = document.createElement("div");
+    Object.assign(edge.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "30px",
+      height: "100vh",
+      zIndex: "99999999",
+      background: "transparent",
+      pointerEvents: "auto",
+      touchAction: "none"
+    });
+
+  document.body.appendChild(edge);
+
+  /* Glow Layer */
+  const glow = document.createElement("div");
+  Object.assign(glow.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "20px",
+    height: "100vh",
+    zIndex: "99998",
+    pointerEvents: "none",
+    opacity: "0",
+    background: "linear-gradient(to right, rgba(255,40,40,0.45), transparent)",
+    transition: "opacity 0.2s ease, transform 0.3s ease"
+  });
+
+  document.body.appendChild(glow);
+
+  /* Idle animation timer */
+  let idleTimer;
+  const idleDelay = 2000;
+  let idle = false;
+
+  const startIdle = () => {
+    idle = true;
+    glow.style.opacity = "0.15";
+    glow.style.transform = "scaleY(0.75)";
+  };
+
+  const stopIdle = () => {
+    idle = false;
+    glow.style.opacity = "0";
+    glow.style.transform = "scaleY(1)";
+  };
+
+  const resetIdle = () => {
+    clearTimeout(idleTimer);
+    stopIdle();
+    idleTimer = setTimeout(startIdle, idleDelay);
+  };
+
+  resetIdle();
+
+  /* Flash glow when activated */
+  const flashGlow = () => {
+    glow.style.opacity = "0.5";
+    glow.style.transform = "scaleY(1)";
+    setTimeout(() => {
+      glow.style.opacity = idle ? "0.15" : "0";
+    }, 180);
+  };
+
+  /* Swipe variables */
+  let startX = 0;
+  let startTime = 0;
+
+  /* Touch Start */
+  const onStart = (e) => {
+    resetIdle();
+    const t = e.touches?.[0] || e;
+    startX = t.clientX;
+    startTime = Date.now();
+
+    glow.style.opacity = "0.35";
+    glow.style.transform = "scaleY(1)";
+  };
+
+  /* Touch End */
+  const onEnd = (e) => {
+    resetIdle();
+    const t = e.changedTouches?.[0] || e;
+    const diff = t.clientX - startX;
+    const dt = Date.now() - startTime;
+    const swipe = diff > 40 && dt < 300;
+
+    if (swipe || Math.abs(diff) < 10) {
+      flashGlow();
+      iframe.remove();
+      edge.remove();
+      glow.remove();
+    } else {
+      glow.style.opacity = idle ? "0.15" : "0";
+    }
+  };
+
+  edge.addEventListener("touchstart", onStart, { passive: true });
+  edge.addEventListener("touchend", onEnd);
+  edge.addEventListener("mousedown", onStart);
+  edge.addEventListener("mouseup", onEnd);
 }
+
+window.runShellFromIframe = async function (cmd) {
+  return await runShell(cmd);
+};
 
 /* Dashboard */
 async function updateDashboard() {
   const statusItems = {
     "status-playstore": "dumpsys package com.android.vending | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
-    "status-playservices": "dumpsys package com.google.android.gms | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
+//    "status-playservices": "dumpsys package com.google.android.gms | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
     "status-selinux": "getenforce || echo Unknown",
     "status-target": "[ -f /data/adb/tricky_store/target.txt ] && grep -cve '^$' /data/adb/tricky_store/target.txt || echo 0",
-    "status-android": "getprop ro.build.version.release || echo Unknown",
+    "status-android": "case \"$(getprop ro.system.build.version.release 2>/dev/null)\" in 4*) echo KitKat ;; 5*) echo Lollipop ;; 6*) echo Marshmallow ;; 7*) echo Nougat ;; 8*) echo Oreo ;; 9*) echo Pie ;; 10) echo QuinceTart ;; 11) echo RedVelvet ;; 12*) echo SnowCone ;; 13*) echo Tiramisu ;; 14*) echo UpsideDown ;; 15*) echo VanillaIceCream ;; 16*) echo Baklava ;; *) echo Unknown ;; esac",
+    "status-pixel": "[ -f /data/adb/modules/playintegrityfix/custom.pif.prop ] && awk -F= '/^PRODUCT=/{print $2}' /data/adb/modules/playintegrityfix/custom.pif.prop || echo None",
     "status-patch": "getprop ro.build.version.security_patch || echo Unknown",
-    "status-whitelist": "[ -f /data/adb/nohello/whitelist ] || [ -f /data/adb/shamiko/whitelist ] && echo Enabled || echo Disabled",
+    "status-zygisk": "[ -f /data/adb/modules/zygisksu/module.prop ] && awk -F= '/^name=/{print $2}' /data/adb/modules/zygisksu/module.prop || ([ -f /data/adb/modules/rezygisk/module.prop ] && echo ReZygisk) || (magisk --sqlite \"SELECT value FROM settings WHERE key='zygisk';\" | grep -q '1' && echo Magisk-Zygisk) || echo None",
+    "status-profile": "if [ -f /data/adb/Box-Brain/advanced ]; then echo 'Supreme'; elif [ -f /data/adb/Box-Brain/legacy ]; then echo 'Legacy'; elif [ -f /data/adb/Box-Brain/wipe ]; then echo 'Meta'; else echo 'None'; fi",
 
     "status-gms": `
       props=(
@@ -116,7 +241,7 @@ async function updateDashboard() {
           fi;
         fi;
       done;
-      if [ $found_any -eq 0 ]; then echo "PIF";
+      if [ $found_any -eq 0 ]; then echo "Meow Box";
       elif [ $enabled -gt 0 ]; then echo "ENABLED";
       else echo "DISABLED"; fi
     `,
@@ -129,9 +254,15 @@ async function updateDashboard() {
     if (!el) continue;
     try {
       let out = (await runShell(cmd)).trim();
-      if (!out) out = id === "status-whitelist" ? "Disabled" : "Unknown";
+      if (!out) out = id === "status-status-zygisk" ? "Scripts Mode" : "Unknown";
 
       switch (id) {
+         case "status-playstore":
+         case "status-profile":
+         case "status-playservices":
+           el.textContent = out;
+           el.className = "status-indicator play";
+          break;
         case "status-selinux":
           el.textContent = out;
           el.className = `status-indicator ${
@@ -143,30 +274,50 @@ async function updateDashboard() {
           el.textContent = `${out} apps`;
           el.className = `status-indicator ${out === "0" ? "disabled" : "enabled"}`;
           break;
+          
+        case "status-pixel":
+          el.textContent = out;
+           el.className = "status-indicator enabled";
+          break;
+          
+        case "status-patch":
+          el.textContent = out;
+           el.className = "status-indicator enabled";
+          break;
+          
+        case "status-android":
+          el.textContent = out;
+           el.className = "status-indicator neutral";
+          break;
+          
+        case "status-zygisk":
+          el.textContent = out;
+           el.className = "status-indicator neutral";
+          break;
 
         case "status-gms":
           if (out === "DISABLED") {
-            el.textContent = "Disabled";
-            el.className = "status-indicator disabled";
+            el.textContent = "Paused";
+            el.className = "status-indicator play";
           } else if (out === "ENABLED") {
-            el.textContent = "Enabled";
-            el.className = "status-indicator enabled";
-          } else if (out === "PIF") {
-            el.textContent = "PIF";
-            el.className = "status-indicator neutral";
+            el.textContent = "Inbuilt";
+            el.className = "status-indicator play";
+          } else if (out === "Meow Box") {
+            el.textContent = "Standalone";
+            el.className = "status-indicator play";
           } else {
             el.textContent = "Unknown";
-            el.className = "status-indicator neutral";
+            el.className = "status-indicator disabled";
           }
           break;
 
         case "status-LineageProp":
           if (out === "FOUND") {
-            el.textContent = "Detected";
-            el.className = "status-indicator disabled";
+            el.textContent = "90% Spoofed";
+            el.className = "status-indicator play";
           } else {
             el.textContent = "Spoofed";
-            el.className = "status-indicator enabled";
+            el.className = "status-indicator play";
           }
           break;
 
@@ -185,30 +336,63 @@ async function updateDashboard() {
 btns.forEach(btn=>{
   if(btn._attached) return;
   btn._attached=true;
-  btn.addEventListener("click",async ()=>{
-    const script=btn.dataset.script;
-    const type=btn.dataset.type;
-    const label=btn.dataset.origLabel||script;
+  btn.addEventListener("click", async () => {
+    const script = btn.dataset.script;
+    const type = btn.dataset.type;
+    const inline = btn.dataset.inline;
+
     btn.classList.add("loading");
 
     try {
-      if (messageMap[script]?.start) popup(messageMap[script].start, messageMap[script].type);
 
-      if (["scanner","hash","user","flags","piffork","pif","vending","support"].includes(type)) {
-        const pathMap={scanner:"./Risky/index.html",hash:"./BootHash/index.html",flags:"./Flags/index.html",piffork:"./PlayIntegrityFork/index.html",pif:"./CustomPIF/index.html",vending:"./Certified/index.html",support:"./Support/index.html",user:"./TrickyStore/index.html"};
-        return openIframe(pathMap[type],label);
+      if (inline) {
+        if (inlineMessageMap[inline]?.success) {
+          popup(inlineMessageMap[inline].success, inlineMessageMap[inline].type);
+        }
+        return;
       }
 
-      if(script) await runShell(`sh ${MODDIR}/${script}`);
+      if (["scanner","hash","user","flags","piffork","pif","vending",
+           "support","report","profile","assistant","tee","xml","about","patch","ctrl"].includes(type)) {
 
-      if (messageMap[script]?.success)
-        popup(messageMap[script].success, messageMap[script].type);
+        const pathMap = {
+          scanner:"./Risky/index.html",
+          ctrl:"./Control/index.html",
+          hash:"./BootHash/index.html",
+          flags:"./Flags/index.html",
+          piffork:"./PlayIntegrityFork/index.html",
+          pif:"./CustomPIF/index.html",
+          vending:"./Certified/index.html",
+          support:"./Support/index.html",
+          report:"./Report/index.html",
+          user:"./TrickyStore/index.html",
+          xml:"./KeyboxLoader/index.html",
+          about:"./About/index.html",
+          patch:"./Patch/index.html",
+          profile:"./Profile/index.html",
+          assistant:"./Assistant/index.html",
+          tee:"./TEEsimulator/index.html"
+        };
 
-    } catch(e) {
-      popup(`Error: ${e.message}`,"error");
+        popup("Opening…","info");
+        return openIframe(pathMap[type]);
+      }
+
+      if (script) {
+        if (messageMap[script]?.start)
+          popup(messageMap[script].start, messageMap[script].type);
+
+//        await runShell(`su -c "sh ${MODDIR}/${script}`);
+        await runShell(`sh ${MODDIR}/${script}`);
+        if (messageMap[script]?.success)
+          popup(messageMap[script].success, messageMap[script].type);
+      }
+
+    } catch (e) {
+      popup(`Error: ${e.message}`, "error");
     } finally {
       btn.classList.remove("loading");
-      setTimeout(updateDashboard,500);
+      setTimeout(updateDashboard, 500);
     }
   });
 });

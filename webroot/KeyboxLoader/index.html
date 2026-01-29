@@ -1,1 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keybox Loader</title>
 
+<style>
+:root{
+  --bg:#1f2233;
+  --fg:#e6e6e6;
+  --muted:#97aac0;
+  --accent:#1592FF;
+
+  --panel-bg:#232637D9;
+  --card-bg:#232637E6;
+  --card-border:#ffffff0D;
+  --btn-hover:#2d3240F2;
+  --shadow:#00000066;
+
+  --success:#38d67a;
+  --error:#ff6b6b;
+
+  --radius:16px;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  height:100vh;
+  background:linear-gradient(135deg,#1f2233,#14172b);
+  font-family:Inter,Roboto,system-ui;
+  color:var(--fg);
+  display:flex;
+  justify-content:center;
+}
+
+.app{
+  width:100%;
+  max-width:560px;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  background:var(--panel-bg);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  box-shadow:0 0 24px rgba(0,153,255,0.12);
+}
+
+.header{text-align:center;margin-bottom:14px}
+.header h1{margin:0;color:var(--accent)}
+.header p{margin:6px 0 0;font-size:13px;color:var(--muted)}
+
+.slots{display:flex;gap:12px;margin-bottom:12px}
+.slot-btn{
+  flex:1;padding:14px;border:none;border-radius:var(--radius);
+  background:#22284a;color:#fff;font-weight:600;cursor:pointer;
+  transition:.25s;
+}
+.slot-btn.active{background:var(--accent)}
+.slot-btn:hover{transform:scale(1.03)}
+
+.controls{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.search,
+.refresh-btn{
+  padding:10px 12px;
+  border-radius:var(--radius);
+  background:var(--card-bg);
+  color:var(--fg);
+  border:1px solid var(--card-border);
+  transition:background .3s, box-shadow .3s;
+}
+
+.search:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 16px rgba(21,146,255,.25);
+}
+
+.refresh-btn{
+  cursor:pointer;
+  color:var(--accent);
+  font-weight:600;
+}
+
+.panel{
+  flex:1;
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:14px;
+  overflow:auto;
+}
+
+.file{
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  padding:12px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 6px 20px var(--shadow);
+  animation:fadeIn .25s ease;
+}
+
+.meta{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.load-btn{
+  border:none;
+  border-radius:var(--radius);
+  padding:8px 14px;
+  background:transparent;
+  color:var(--accent);
+  border:1px solid rgba(21,146,255,.35);
+  font-weight:600;
+  cursor:pointer;
+  transition:background .3s, transform .3s;
+}
+
+.load-btn:hover{
+  background:rgba(21,146,255,.15);
+  transform:scale(1.05);
+}
+
+.footer{
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+  margin-top:10px;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-card{
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  padding:20px;
+  border-radius:var(--radius);
+  text-align:center;
+  box-shadow:0 0 24px rgba(0,153,255,.18);
+  animation:scaleIn .25s ease;
+}
+
+.modal-card.success{color:var(--success)}
+.modal-card.error{color:var(--error)}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(6px)}
+}
+@keyframes scaleIn{
+  from{transform:scale(.9);opacity:0}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>Keybox Loader</h1>
+    <p>Newest files first • Auto refresh enabled</p>
+  </div>
+
+  <div class="slots">
+    <button class="slot-btn active" data-slot="1">Keybox 1</button>
+    <button class="slot-btn" data-slot="2">Keybox 2</button>
+    <button class="slot-btn" data-slot="3">Keybox 3</button>
+  </div>
+
+  <div class="controls">
+    <input class="search" id="search" placeholder="Search XML file…">
+    <button class="refresh-btn" id="refresh">Refresh</button>
+  </div>
+
+  <div class="panel" id="file-list">Scanning…</div>
+
+  <div class="footer" id="footer">Auto refresh every 10 seconds</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card" id="modal-card"></div>
+</div>
+
+<script>
+const LOGFILE="/data/adb/Box-Brain/Integrity-Box-Logs/keybox_scan.log";
+const RUNNER="/data/adb/modules/playintegrityfix/webroot/common_scripts/run_scan.sh";
+const DEST="/data/adb/tricky_store";
+
+let slot=1;
+let allFiles=[];
+let lastSnapshot="";
+
+function runShell(cmd){
+  return new Promise((res,rej)=>{
+    if (window.parent && window.parent.runShellFromIframe) {
+      window.parent.runShellFromIframe(cmd)
+        .then(res)
+        .catch(rej);
+    } else {
+      rej("Parent shell bridge not available");
+    }
+  });
+}
+
+function showModal(msg,type){
+  const m=document.getElementById("modal");
+  const c=document.getElementById("modal-card");
+  c.className="modal-card "+type;
+  c.textContent=msg;
+  m.style.display="flex";
+  setTimeout(()=>m.style.display="none",1800);
+}
+
+async function scanAndRefresh(){
+  document.getElementById("footer").textContent="Refreshing…";
+  try{
+    await runShell(`rm -f ${LOGFILE}`);
+    await runShell(`sh -c 'sh ${RUNNER} &'`);
+  }catch{}
+
+  const start=Date.now();
+  const poll=setInterval(async()=>{
+    try{
+      const cur=await runShell(`cat ${LOGFILE}`);
+      if(cur && cur!==lastSnapshot){
+        lastSnapshot=cur;
+        parseAndRender(cur);
+        document.getElementById("footer").textContent="Auto refresh every 10 seconds";
+        clearInterval(poll);
+      }
+    }catch{}
+    if(Date.now()-start>8000) clearInterval(poll);
+  },500);
+}
+
+function parseAndRender(out){
+  allFiles=out.split("\n").filter(Boolean).map(l=>{
+    const [ts,size,path]=l.split("|");
+    return{
+      ts:+ts,
+      size:+size,
+      path,
+      name:path.split("/").pop()
+    };
+  });
+  render();
+}
+
+function render(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const list=document.getElementById("file-list");
+  list.innerHTML="";
+  allFiles
+    .filter(f=>f.name.toLowerCase().includes(q))
+    .forEach(f=>{
+      const el=document.createElement("div");
+      el.className="file";
+      el.innerHTML=`
+        <div>
+          <div>${f.name}</div>
+          <div class="meta">
+            ${(f.size/1024).toFixed(1)} KB •
+            ${new Date(f.ts*1000).toLocaleString()}
+          </div>
+        </div>
+        <button class="load-btn">Load</button>
+      `;
+      el.querySelector(".load-btn").onclick=()=>loadFile(f.path);
+      list.appendChild(el);
+    });
+}
+
+async function loadFile(path){
+  const names=["","keybox.xml","keybox2.xml","keybox3.xml"];
+  try{
+    await runShell(`
+      mkdir -p ${DEST} &&
+      cp -f "${path}" ${DEST}/${names[slot]} &&
+      chmod 644 ${DEST}/${names[slot]}
+    `);
+    showModal(`Loaded into Keybox ${slot}`,"success");
+  }catch{
+    showModal("Failed to load keybox","error");
+  }
+}
+
+document.querySelectorAll(".slot-btn").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".slot-btn").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    slot=+b.dataset.slot;
+  };
+});
+
+document.getElementById("search").oninput=render;
+document.getElementById("refresh").onclick=scanAndRefresh;
+
+scanAndRefresh();
+setInterval(scanAndRefresh,10000);
+</script>
+</body>
+</html>

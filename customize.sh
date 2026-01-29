@@ -33,7 +33,7 @@ SDK=$(getprop ro.system.build.version.sdk)
 ARCH=$(getprop ro.product.cpu.abi)
 BUILD_DATE=$(getprop ro.system.build.date)
 ROM_TYPE=$(getprop ro.system.build.type)
-FINGERPRINT=$(getprop ro.system.build.fingerprint)
+SDK=$(getprop ro.build.version.sdk)
 SE=$(getenforce)
 KERNEL=$(uname -r)
 
@@ -78,8 +78,40 @@ check_integrity() {
 # Setup environment and permissions
 setup_environment() {
     debug " ✦ Setting up Environment "
-    chmod +x "$MODPATH/action.sh"
-    sh "$MODPATH/action.sh" > /dev/null 2>&1
+    chmod +x "$SCRIPT/key.sh"
+    sh "$SCRIPT/key.sh" #> /dev/null 2>&1
+}
+
+hizru() {
+    FLAG_FILE="$FLAG/skip"
+    LOG_FILE="$LOG_DIR/skip.log"
+
+    mkdir -p "$FLAG" "$LOG_DIR"
+
+    PKGS="com.samsung.android.app.updatecenter com.oplus.romupdate"
+    FOUND=0
+    TS="$(date '+%Y-%m-%d %H:%M:%S')"
+
+    for pkg in $PKGS; do
+        if pm list packages -s 2>/dev/null | grep -q "^package:$pkg$"; then
+            FOUND=1
+            echo "$TS | PM_DETECTED | $pkg" >> "$LOG_FILE"
+        elif find /system /product /system_ext /apex -type d -name "*$pkg*" 2>/dev/null | grep -q .; then
+            FOUND=1
+            echo "$TS | FS_DETECTED | $pkg" >> "$LOG_FILE"
+        else
+            echo "$TS | NOT_FOUND | $pkg" >> "$LOG_FILE"
+        fi
+    done
+
+    if [ "$FOUND" -eq 1 ]; then
+        touch "$FLAG_FILE"
+        echo "$TS | ACTION | skip flag created" >> "$LOG_FILE"
+        return 0
+    fi
+
+    echo "$TS | ACTION | no skip required" >> "$LOG_FILE"
+    return 1
 }
 
 # Clean up old logs and files
@@ -89,18 +121,24 @@ cleanup() {
 }
 
 setup_keybox() {
-  local MOD="$1/keybox"
-  local TRICKY="/data/adb/tricky_store"
-  local files="secondary_keybox.xml aosp_keybox.xml"
+  local BASE="$1"
+  [ -z "$BASE" ] && return 0
 
-  # Create target directory if missing
-  [ ! -d "$TRICKY" ] && mkdir -p "$TRICKY" && chmod 700 "$TRICKY"
+  local SRC="$BASE/keybox"
+  local DST="/data/adb/tricky_store"
 
-  # Move files
-  for f in $files; do
-    local src="$MOD/$f"
-    local dst="$TRICKY/$f"
-    [ ! -f "$dst" ] && mv "$src" "$dst" && chmod 600 "$dst"
+  # Ensure destination directory exists
+  [ -d "$DST" ] || {
+    mkdir -p "$DST" || return 1
+    chmod 700 "$DST"
+  }
+
+  for f in keybox2.xml keybox3.xml; do
+    [ -f "$DST/$f" ] && continue
+    [ -f "$SRC/$f" ] || continue
+    cp "$SRC/$f" "$DST/$f" || continue
+    chmod 600 "$DST/$f"
+    chown root:root "$DST/$f" 2>/dev/null
   done
 }
 
@@ -139,7 +177,6 @@ gather_system_info() {
     debug " ✦ SELinux Status : $SE"
     debug " ✦ ROM Type       : $ROM_TYPE"
     debug " ✦ Build Date     : $BUILD_DATE"
-    debug " ✦ Fingerprint    : $FINGERPRINT"
     debug "_________________________________________"
     debug
     debug
@@ -156,14 +193,22 @@ release_source() {
 enable_recommended_settings() {
     debug " ✦ Enabling Recommended Settings "
     touch "$FLAG/NoLineageProp"
+    touch "$FLAG/migrate_force"
+    touch "$FLAG/run_migrate"
     touch "$FLAG/noredirect"
-    touch "$FLAG/advanced"
+#    touch "$FLAG/advanced"
     touch "$FLAG/nodebug"
     touch "$FLAG/encrypt"
     touch "$FLAG/build"
     touch "$FLAG/twrp"
     touch "$FLAG/tag"
 }
+
+if [ "$SDK" -ge 33 ]; then
+    touch "$FLAG/advanced"
+else
+    touch "$FLAG/legacy"
+fi
 
 # Final footer message
 display_footer() {
@@ -181,6 +226,7 @@ install_module() {
     gather_system_info
     check_integrity
     setup_environment
+    hizru
     prepare_directories
     cleanup
     check_boot_hash
@@ -221,32 +267,36 @@ fi
 # Start the installation process
 install_module
 
+# Write security patch file if missing 
+if [ ! -f /data/adb/tricky_store/security_patch.txt ]; then
+cat <<EOF > /data/adb/tricky_store/security_patch.txt
+all=2025-12-05
+EOF
+fi
+
 ##########################################
 # adapted from Play Integrity Fork by @osm0sis
 # source: https://github.com/osm0sis/PlayIntegrityFork
 # license: GPL-3.0
 ##########################################
 
-# Allow a scripts-only mode for older Android (<10) which may not require the Zygisk components
-if [ -f /sdcard/zygisk ]; then
+# Zygiskless installation 
+if [ -f /sdcard/zygisk ] || [ -f /data/adb/Box-Brain/zygisk ]; then
     debug " ✦ Installing global scripts only"
     debug " ✦ Disabled: Zygisk Attestation fallback"
-    debug " ✦ Disabled: Device Spoofing"
-#    touch /sdcard/zygisk
-    sed -i 's/\(description=\)\(.*\)/\1[Scripts-only mode] \2/' $MODPATH/module.prop
-#    [ -f /data/adb/modules/playintegrityfix/uninstall.sh ] && sh /data/adb/modules/playintegrityfix/uninstall.sh
+    debug " ✦ Disabled: PIF Module Spoofing"
+    touch "$FLAG/zygisk"
+    sed -i 's/\(description=\)\(.*\)/\1𝙒𝙊𝙍𝙆𝙄𝙉𝙂 𝘼𝙎 𝙎𝙐𝙋𝙋𝙊𝙍𝙏 𝙁𝙊𝙍 𝙄𝙉𝘽𝙐𝙄𝙇𝙏 𝙎𝙋𝙊𝙊𝙁𝙄𝙉𝙂 || \2/' $MODPATH/module.prop
     rm -rf $MODPATH/app_replace_list.txt \
         $MODPATH/autopif2.sh $MODPATH/classes.dex \
         $MODPATH/common_setup.sh $MODPATH/custom.app_replace_list.txt \
-        $MODPATH/custom.pif.json $MODPATH/custom.pif.prop  \
-        $MODPATH/example.pif.prop $MODPATH/migrate.sh \
+        $MODPATH/custom.pif.json \
+        $MODPATH/example.pif.prop \
         $MODPATH/pif.json $MODPATH/pif.prop $MODPATH/zygisk \
         /data/adb/modules/playintegrityfix/custom.app_replace_list.txt \
         /data/adb/modules/playintegrityfix/custom.pif.json \
-        /data/adb/modules/playintegrityfix/custom.pif.prop \
         /data/adb/modules/playintegrityfix/skippersistprop \
-        /data/adb/modules/playintegrityfix/system \
-#        /data/adb/modules/playintegrityfix/uninstall.sh
+        /data/adb/modules/playintegrityfix/system
 fi
 
 # Copy any disabled app files to updated module
@@ -256,7 +306,7 @@ if [ -d /data/adb/modules/playintegrityfix/system ]; then
 fi
 
 # Copy any supported custom files to updated module
-for FILE in custom.app_replace_list.txt custom.pif.json custom.pif.prop skipdelprop skippersistprop uninstall.sh; do
+for FILE in custom.app_replace_list.txt custom.pif.prop skipdelprop skippersistprop uninstall.sh; do
     if [ -f "/data/adb/modules/playintegrityfix/$FILE" ]; then
         debug " ✦ Restoring $FILE"
         cp -af /data/adb/modules/playintegrityfix/$FILE $MODPATH/$FILE
@@ -266,6 +316,7 @@ done
 # Warn if potentially conflicting modules are installed
 if [ -d /data/adb/modules/MagiskHidePropsConf ]; then
     debug " ✦ MagiskHidePropsConfig (MHPC) module may cause issues with PIF"
+    debug " ✦ Kindly disable or remove it"
 fi
 
 # Run common tasks for installation and boot-time
@@ -274,22 +325,11 @@ if [ -d "$MODPATH/zygisk" ]; then
     . $MODPATH/common_setup.sh
 fi
 
-# Migrate custom.pif.json to latest defaults if needed
-if [ -f "$MODPATH/custom.pif.json" ]; then
-    if ! grep -q "api_level" $MODPATH/custom.pif.json || ! grep -q "verboseLogs" $MODPATH/custom.pif.json || ! grep -q "spoofVendingFinger" $MODPATH/custom.pif.json; then
-        debug " ✦ Running migration script on custom.pif.json:"
-        debug " "
-        chmod 755 $MODPATH/migrate.sh
-        sh $MODPATH/migrate.sh --install --force --advanced $MODPATH/custom.pif.json
-        debug " "
-    fi
-fi
-
 # Clean up any leftover files from previous deprecated methods
 rm -f /data/data/com.google.android.gms/cache/pif.prop /data/data/com.google.android.gms/pif.prop \
     /data/data/com.google.android.gms/cache/pif.json /data/data/com.google.android.gms/pif.json
 
-# Disable zygiskless installation on next installation
+# Remove flag from /sdcard to avoid detection 
 [ -f /sdcard/zygisk ] && rm -f /sdcard/zygisk
 
 display_footer

@@ -1,1 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IntegrityBox Profile</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+<style>
+:root{
+  --bg:#1f2233; --fg:#e6e6e6; --accent:#1592FF;
+  --panel-bg:#232637D9; --radius:16px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#1c1e2b,#10121c);
+  color:var(--fg);font-family:system-ui;padding:20px;
+}
+.container{width:440px;max-width:96%;}
+.card{
+  background:var(--panel-bg);
+  border-radius:var(--radius);
+  padding:22px;
+}
+h1{
+  margin:0 0 16px;
+  text-align:center;
+  color:var(--accent);
+  font-size:20px;
+}
+.rows{display:grid;gap:12px;}
+.item{
+  padding:16px;border-radius:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  cursor:pointer;transition:.2s;
+}
+.item:hover{transform:translateY(-3px)}
+.item.active{
+  border:2px solid var(--accent);
+  background:rgba(21,146,255,.18);
+}
+.title{display:flex;align-items:center;gap:10px;font-weight:600;}
+.subtitle{margin-top:6px;font-size:13px;color:rgba(255,255,255,.6);}
+.note{
+  margin-top:16px;
+  padding:12px;border-radius:12px;
+  background:rgba(255,255,255,.05);
+  font-size:13px;
+}
+.actions{display:flex;gap:10px;margin-top:16px;}
+.btn{
+  flex:1;padding:10px;border-radius:12px;
+  text-align:center;font-size:13px;
+  background:rgba(255,255,255,.06);
+  cursor:pointer;
+}
+.btn:hover{background:rgba(255,255,255,.12)}
+.footer{text-align:center;margin-top:14px;font-size:12px;opacity:.45}
+
+#loader{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+.spinner{
+  width:48px;height:48px;
+  border:4px solid rgba(255,255,255,.2);
+  border-top:4px solid var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.webui-popup { pointer-events:none; }
+</style>
+</head>
+
+<body>
+
+<div id="loader">
+  <div class="spinner"></div>
+</div>
+
+<div class="container">
+<div class="card">
+
+<h1>
+  <span class="material-icons" style="vertical-align:middle">tune</span>
+  IntegrityBox Profile
+</h1>
+
+<div class="rows" id="profiles"></div>
+
+<div class="note">
+<b>Announcements</b><br>
+• Profile switching has a 30s cooldown<br>
+• GMS & Play Store will be restarted automatically<br>
+• Old Play Store versions may help passing integrity
+</div>
+
+<div class="actions">
+  <div class="btn" onclick="clearData()">
+    <span class="material-icons">delete</span><br>
+    Clear GMS / Play Store
+  </div>
+  <div class="btn" onclick="openAPKMirror()">
+    <span class="material-icons">download</span><br>
+    Old Play Store APK
+  </div>
+</div>
+
+<div class="footer">© IntegrityBox • 2026</div>
+</div>
+</div>
+
+<script>
+const ADV_FILE="/data/adb/Box-Brain/advanced";
+const LEGACY_FILE="/data/adb/Box-Brain/legacy";
+const WIPE_FILE="/data/adb/Box-Brain/wipe";
+const OSMOSIS="/data/adb/modules/playintegrityfix/osm0sis.sh";
+
+const COOLDOWN = 30000;
+let lastSwitch = 0;
+
+const profiles = [
+  { name:"Supreme", icon:"rocket_launch", desc:"This works on majority of devices", file:ADV_FILE },
+  { name:"Legacy",  icon:"history", desc:"Try this if Supreme Profile doesn't work for you", file:LEGACY_FILE },
+  { name:"Meta",    icon:"auto_delete", desc:"Experimental, doesn't work everytime", file:WIPE_FILE }
+];
+
+function popup(msg, type="info") {
+  try {
+    if (typeof window.toast === "function") { window.toast(String(msg)); return; }
+    if (window.kernelsu && typeof window.kernelsu.toast === "function") { window.kernelsu.toast(String(msg)); return; }
+    if (typeof ksu === "object" && typeof ksu.toast === "function") { ksu.toast(String(msg)); return; }
+  } catch {}
+
+  const n = document.createElement("div");
+  n.className = "webui-popup";
+  n.textContent = msg;
+  const colors = { error:"#f44336", success:"#4caf50", info:"#1565c0", warn:"#ff8f00" };
+  const bg = colors[type] || "#0099FF";
+  Object.assign(n.style, {
+    position:"fixed", top:"-70px", left:"50%", transform:"translateX(-50%)",
+    background:bg, color:"#fff", padding:"0.8rem 1.2rem",
+    borderRadius:"8px", fontWeight:"600", zIndex:"99999",
+    boxShadow:"0 6px 18px rgba(0,0,0,0.35)",
+    transition:"top .36s,opacity .36s", opacity:"0"
+  });
+  document.body.appendChild(n);
+  requestAnimationFrame(()=>{ n.style.top="20px"; n.style.opacity="1"; });
+  setTimeout(()=>{ n.style.top="-70px"; n.style.opacity="0"; setTimeout(()=>n.remove(),420); },2500);
+}
+
+function showLoader(show){
+  document.getElementById("loader").style.display = show ? "flex" : "none";
+}
+
+function sh(cmd){
+  try { return ksu.exec(cmd); } catch { return ""; }
+}
+
+async function getActive(){
+  for(const p of profiles){
+    const r = sh(`test -f "${p.file}" && echo yes`);
+    if(String(r).trim()==="yes") return p.file;
+  }
+  return null;
+}
+
+async function switchProfile(p){
+  if(Date.now() - lastSwitch < COOLDOWN){
+    popup("Please wait before switching again", "warn");
+    return;
+  }
+  lastSwitch = Date.now();
+
+  showLoader(true);
+  popup("Applying " + p.name + " profile…", "info");
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+
+      sh(`
+        rm -f "${ADV_FILE}" "${LEGACY_FILE}" "${WIPE_FILE}" &&
+        touch "${p.file}" &&
+        chmod 0644 "${p.file}" &&
+        sh "${OSMOSIS}" &&
+        pkill -f com.google.android.gms &&
+        pkill -f com.android.vending
+      `);
+
+      showLoader(false);
+      popup(p.name + " profile applied", "success");
+      render();
+
+    }, 0);
+  });
+}
+
+async function render(){
+  const active = await getActive();
+  const root = document.getElementById("profiles");
+  root.innerHTML = "";
+
+  profiles.forEach(p=>{
+    const d = document.createElement("div");
+    d.className = "item" + (active===p.file ? " active" : "");
+    d.innerHTML = `
+      <div class="title">
+        <span class="material-icons">${p.icon}</span>${p.name}
+      </div>
+      <div class="subtitle">${p.desc}</div>
+    `;
+    d.onclick = () => switchProfile(p);
+    root.appendChild(d);
+  });
+}
+
+function clearData(){
+  showLoader(true);
+  popup("Clearing Play Store & GMS data…","info");
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      try{
+        sh(`pm clear com.android.vending && pm clear com.google.android.gms`);
+        popup("Data cleared successfully","success");
+      }catch{
+        popup("Command failed","error");
+      }
+      showLoader(false);
+    },0);
+  });
+}
+
+function openAPKMirror(){
+  sh(`nohup am start -a android.intent.action.VIEW -d "https://www.apkmirror.com/apk/google-inc/google-play-store/google-play-store-40-0-13-release/google-play-store-40-0-13-23-0-pr-612537281-android-apk-download/download/?key=11b745de637f14dc60ab90c02234ed466e71cdf3&forcebaseapk=true" > /dev/null 2>&1 &`);
+}
+
+document.addEventListener("DOMContentLoaded", render);
+</script>
+</body>
+</html>

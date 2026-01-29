@@ -17,6 +17,23 @@
   --mona: #001A31;
 }
 
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  color: var(--accent);
+  font-family: 'Poppins', sans-serif;
+  font-size: 8rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-shadow: 0 0 25px var(--glow-color), 0 0 50px rgba(0,153,255,0.25);
+  overflow: hidden;
+}
+
 /* Body & Layout */
 body {
   margin: 0;
@@ -105,6 +122,12 @@ body {
 .status-indicator.enabled { background: rgba(0,153,255,0.2); color: var(--accent); }
 .status-indicator.disabled { background: rgba(220,80,80,0.25); color: #FF4C4C; }
 .status-indicator.neutral { background: rgba(120,120,120,0.25); color: #0ED000; }
+.status-indicator.play { background: rgba(160,90,220,0.25); color: #B36BFF; }
+.status-indicator.peela { background: rgba(255,165,0,0.25); color: #FFB500; }
+.status-indicator.gulambi { background: rgba(255,20,147,0.25); color: #FF2F92; }
+.status-indicator.grey { background: rgba(203,213,225,0.25); color: #CBD5E1; }
+.status-indicator.teal { background: rgba(45,212,191,0.25); color: #2DD4BF; }
+.status-indicator.aqua { background: rgba(0,200,255,0.25); color: #5BB5FF; }
 
 /* Buttons */
 .button-grid {
@@ -229,7 +252,6 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Responsive Design */
 @media(max-width:600px){
   .btn { height:80px; }
   .btn .icon { font-size:4rem; }
@@ -305,7 +327,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive Title Scaling */
+/* Title Scaling */
 l@media (max-width: 600px) {
   .title { font-size: 1.8rem; }
   .subtitle { font-size: 0.85rem; }

@@ -6,39 +6,59 @@
 <title>Control Centre</title>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
-:root {
-  --bg-gradient: linear-gradient(145deg, #05060b, #001f3d);
-  --card:rgba(15,20,30,0.9);
+:root{
+  --bg:#1f2233;
   --fg:#e6e6e6;
-  --accent:#1592ff;
-  --shadow:rgba(0,0,0,0.7);
+  --muted:#97aac0;
+  --accent:#1592FF;
+
+  --panel-bg:#232637D9;
+  --card-bg:#232637E6;
+  --card-border:#ffffff0D;
+  --btn-hover:#2d3240F2;
+  --shadow:#00000066;
+
+  --radius:16px;
+  --transition:.3s;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
-  background:var(--bg-gradient);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+  background:linear-gradient(135deg,#1f2233,#14172b);
   color:var(--fg);
   min-height:100vh;
   display:flex;
   justify-content:center;
   padding:20px 0;
   overflow-y:auto;
-  scroll-behavior:smooth;
 }
 
-/* Card */
 .card{
-  background:var(--card);
+  background:var(--panel-bg);
+  border:1px solid var(--card-border);
   border-radius:24px;
   width:380px;
-  padding:28px;
-  box-shadow:0 12px 28px var(--shadow);
-  backdrop-filter:blur(10px);
-  animation:fadeIn 0.4s ease-out;
+  padding:26px;
+  box-shadow:0 0 24px rgba(0,153,255,0.12);
+  position:relative;
 }
 
-/* Header */
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle,var(--accent) 0%,transparent 70%);
+  opacity:.18;
+  filter:blur(16px);
+  pointer-events:none;
+}
+
 .h{
   display:flex;
   justify-content:center;
@@ -46,89 +66,113 @@ body{
   font-size:22px;
   font-weight:700;
   color:var(--accent);
-  text-shadow:0 0 6px rgba(21,146,255,0.5);
 }
 
-/* Rows */
 .row{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:14px;
-  padding:16px 0;
-  border-radius:14px;
-  position:relative;
-  margin-bottom:12px;
-  background:rgba(25,30,45,0.5);
-  transition:transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+  padding:16px 14px;
+  margin-bottom:16px;
+  border-radius:var(--radius);
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition),
+    background var(--transition);
 }
-.row::before{
-  content:'';
+
+.row:hover{
+  background:var(--btn-hover);
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px var(--shadow);
+}
+
+.left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.icon{
+  width:32px;
+  height:32px;
+  font-size:32px;
+  color:var(--accent);
+  opacity:.95;
+  flex-shrink:0;
+}
+
+.label{
+  font-size:15px;
+  font-weight:500;
+  color:var(--fg);
+}
+
+.switch{
+  position:relative;
+  width:52px;
+  height:30px;
+  cursor:pointer;
+}
+
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.slider{
   position:absolute;
   inset:0;
-  border-radius:inherit;
-  background:rgba(21,146,255,0.05);
-  filter:blur(10px);
-  z-index:0;
-}
-.row:hover{
-  transform:translateY(-2px);
-  box-shadow:0 0 14px rgba(21,146,255,0.3);
-  background:rgba(25,30,45,0.65);
+  border-radius:999px;
+  background:#20253a;
+  border:1px solid var(--card-border);
+  transition:background .25s, box-shadow .25s;
 }
 
-/* Left section */
-.left{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
-.icon{width:26px;height:26px;color:var(--accent)}
-.label{font-size:16px;color:var(--fg);font-weight:500}
-
-/* Switch toggle */
-.switch{
-  position:relative;width:56px;height:34px;cursor:pointer;z-index:1;
-}
-.switch input{opacity:0;width:0;height:0}
-.slider{
-  position:absolute;inset:0;border-radius:34px;
-  background:#1a1f2b;transition:background .25s,box-shadow .25s;
-  overflow:hidden;
-}
 .knob{
-  position:absolute;left:4px;bottom:4px;width:26px;height:26px;border-radius:50%;
-  background:#fff;transition:transform .25s,background .25s;
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#ffffff;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  transition:transform .25s;
 }
+
 .switch input:checked + .slider{
   background:var(--accent);
-  box-shadow:0 0 16px var(--accent);
+  box-shadow:0 0 10px rgba(21,146,255,.45);
 }
-.switch input:checked + .slider .knob{transform:translateX(22px);}
-.slider::after{
-  content:"";
-  position:absolute;inset:0;border-radius:inherit;
-  opacity:0;transform:scale(1.2);background:var(--accent);
-}
-.switch:active .slider::after{animation:ripple .3s ease}
-@keyframes ripple{0%{opacity:.3;transform:scale(0.8)}100%{opacity:0;transform:scale(1.8)}}
 
-/* New popup fallback */
-.webui-popup {
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
+.switch input:checked + .slider .knob{
+  transform:translateX(22px);
+}
+
+.webui-popup{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
 }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="h">Control Centre</div>
-  <div class="row"><div class="left"><span class="material-icons icon">adb</span><div class="label">PIF Advanced</div></div><label class="switch"><input type="checkbox" id="advanced"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">android</span><div class="label">Spoof Lineage Props</div></div><label class="switch"><input type="checkbox" id="NoLineageProp"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">bug_report</span><div class="label">Spoof Debug Fingerprint</div></div><label class="switch"><input type="checkbox" id="nodebug"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">pest_control</span><div class="label">Spoof Debug Build</div></div><label class="switch"><input type="checkbox" id="build"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">verified</span><div class="label">Spoof Build Tag</div></div><label class="switch"><input type="checkbox" id="tag"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">lock</span><div class="label">Spoof Encryption</div></div><label class="switch"><input type="checkbox" id="encrypt"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><div class="left"><span class="material-icons icon">bolt</span><div class="label">Spoof Selinux</div></div><label class="switch"><input type="checkbox" id="selinux"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">healing</span><div class="label">Spoof Custom Recovery</div></div><label class="switch"><input type="checkbox" id="twrp"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">Disable GMS Spoofing</div></div><label class="switch"><input type="checkbox" id="gms"><span class="slider"><span class="knob"></span></span></label></div>
+<!--  <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">Disable GMS Spoofing</div></div><label class="switch"><input type="checkbox" id="gms"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">bolt</span><div class="label">Spoof Selinux</div></div><label class="switch"><input type="checkbox" id="selinux"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">adb</span><div class="label">PIF Advanced</div></div><label class="switch"><input type="checkbox" id="advanced"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">shop</span><div class="label">Disable PlayStore Spoofing</div></div><label class="switch"><input type="checkbox" id="playstore"><span class="slider"><span class="knob"></span></span></label></div>
-  <div class="row"><div class="left"><span class="material-icons icon">android</span><div class="label">Override Lineage Props</div></div><label class="switch"><input type="checkbox" id="override"><span class="slider"><span class="knob"></span></span></label></div>
+  <div class="row"><div class="left"><span class="material-icons icon">android</span><div class="label">Override Lineage Props</div></div><label class="switch"><input type="checkbox" id="override"><span class="slider"><span class="knob"></span></span></label></div>  -->
   <div class="row"><div class="left"><span class="material-icons icon">delete</span><div class="label">Nuke Gapp Logs</div></div><label class="switch"><input type="checkbox" id="gapps"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">delete</span><div class="label">Nuke Module Logs</div></div><label class="switch"><input type="checkbox" id="root"><span class="slider"><span class="knob"></span></span></label></div>
   <div class="row"><div class="left"><span class="material-icons icon">download</span><div class="label">Get Recommended Modules</div></div><label class="switch"><input type="checkbox" id="download"><span class="slider"><span class="knob"></span></span></label></div>
@@ -138,15 +182,13 @@ body{
 
 <script>
 const DIR="/data/adb/Box-Brain";
-const FILES=["noredirect","safemode","advanced","gms","playstore","override","NoLineageProp","gapps","download","root","nodebug","encrypt","twrp","build","tag","selinux"];
+const FILES=["noredirect","safemode","NoLineageProp","gapps","download","root","nodebug","encrypt","twrp","build","tag"];
 const els=Object.fromEntries(FILES.map(f=>[f,document.getElementById(f)]));
 
 const messages={
   noredirect:{on:"You won't be redirected",off:"Redirect enabled"},
   NoLineageProp:{on:"Disable if camera fails",off:"Lineage props unchanged"},
-  playstore:{on:"Reboot to apply changes",off:"Do resetprop manually"},
   gms:{on:"Reboot to apply changes",off:"Do resetprop manually"},
-  override:{on:"Click on action button",off:"Force props disabled"},
   safemode:{on:"Reboot to apply changes",off:"Only enable when something went wrong"},
   twrp:{on:"Reboot to apply changes",off:"Disabled"},
   encrypt:{on:"Fake storage encryption applied",off:"Disabled"},
@@ -155,16 +197,13 @@ const messages={
   tag:{on:"Reboot to apply changes",off:"Disabled"},
   gapps:{on:"Click on Action button",off:"Disabled"},
   download:{on:"Click on Action button",off:"Disabled"},
-  root:{on:"Click on Action button",off:"Disabled"},
-  advanced:{on:"Pro Mode enabled",off:"Default settings"},
-  selinux:{on:"Reboot to apply changes",off:"Disabled"}
+  root:{on:"Click on Action button",off:"Disabled"}
 };
 
 const exec = typeof ksu!=='undefined'&&ksu&&ksu.exec
   ? cmd=>ksu.exec(cmd)
   : (typeof Android!=='undefined'&&Android&&Android.exec ? cmd=>Android.exec(cmd) : ()=>'');
 
-/* popup function */
 function popup(msg,type="info") {
   try {
     if (typeof window.toast === "function") { window.toast(String(msg)); return; }

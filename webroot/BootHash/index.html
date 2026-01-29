@@ -1,235 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Verified Boot Hash</title>
 <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
 <style>
-:root {
-  --bg: #1f2233;
-  --fg: #e6e6e6;
-  --accent: #1592FF;
-  --panel-bg: #232637D9;
-  --btn-hover: #2d3240F2;
-  --border-color: #ffffff14;
-  --card-bg: #232637E6;
-  --card-border: #ffffff0D;
-  --shadow-color: #00000066;
-  --border-radius: 16px;
-  --glow-color: #1592FF;
-  --transition-speed: 0.3s;
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#1f2233;
+  --fg:#e6e6e6;
+  --accent:#1592FF;
+  --panel-bg:#232637D9;
+  --card-bg:#232637E6;
+  --card-border:#ffffff0D;
+  --btn-hover:#2d3240F2;
+  --shadow:#00000066;
+  --radius:16px;
+  --transition:.3s;
 }
 
-body {
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+html,body{
+  height:100%;
   background:linear-gradient(135deg,#1f2233,#14172b);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   color:var(--fg);
-  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.container {
-  width:70%;
-  max-width:300px;
+.shell{
+  width:min(720px,92vw);
+  padding:24px;
   background:var(--panel-bg);
-  border-radius:var(--border-radius);
   border:1px solid var(--card-border);
-  box-shadow:0 8px 40px var(--shadow-color);
-  padding:1.5rem;
-  display:flex;
-  flex-direction:column;
-  gap:1rem;
+  border-radius:var(--radius);
+  box-shadow:0 0 24px rgba(0,153,255,0.12);
   position:relative;
-  overflow:hidden;
-  animation:floatUp 0.8s ease;
 }
-.container::before {
-  content:'';
+
+.shell::after{
+  content:"";
   position:absolute;
   inset:0;
-  background:radial-gradient(circle at center,var(--glow-color) 0%,transparent 70%);
-  opacity:0.12;
-  filter:blur(15px);
-  animation:glowPulse 10s infinite;
+  background:radial-gradient(circle,var(--accent) 0%,transparent 70%);
+  opacity:.18;
+  filter:blur(16px);
   pointer-events:none;
 }
 
-@keyframes floatUp {
-  0%{opacity:0;transform:translateY(20px) scale(0.95);}
-  100%{opacity:1;transform:translateY(0) scale(1);}
-}
-@keyframes glowPulse {
-  0%,100%{opacity:0.12;transform:scale(1);}
-  50%{opacity:0.25;transform:scale(1.1);}
-}
-
-h1 {
-  font-size:1.5rem;
-  text-align:center;
-  color:var(--accent);
-  margin:0;
-  animation:textGlow 2s infinite alternate;
-}
-@keyframes textGlow {
-  from { text-shadow:0 0 4px var(--accent); }
-  to { text-shadow:0 0 12px var(--accent); }
-}
-
-label {
-  font-size:0.85rem;
-  opacity:0.9;
-}
-
-input {
-  width:100%;
-  padding:0.5rem;
-  border-radius:12px;
-  border:1px solid var(--border-color);
-  background:var(--card-bg);
-  color:var(--fg);
-  outline:none;
-  transition:all 0.25s ease;
-}
-input:focus {
-  border-color:var(--accent);
-  box-shadow:0 0 12px var(--accent);
-  transform:scale(1.02);
-}
-
-.buttons {
+.head{
   display:flex;
-  gap:0.8rem;
-  flex-wrap:wrap;
+  align-items:center;
+  gap:14px;
+  margin-bottom:18px;
 }
 
-.btn {
-  flex:1;
-  padding:0.6rem;
+.logo{
+  width:44px;height:44px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(21,146,255,.2);
+  color:var(--accent);
+}
+
+.title{
+  font-size:1.2rem;
+  font-weight:700;
+}
+
+.subtitle{
+  font-size:.85rem;
+  opacity:.7;
+}
+
+.field{
+  margin-top:10px;
+}
+
+.input{
+  width:100%;
+  padding:12px 16px;
+  border-radius:12px;
   background:var(--card-bg);
   border:1px solid var(--card-border);
-  border-radius:var(--border-radius);
+  color:var(--fg);
+  font-family:ui-monospace,monospace;
+  transition:var(--transition);
+}
+
+.input:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 18px rgba(21,146,255,.25);
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-top:18px;
+}
+
+.btn{
+  height:44px;
+  border-radius:var(--radius);
+  border:1px solid var(--card-border);
+  background:var(--card-bg);
   color:var(--fg);
   font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
   cursor:pointer;
-  position:relative;
-  overflow:hidden;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:0.4rem;
-  transition:all var(--transition-speed);
+  transition:transform var(--transition),box-shadow var(--transition),background var(--transition);
+  box-shadow:0 6px 20px var(--shadow);
 }
-.btn:hover {
+
+.btn:hover{
   background:var(--btn-hover);
-  transform:translateY(-2px) scale(1.03);
-  box-shadow:0 8px 28px var(--shadow-color);
-}
-.btn:active {
-  transform:scale(0.96);
-  opacity:0.9;
-}
-.btn::after {
-  content:'';
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  background:radial-gradient(circle at center,var(--glow-color) 0%,transparent 60%);
-  opacity:0.15;
-  filter:blur(6px);
-  animation:btnGlow 6s infinite;
-  pointer-events:none;
-}
-@keyframes btnGlow {
-  0%,100%{opacity:0.15;transform:scale(1);}
-  50%{opacity:0.3;transform:scale(1.1);}
+  transform:translateY(-2px) scale(1.02);
 }
 
-.icon {
-  font-size:1.2rem;
+.btn.primary{
   color:var(--accent);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  animation:iconGlow 2s infinite alternate;
-}
-@keyframes iconGlow {
-  from{opacity:0.6;}
-  to{opacity:1;filter:drop-shadow(0 0 6px var(--accent));}
+  border-color:rgba(21,146,255,.35);
 }
 
-#toast {
-  position:fixed;
-  bottom:25px;
-  left:50%;
-  transform:translateX(-50%);
-  background:var(--panel-bg);
-  border:1px solid var(--card-border);
-  color:var(--fg);
-  padding:10px 16px;
-  border-radius:12px;
-  box-shadow:0 4px 20px var(--shadow-color);
-  opacity:0;
-  transition:opacity 0.4s, transform 0.4s;
-  z-index:1000;
-  font-size:0.85rem;
+.btn.reboot{
+  color:#ff6b6b;
 }
-#toast.show{
-  opacity:1;
-  transform:translateX(-50%) translateY(-10px);
+
+.info{
+  display:flex;
+  gap:8px;
+  margin-top:18px;
+  font-size:.9rem;
+  opacity:.8;
+}
+
+.saved{
+  font-family:ui-monospace,monospace;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Verified Boot Hash</h1>
-  <label>Paste your hash:</label>
-  <input id="new-hash" type="text" placeholder="abcdef1234...">
-  <div class="buttons">
-    <button class="btn" id="apply-hash"><span class="icon material-symbols-outlined">done</span>Apply</button>
-    <button class="btn" id="reset-hash"><span class="icon material-symbols-outlined">restart_alt</span>Reset</button>
+
+<div id="bg-glow"></div>
+<div id="fx-layer"></div>
+
+<div class="shell">
+  <div class="streak"></div>
+
+  <div class="head">
+    <div class="logo"><span class="material-symbols-outlined">verified</span></div>
+    <div style="flex:1">
+      <div class="title">Verified Boot Hash</div>
+      <div class="subtitle">Only A–Z and 0–9, no labels, no spaces</div>
+    </div>
   </div>
+
+  <div class="field">
+    <input id="new-hash" class="input" placeholder="E.g. F99B5EA989109F1E4702BD3" />
+  </div>
+
+  <div class="controls">
+    <button id="apply" class="btn primary"><span class="material-symbols-outlined">check</span>Apply</button>
+    <button id="reset" class="btn ghost"><span class="material-symbols-outlined">restart_alt</span>Reset</button>
+    <button id="reboot" class="btn reboot"><span class="material-symbols-outlined">restart_alt</span>Reboot</button>
+  </div>
+
+  <div class="info"><div>Saved:</div><div id="savedHash" class="saved">Config is empty </div></div>
 </div>
-<div id="toast"></div>
 
 <script>
-function popup(text,type){
-  const toast=document.getElementById("toast");
-  toast.textContent=text;
-  toast.style.borderColor=type==="success"?"limegreen":"#ff4c4c";
-  toast.classList.add("show");
-  setTimeout(()=>toast.classList.remove("show"),3000);
-}
+const DEST = "/data/adb/Box-Brain/hash.txt";
+const input = document.getElementById("new-hash");
+const savedEl = document.getElementById("savedHash");
+const applyBtn = document.getElementById("apply");
+const resetBtn = document.getElementById("reset");
+const rebootBtn = document.getElementById("reboot");
+const fx = document.getElementById("fx-layer");
 
-async function runShell(cmd){
-  if(typeof ksu==="object" && typeof ksu.exec==="function") return await ksu.exec(cmd);
-  console.log("Shell:",cmd);
-  return Promise.resolve();
-}
-
-document.getElementById("apply-hash")?.addEventListener("click",async()=>{
-  const hash=(document.getElementById("new-hash")?.value||"").trim();
-  if(!hash){popup("Enter hash","error");return;}
+function popup(msg, type="info"){
   try{
-    await runShell(`echo "${hash}" > /data/adb/Box-Brain/hash.txt`);
+    if(window.toast) return window.toast(msg);
+    if(window.kernelsu?.toast) return kernelsu.toast(msg);
+    if(window.ksu?.toast) return ksu.toast(msg);
+  }catch(e){}
+  alert(msg);
+}
+
+function getExec(){
+  if(window.ksu?.exec) return window.ksu.exec.bind(window.ksu);
+  if(window.kernelsu?.exec) return window.kernelsu.exec.bind(window.kernelsu);
+  if(typeof window.exec === "function") return window.exec;
+  return null;
+}
+
+function runCmd(cmd){
+  const exec = getExec();
+  if(!exec) return Promise.reject(new Error("No exec bridge"));
+
+  try{
+    if(exec.length >= 3){
+      return new Promise((resolve, reject)=>{
+        const id = "__cb"+Date.now();
+        window[id] = (code, stdout, stderr)=>{
+          delete window[id];
+          if(+code === 0) resolve(stdout||"");
+          else reject(new Error(stderr||stdout||"shell error"));
+        };
+        exec(cmd, "{}", id);
+      });
+    }
+
+    const out = exec(cmd);
+    if(out?.then) return out.then(r=>r.stdout || r);
+    return Promise.resolve(out?.stdout || out || "");
+  }catch(e){
+    return Promise.reject(e);
+  }
+}
+
+async function readSaved(){
+  try{
+    const txt = await runCmd(`cat '${DEST}' || true`);
+    const t = txt.trim();
+    savedEl.textContent = t || "Config is empty ";
+  }catch(e){
+    savedEl.textContent = "Config is empty ";
+  }
+}
+
+async function writeFile(v){
+  const safe = v.replace(/'/g,"'\"'\"'");
+  return runCmd(`printf "%s" '${safe}' > '${DEST}' && sync`);
+}
+
+async function removeFile(){
+  return runCmd(`rm -f '${DEST}'`);
+}
+
+function validate(v){
+  if(!v) return {ok:false,why:"Empty"};
+  if(/[^A-Za-z0-9]/.test(v)) return {ok:false,why:"Only A–Z and 0–9 allowed"};
+  if(v.length < 12) return {ok:false,why:"Too short"};
+  if(v.length > 4096) return {ok:false,why:"Too long"};
+  return {ok:true};
+}
+
+applyBtn.onclick = async ()=>{
+  const v = input.value.trim();
+  const check = validate(v);
+  if(!check.ok) return popup(check.why,"error");
+  applyBtn.disabled = true;
+  try{
+    await writeFile(v);
     popup("Boot hash applied","success");
-  }catch{
-    popup("Failed to write hash","error");
-  }
+    readSaved();
+  }catch(e){ popup(e.message,"error"); }
+  applyBtn.disabled = false;
+};
+
+resetBtn.onclick = async ()=>{
+  try{
+    await removeFile();
+    savedEl.textContent="Config is empty ";
+    popup("Boot hash removed","info");
+  }catch(e){ popup(e.message,"error"); }
+};
+
+rebootBtn.onclick = async ()=>{
+  try{
+    await runCmd("reboot");
+    popup("Rebooting…");
+  }catch(e){ popup(e.message,"error"); }
+};
+
+let px=0, py=0;
+let tx=0, ty=0;
+
+document.addEventListener("mousemove", e=>{
+  px = ((e.clientX / innerWidth) - 0.5) * 30;
+  py = ((e.clientY / innerHeight) - 0.5) * 30;
 });
 
-document.getElementById("reset-hash")?.addEventListener("click",async()=>{
-  try{
-    await runShell(`rm -f /data/adb/Box-Brain/hash.txt`);
-    popup("Boot hash reset","success");
-  }catch{
-    popup("Failed to reset","error");
-  }
-});
+function parallaxLoop(){
+  tx += (px - tx) * 0.06;
+  ty += (py - ty) * 0.06;
+  fx.style.transform = `translate(${tx}px, ${ty}px)`;
+  requestAnimationFrame(parallaxLoop);
+}
+parallaxLoop();
+
+readSaved();
 </script>
 </body>
 </html>

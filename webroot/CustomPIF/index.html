@@ -97,6 +97,31 @@ h1{
   color: #1BCD00;
   border: 1px solid rgba(27, 205, 0, 0.18);
 }
+
+.idk-expiry {
+  background: linear-gradient(90deg,
+    rgba(255, 0, 0, 0.18),
+    rgba(255, 165, 0, 0.18),
+    rgba(255, 255, 0, 0.18),
+    rgba(0, 128, 0, 0.18),
+    rgba(0, 0, 255, 0.18),
+    rgba(75, 0, 130, 0.18),
+    rgba(238, 130, 238, 0.18)
+  );
+  border: 1px solid rgba(27, 205, 0, 0.18);
+  color: #FFB900;
+  border-radius: 6px;
+  font-weight: bold;
+  padding: 5px 10px;
+  background-size: 400% 400%;
+  animation: rainbowBG 8s linear infinite;
+}
+
+@keyframes rainbowBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 </style>
 </head>
 <body>
@@ -187,7 +212,7 @@ function makeItem(index,file,meta){
   line.className="line";
   line.innerHTML=`
     <div><strong>${meta.MODEL||"Unknown Model"}</strong><div class="small">${meta.DEVICE||"unknown"}</div></div>
-    <div class="small">${meta.RELEASE?("Android "+meta.RELEASE):""}</div>
+    <div class="small">${meta.RELEASE?("Type: "+meta.RELEASE):""}</div>
   `;
 
   const metaRow=document.createElement("div");
@@ -260,7 +285,7 @@ function loadFromCache(){
 
 function formatExpiry(el, dateStr) {
   if (!dateStr || !dateStr.trim()) {
-    el.innerHTML = `<span class="expiry-badge safe-expiry">IDK Bro 😭🙏💔🥀</span>`;
+    el.innerHTML = `<span class="expiry-badge idk-expiry">N/A</span>`;
     return;
   }
 
@@ -284,7 +309,7 @@ function formatExpiry(el, dateStr) {
     return;
   }
 
-  el.innerHTML = `<span class="expiry-badge safe-expiry">Expires in ${diffDays} days</span>`;
+  el.innerHTML = `<span class="expiry-badge safe-expiry">Expiring in ${diffDays} days</span>`;
 }
 
 async function init(){

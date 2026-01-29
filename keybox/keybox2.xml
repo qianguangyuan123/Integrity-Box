@@ -1,5 +1,8 @@
-<!-- 
-PLACEHOLDER FILE, MEANT TO BE USED WITH TEE SIMULATOR MODULE 
+<!--
+This is a placeholder file intended for use with the TEE Simulator module.
 
-IF YOU GOT A PERSONAL KEYBOX, AND WANNA USE IT ON LIMITED APPS, PASTE IT'S CONTENTS INSIDE THIS FILE OR RENAME YOUR KEYBOX TO keybox2.xml 
+If you have a personal Keybox and want to apply it only to selected or limited apps,
+paste the full contents of your Keybox into this file.
+
+Leave this file unchanged if you do not plan to use a custom Keybox.
 -->

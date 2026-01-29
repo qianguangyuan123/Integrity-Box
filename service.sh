@@ -5,9 +5,10 @@ MODPATH="${0%/*}"
 # Module path and file references
 LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
 PROP="/data/adb/modules/playintegrityfix/system.prop"
-LINE="ro.crypto.state=encrypted"
-LINE2="ro.build.tags=release-keys"
-LINE3="ro.build.type=user"
+SCRIPT="/data/adb/modules/playintegrityfix/webroot/common_scripts/override_lineage.sh"
+PROP1="ro.crypto.state=encrypted"
+PROP2="ro.build.tags=release-keys"
+PROP3="ro.build.type=user"
 PIF="/data/adb/modules/playintegrityfix"
 LOG="$LOG_DIR/service.log"
 LOG2="$LOG_DIR/encrypt.log"
@@ -17,30 +18,40 @@ LOG5="$LOG_DIR/tag.log"
 LOG6="$LOG_DIR/build.log"
 
 # Log folder
-mkdir -p "$LOGDIR"
+mkdir -p "$LOG_DIR"
 
 # Logger function
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') | $1" | tee -a "$LOG"
 }
 
+# Stop when safe mode is enabled 
+#if [ -f "/data/adb/Box-Brain/safemode" ]; then
+#    exit 1
+#fi
+
+# Run script
+if [ -f "$SCRIPT" ]; then
+    sh "$SCRIPT"
+fi
+
 # Spoof Encryption 
 {
   echo "ENCRYPT CHECK ($(date))"
 
   if [ -f /data/adb/Box-Brain/encrypt ]; then
-    if grep -qxF "$LINE" "$PROP"; then
-      echo "Line already exists, no action needed"
+    if grep -qxF "$PROP1" "$PROP"; then
+      echo "Prop already exists, no action needed"
     else
-      echo "$LINE" >> "$PROP"
-      echo "Spoofed prop: $LINE"
+      echo "$PROP1" >> "$PROP"
+      echo "Spoofed prop: $PROP1"
     fi
   else
-    if grep -qxF "$LINE" "$PROP"; then
+    if grep -qxF "$PROP1" "$PROP"; then
       sed -i "\|^$LINE\$|d" "$PROP"
-      echo "Removed line: $LINE"
+      echo "Removed line: $PROP1"
     else
-      echo "Line not present, no action needed"
+      echo "Prop not present, no action needed"
     fi
   fi
 
@@ -52,18 +63,18 @@ log() {
   echo "TAG CHECK ($(date))"
 
   if [ -f /data/adb/Box-Brain/tag ]; then
-    if grep -qxF "$LINE2" "$PROP"; then
-      echo "Line already exists, no action needed"
+    if grep -qxF "$PROP2" "$PROP"; then
+      echo "Prop already exists, no action needed"
     else
-      echo "$LINE2" >> "$PROP"
-      echo "Spoofed prop: $LINE"
+      echo "$PROP2" >> "$PROP"
+      echo "Spoofed prop: $PROP1"
     fi
   else
-    if grep -qxF "$LINE2" "$PROP"; then
-      sed -i "\|^$LINE2\$|d" "$PROP"
-      echo "Removed line: $LINE2"
+    if grep -qxF "$PROP2" "$PROP"; then
+      sed -i "\|^$PROP2\$|d" "$PROP"
+      echo "Removed line: $PROP2"
     else
-      echo "Line not present, no action needed"
+      echo "Prop not present, no action needed"
     fi
   fi
 
@@ -75,18 +86,18 @@ log() {
   echo "BUILD CHECK ($(date))"
 
   if [ -f /data/adb/Box-Brain/build ]; then
-    if grep -qxF "$LINE3" "$PROP"; then
-      echo "Line already exists, no action needed"
+    if grep -qxF "$PROP3" "$PROP"; then
+      echo "Prop already exists, no action needed"
     else
-      echo "$LINE3" >> "$PROP"
-      echo "Spoofed prop: $LINE3"
+      echo "$PROP3" >> "$PROP"
+      echo "Spoofed prop: $PROP3"
     fi
   else
-    if grep -qxF "$LINE3" "$PROP"; then
-      sed -i "\|^$LINE3\$|d" "$PROP"
-      echo "Removed line: $LINE3"
+    if grep -qxF "$PROP3" "$PROP"; then
+      sed -i "\|^$PROP3\$|d" "$PROP"
+      echo "Removed line: $PROP3"
     else
-      echo "Line not present, no action needed"
+      echo "Prop not present, no action needed"
     fi
   fi
 
@@ -100,12 +111,20 @@ log() {
   [ -f /data/adb/Box-Brain/twrp ] && hide_recovery_folders
 } >> "$LOG4" 2>&1
 
+# Reset system properties if mismatch 
+resetprop_if_diff sys.usb.adb.disabled 1
+resetprop_if_diff service.adb.root 0
+resetprop_if_diff persist.sys.developer_options 0
+resetprop_if_diff persist.sys.dev_mode 0
+resetprop_if_diff persist.sys.debuggable 0
+resetprop_if_diff ro.oem_unlock_supported 0
+resetprop_if_diff ro.hardware.virtual_device 0
+
 ##########################################
 # adapted from Play Integrity Fork by @osm0sis
 # source: https://github.com/osm0sis/PlayIntegrityFork
 # license: GPL-3.0
 ##########################################
-
 
 # Conditional sensitive properties
 # Magisk Recovery Mode

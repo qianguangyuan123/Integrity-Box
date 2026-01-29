@@ -4,7 +4,6 @@ MODPATH="${0%/*}"
 
 boot="/data/adb/service.d"
 placeholder="/data/adb/modules/playintegrityfix/webroot/common_scripts"
-PLAYSTORE="/data/adb/Box-Brain/playstore"
 mkdir -p "$boot"
 
 # Remove installation script if exists 
@@ -12,33 +11,75 @@ if [ -f "/data/adb/modules/playintegrityfix/customize.sh" ]; then
   rm -rf "/data/adb/modules/playintegrityfix/customize.sh"
 fi
 
-# Remove override flag if exists 
-if [ -f "/data/adb/Box-Brain/.los" ]; then
-  rm -rf "/data/adb/Box-Brain/.los"
-fi
-
-# create dummy placeholder files to fix broken translations in webui
-touch "$placeholder/meowdump"
-touch "$placeholder/boot_hash"
-touch "$placeholder/vending"
-touch "$placeholder/support"
-touch "$placeholder/app.sh"
-touch "$placeholder/user.sh"
-touch "$placeholder/patch.sh"
-touch "$placeholder/pif.sh"
-#touch "$placeholder/resetprop.sh"
-touch "$placeholder/kill.sh"
-touch "$placeholder/report"
-touch "$placeholder/start"
-touch "$placeholder/stop"
-touch "$placeholder/assistant"
-
-if [ -f "/data/adb/Box-Brain/gms" ]; then
+if [ -f "/data/adb/Box-Brain/disablegms" ]; then
     set_resetprop persist.sys.pihooks.disable.gms_key_attestation_block true
     set_resetprop persist.sys.pihooks.disable.gms_props true
+    set_simpleprop persist.sys.pixelprops.vending false
     set_simpleprop persist.sys.pihooks.disable 1
     set_simpleprop persist.sys.kihooks.disable 1
 fi
+
+if [ -f "/data/adb/Box-Brain/enablegms" ]; then
+    set_resetprop persist.sys.pihooks.disable.gms_key_attestation_block false
+    set_resetprop persist.sys.pihooks.disable.gms_props false
+    set_simpleprop persist.sys.pixelprops.vending true
+    set_simpleprop persist.sys.pihooks.disable 0
+    set_simpleprop persist.sys.kihooks.disable 0
+fi
+
+if [ -f "/data/adb/Box-Brain/a12" ]; then
+    API="$(getprop ro.product.first_api_level)"
+
+    {
+        echo "----------------------------------------"
+        echo "API override check: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "Flag file present: /data/adb/Box-Brain/a12"
+        echo "ro.product.first_api_level: $API"
+    } >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
+
+    if [ -n "$API" ] && [ "$API" -ge 33 ]; then
+        resetprop ro.product.first_api_level 32
+        echo "Action: reset to 32" >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
+    else
+        echo "Action: skipped (API < 33 or empty)" >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
+    fi
+else
+    {
+        echo "----------------------------------------"
+        echo "API override skipped: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "Reason: /data/adb/Box-Brain/a12 not found"
+    } >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
+fi
+
+if [ ! -f "$placeholder/run_scan.sh" ]; then
+  cat <<'EOF' > "$placeholder/run_scan.sh"
+#!/system/bin/sh
+
+SCRIPT="/data/adb/modules/playintegrityfix/webroot/common_scripts/scan_keybox.sh"
+
+# Run detached
+sh "$SCRIPT" > /data/adb/Box-Brain/Integrity-Box-Logs/keybox_runner.log 2>&1 &
+EOF
+fi
+
+chmod 755 "$placeholder/run_scan.sh"
+
+if [ ! -f "$placeholder/scan_keybox.sh" ]; then
+  cat <<'EOF' > "$placeholder/scan_keybox.sh"
+#!/system/bin/sh
+
+OUT="/data/adb/Box-Brain/Integrity-Box-Logs/keybox_scan.log"
+TARGET="/sdcard/Download"
+
+rm -f "$OUT"
+
+# epoch|size_bytes|full_path
+find "$TARGET" -type f -iname "*.xml" -printf "%T@|%s|%p\n" 2>/dev/null \
+  | sort -nr >> "$OUT"
+EOF
+fi
+
+chmod 755 "$placeholder/scan_keybox.sh"
 
 rm -rf "$placeholder/resetprop.sh"
 if [ ! -f "$placeholder/resetprop.sh" ]; then
@@ -58,13 +99,28 @@ fi
 EOF
 fi
 
-if [ ! -f "$placeholder/override_lineage.sh" ]; then
-  cat <<'EOF' > "$placeholder/override_lineage.sh"
+chmod 755 "$placeholder/resetprop.sh"
+
+cat <<'EOF' > "$placeholder/force_override.sh"
+#!/system/bin/sh
+L=/data/adb/Box-Brain/Integrity-Box-Logs/ForceSpoof.log
+mkdir -p ${L%/*}
+getprop | grep -i lineage | while read l; do
+p=${l#*[}; p=${p%%]*}
+echo "$(date '+%F %T') DEL $p" >> $L
+resetprop --delete "$p"
+done
+EOF
+
+chmod 755 "$placeholder/force_override.sh"
+
+cat <<'EOF' > "$placeholder/override_lineage.sh"
 #!/system/bin/sh
 
-# nuke flag if exists
-if [ -f "/data/adb/Box-Brain/override" ]; then
-  rm -rf "/data/adb/Box-Brain/override"
+# Stop when safe mode is enabled 
+if [ -f "/data/adb/Box-Brain/safemode" ]; then
+    echo " Permission denied by Safe Mode"
+    exit 1
 fi
 
 # check prop
@@ -138,18 +194,28 @@ echo "[INFO] Script completed at $(date)" >> "$LOG_FILE"
 echo "•••••••••••••••••••••=" >> "$LOG_FILE"
 echo " "
 echo " "
-echo " LINEAGE PROPS AFTER OVERRIDE:"
-echo " "
-getprop | grep -i lineage
-touch "/data/adb/Box-Brain/.los"
 exit 0
 EOF
-fi
 
 chmod 755 "$placeholder/override_lineage.sh"
 
-if [ ! -f "$boot/lineage.sh" ]; then
-  cat <<'EOF' > "$boot/lineage.sh"
+touch "$placeholder/kill"
+touch "$placeholder/aosp"
+touch "$placeholder/patch"
+touch "$placeholder/xml"
+touch "$placeholder/tee"
+touch "$placeholder/user"
+touch "$placeholder/hma"
+touch "$placeholder/ulock"
+touch "$placeholder/stop"
+touch "$placeholder/start"
+touch "$placeholder/nogms"
+touch "$placeholder/lineage"
+touch "$placeholder/selinux"
+touch "$placeholder/zygisknext"
+touch "$placeholder/yesgms"
+
+cat <<'EOF' > "$boot/lineage.sh"
 #!/system/bin/sh
 
 # Abort the script & delete flags web safe mode is active 
@@ -161,19 +227,13 @@ if [ -f "/data/adb/Box-Brain/safemode" ]; then
     exit 1
 fi
 
+if [ -f "/data/adb/modules/playintegrityfix/disable" ]; then
+    rm -rf "/data/adb/modules/playintegrityfix/system.prop"
+    exit 0
+fi
+
 MODPATH="/data/adb/modules/playintegrityfix"
 . $MODPATH/common_func.sh
-
-# SELinux spoofing
-if [ -f /data/adb/Box-Brain/selinux ]; then
-    if command -v setenforce >/dev/null 2>&1; then
-        current=$(getenforce)
-        if [ "$current" != "Enforcing" ]; then
-            setenforce 1
-            log "SELINUX Spoofed successfully"
-        fi
-    fi
-fi
 
 # Module path and file references
 LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
@@ -280,12 +340,10 @@ if [ -f "$NODEBUG_FLAG" ] || [ -f "$TAG_FLAG" ]; then
     fi
 fi
 EOF
-fi
 
 chmod 777 "$boot/lineage.sh"
 
-if [ ! -f "$boot/hash.sh" ]; then
-  cat <<'EOF' > "$boot/hash.sh"
+cat <<'EOF' > "$boot/hash.sh"
 #!/system/bin/sh
 
 HASH_FILE="/data/adb/Box-Brain/hash.txt"
@@ -297,6 +355,12 @@ mkdir -p "$LOG_DIR"
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') | $1" >> "$LOG_FILE"
 }
+
+# Stop when safe mode is enabled 
+if [ -f "/data/adb/Box-Brain/safemode" ]; then
+    log " Permission denied by Safe Mode"
+    exit 1
+fi
 
 log " "
 log "Script started"
@@ -360,7 +424,6 @@ log " "
 
 exit 0
 EOF
-fi
 
 chmod 777 "$boot/hash.sh"
 
@@ -372,6 +435,7 @@ cat <<'EOF' > "$boot/prop.sh"
 LOG_FILE="/data/adb/Box-Brain/Integrity-Box-Logs/prop_patch.log"
 PATCH_DATE="2025-12-05"
 FILE_PATH="/data/adb/tricky_store/security_patch.txt"
+SKIP_FILE="/data/adb/Box-Brain/skip"
 
 # LOGGING FUNCTIONS
 writelog() {
@@ -391,22 +455,10 @@ if [ -f "/data/adb/Box-Brain/safemode" ]; then
     exit 1
 fi
 
-# RESETROP CHECK
+# RESETPROP CHECK
 if ! command -v resetprop >/dev/null 2>&1; then
     abort "resetprop not found, cannot continue"
 fi
-
-# Whitelist 1+ Port / Stock ROM
-ONEPLUS_CAM_PROP=$(getprop persist.vendor.camera.privapp.list)
-
-is_oneplus_device() {
-    case "$ONEPLUS_CAM_PROP" in
-        *com.oneplus.camera*|*com.oppo.camera*|*com.oplus.camera*)
-            return 0 ;;
-        *)
-            return 1 ;;
-    esac
-}
 
 # PROP SET FUNCTION
 setprop_safe() {
@@ -429,7 +481,7 @@ setprop_safe() {
 # START LOG
 writelog "•••••• Starting Security Patch Override ••••••"
 
-# SAVE PATCH DATE TO STORAGE
+# SAVE PATCH DATE
 mkdir -p "/data/adb/tricky_store"
 echo "all=$PATCH_DATE" > "$FILE_PATH" 2>>"$LOG_FILE"
 
@@ -437,8 +489,8 @@ echo "all=$PATCH_DATE" > "$FILE_PATH" 2>>"$LOG_FILE"
 setprop_safe ro.build.version.security_patch "$PATCH_DATE"
 
 # APPLY VENDOR SECURITY PATCH
-if is_oneplus_device; then
-    writelog "⚠ OnePlus/Oppo/Realme device detected, skipping ro.vendor.build.security_patch to avoid fingerprint issues"
+if [ -f "$SKIP_FILE" ]; then
+    writelog "⚠ Sensitive device detected, skipping ro.vendor.build.security_patch"
 else
     setprop_safe ro.vendor.build.security_patch "$PATCH_DATE"
 fi
@@ -447,8 +499,8 @@ fi
 BUILD_VAL=$(getprop ro.build.version.security_patch)
 VENDOR_VAL=$(getprop ro.vendor.build.security_patch)
 
-if is_oneplus_device; then
-    writelog "ℹ Vendor patch override intentionally skipped on this device (safe mode for Oplus family)"
+if [ -f "$SKIP_FILE" ]; then
+    writelog "⚠ Sensitive device detected, Vendor patch override intentionally skipped"
 else
     writelog "Vendor Patch Applied: $VENDOR_VAL"
 fi
@@ -462,22 +514,20 @@ EOF
 
 chmod 777 "$boot/prop.sh"
 
-
-if [ -e "$PLAYSTORE" ]; then
-    echo "Disabling PixelPlaystore" >> /data/adb/Box-Brain/Integrity-Box-Logs/PixelStore.log
-    resetprop -n persist.sys.pixelprops.vending false
-else
-    echo "Playstore flag is disabled, no action needed" >> /data/adb/Box-Brain/Integrity-Box-Logs/PixelStore.log
-fi
-
 ##########################################
-# adapted from Shamiko by @LSPosed
+# adapted from Shamiko (service.sh) by @LSPosed
 # source: https://github.com/LSPosed/LSPosed.github.io/releases
 ##########################################
 
 if [ ! -f "/data/adb/modules/zygisk_shamiko/module.prop" ]; then
    cat <<'EOF' > "$boot/shamiko.sh"
 #!/system/bin/sh
+
+# Stop when safe mode is enabled 
+if [ -f "/data/adb/Box-Brain/safemode" ]; then
+    echo " Permission denied by Safe Mode"
+    exit 1
+fi
 
 check_reset_prop() {
   local NAME=$1

@@ -1,11 +1,25 @@
 RECORD="/data/adb/Box-Brain/Integrity-Box-Logs"
 OUT="/storage/emulated/0/Download/IntegrityModules"
+BOX="/data/adb/Box-Brain"
 LOGZ="/data/adb/Box-Brain/Integrity-Box-Logs/integrity_downloader.log"
 WIDTH=55
 
 # Logger function
 pif() {
     echo "$1" | tee -a "$RECORD/PlayIntegrityScript.log"
+}
+
+recommended_settings() {
+    touch "$BOX/NoLineageProp"
+    touch "$BOX/migrate_force"
+    touch "$BOX/run_migrate"
+    touch "$BOX/noredirect"
+#    touch "$BOX/advanced"
+    touch "$BOX/nodebug"
+    touch "$BOX/encrypt"
+    touch "$BOX/build"
+    touch "$BOX/twrp"
+    touch "$BOX/tag"
 }
 
 # Logger function
@@ -17,7 +31,7 @@ center() { printf "%*s\n" $(((${#1}+$WIDTH)/2)) "$1"; }
 
 banner() {
   printf "%${WIDTH}s\n" | tr ' ' '='
-  center "INTEGRITY FIX DOWNLOADER"
+  center "INTEGRITY BOX DOWNLOADER"
   printf "%${WIDTH}s\n" | tr ' ' '='
 }
 
@@ -181,7 +195,7 @@ add_if_missing() {
     fi
 }
 
-setval() { grep -q "^$2=" "$1" && sed -i "s/^$2=.*/$2=$3/" "$1" && log "$2 → $3" || log "$2 not found"; }
+setval() { grep -q "^$2=" "$1" && sed -i "s/^$2=.*/$2=$3/" "$1" && log "$2 > $3" || log "$2 not found"; }
 
 lineage() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$RECORD/lineage.log"
@@ -193,15 +207,17 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$RECORD/pixel.log"
 }
 
 set_resetprop() {
-    PROP="$1"
-    VALUE="$2"
-    CURRENT=$(su -c getprop "$PROP")
-    
-    if [ -n "$CURRENT" ]; then
-        su -c resetprop -n -p "$PROP" "$VALUE" > /dev/null 2>&1
-        chup "Reset $PROP to $VALUE"
+    local PROP="$1"
+    local VALUE="$2"
+
+    if prop_exists "$PROP"; then
+        if resetprop -n -p "$PROP" "$VALUE" 2>/dev/null; then
+            chup "Disabled spoof: $PROP > $VALUE"
+        else
+            chup "Failed to modify $PROP"
+        fi
     else
-        chup "Skipping $PROP, property does not exist"
+        chup "Skipped $PROP (not defined)"
     fi
 }
 
@@ -233,14 +249,17 @@ megatron() {
   max_attempts=5
   attempt=1
   delay=1
+  hosts="1.1.1.1 8.8.8.8 9.9.9.9 223.5.5.5 114.114.114.114"
 
   while [ $attempt -le $max_attempts ]; do
+    echo " "
     echo "🌐 Attempt $attempt of $max_attempts..."
 
-    # Try to ping Cloudflare DNS
-    if ping -c1 -W2 1.1.1.1 >/dev/null 2>&1; then
-      return 0
-    fi
+    for host in $hosts; do
+      if ping -c1 -W2 "$host" >/dev/null 2>&1; then
+        return 0
+      fi
+    done
 
     echo "❌ No internet detected"
     sleep $delay
@@ -256,10 +275,10 @@ megatron() {
 print_header() {
   echo
   echo "════════════════════════════════"
-  echo "        Play Integrity Box Action Log"
+  echo "      Play Integrity Box Console"
   echo "════════════════════════════════"
   echo
-  printf " %-9s | %s\n" "STATUS" "TASK"
+  printf " %-1s| %s\n" "STATUS " "  TASK"
   echo "--------------------------------------------"
 }
 
@@ -267,15 +286,16 @@ print_header() {
 log_step() {
   local status="$1"
   local task="$2"
-  printf " %-9s | %s\n" "$status" "$task"
+
+  printf "Task   : %s\nStatus : %s\n\n" "$task" "$status"
 }
 
 # Exit delay
 handle_delay() {
   if [ "$KSU" = "true" ] || [ "$APATCH" = "true" ] && [ "$KSU_NEXT" != "true" ] && [ "$MMRL" != "true" ]; then
     echo
-    echo " Closing in 5 seconds..."
-    sleep 5
+    echo " Closing in 10 seconds..."
+    sleep 10
   fi
 }
 
@@ -478,7 +498,7 @@ check_and_set_prop() {
     CURRENT=$(getprop "$PROP")
 
     if [ "$CURRENT" = "$VALUE" ]; then
-        writelog " $PROP is already set to $VALUE — no change needed"
+        writelog " $PROP is already set to $VALUE no change needed"
     else
         if resetprop "$PROP" "$VALUE"; then
             writelog " Set $PROP to $VALUE (was: $CURRENT)"
@@ -486,6 +506,228 @@ check_and_set_prop() {
             writelog " Failed to set $PROP (current: $CURRENT)"
         fi
     fi
+}
+
+ensure_blacklist_entries() {
+    BLACKLIST="/data/adb/Box-Brain/blacklist.txt"
+
+    # Ensure directory & file exist
+    mkdir -p "$(dirname "$BLACKLIST")"
+    [ -f "$BLACKLIST" ] || touch "$BLACKLIST"
+
+    # Required blacklist entries
+    REQUIRED_ENTRIES="
+io.github.vvb2060.mahoshojo
+com.reveny.nativecheck
+icu.nullptr.nativetest
+com.android.nativetest
+io.liankong.riskdetector
+me.garfieldhan.holmes
+luna.safe.luna
+com.zhenxi.hunter
+com.studio.duckdetector
+"
+
+    for entry in $REQUIRED_ENTRIES; do
+        # Exact match only
+        if ! grep -qxF "$entry" "$BLACKLIST"; then
+            echo "$entry" >> "$BLACKLIST"
+        fi
+    done
+}
+
+ensure_exec_permissions() {
+  local DIR="/data/adb/modules/playintegrityfix"
+
+  [ -d "$DIR" ] || return 0
+
+  for file in "$DIR"/*.sh; do
+    [ -f "$file" ] || continue
+
+    if [ ! -x "$file" ]; then
+      chmod +x "$file"
+    fi
+  done
+}
+
+print_quote() {
+  QUOTE_STATE="/data/adb/Box-Brain/.quote_index"
+
+  QUOTES="
+Every soul shall taste death, and you will only be given your full compensation on the Day of Resurrection. [QURAN 3:185]
+
+Man is born to trouble as surely as sparks fly upward. [BIBLE ~ JOB 5:7]
+
+The living know that they will die, but the dead know nothing. [BIBLE ~ ECCLESIASTES 9:5]
+
+As a man casts off worn-out garments and puts on new ones, so the soul casts off worn-out bodies and enters others that are new. [BHAGAVAD GITA 2:22]
+
+All conditioned things are impermanent, when one sees this with wisdom, one turns away from suffering. [DHAMMAPADA 277]
+
+The grave and destruction are never satisfied, and neither are human eyes. [BIBLE ~ PROVERBS 27:20]
+
+You are dust, and to dust you shall return. [BIBLE ~ GENESIS 3:19]
+
+The world is only enjoyment of deception. [QURAN 57:20]
+
+From lust arises sorrow; from lust arises fear; for one who is free from lust, there is no sorrow, how then fear. [DHAMMAPADA 216]
+
+Just as a river is swept away by a flood, so death carries off a man who is gathering flowers and whose mind is distracted by desire. [DHAMMAPADA 47]
+
+The soul is neither born, nor does it die at any time. [BHAGAVAD GITA 2:20]
+
+Better is the day of death than the day of birth. [BIBLE ~ ECCLESIASTES 7:1]
+
+No bearer of burdens will bear the burden of another. [QURAN 6:164]
+
+Even if one conquers a thousand men in battle, the greatest conqueror is the one who conquers himself. [DHAMMAPADA 103]
+
+The eye is not satisfied with seeing, nor the ear filled with hearing. [BIBLE ~ ECCLESIASTES 1:8]
+
+Those whose minds are distorted by desire surrender themselves to lower impulses. [BHAGAVAD GITA 7:20]
+
+The heart is deceitful above all things, and desperately sick. [BIBLE ~ JEREMIAH 17:9]
+
+Indeed, the soul is a persistent enjoiner of evil. [QURAN 12:53]
+
+Just as a butcher leads an ox to slaughter, so does craving lead beings onward. [BUDDHIST SUTTA ~ ITIVUTTAKA]
+
+The dead will not praise, nor any who go down into silence. [BIBLE ~ PSALMS 115:17]
+
+The one who indulges in desire never finds satisfaction, like fire fed with ghee. [MAHABHARATA ~ SHANTI PARVA]
+
+When the soul departs from the body, relatives turn away and only deeds remain. [GARUDA PURANA]
+
+Power belongs wholly to the Divine, and those who seek it for themselves are deluded. [QURAN 35:10]
+
+All flesh is grass, and all its beauty is like the flower of the field. [BIBLE ~ ISAIAH 40:6]
+
+Just as rain breaks through an ill-thatched house, passion breaks through an untrained mind. [DHAMMAPADA 13]
+
+The wise grieve neither for the living nor for the dead. [BHAGAVAD GITA 2:11]
+
+The grave is my home; darkness is my closest friend. [BIBLE ~ JOB 17:13]
+
+Those who forget death will cling tightly to the world. [BHAGAVATA PURANA]
+
+Indeed, mankind is in loss. [QURAN 103:2]
+
+Every soul will taste death, and only afterward will the full measure of life be understood. [QURAN 3:185]
+
+Why are you cast down, O my soul, and why are you disturbed within me. [BIBLE ~ PSALMS 42:11]
+
+The soul is neither born, nor does it die; it is not slain when the body is slain. [BHAGAVAD GITA 2:20]
+
+Just as a shadow follows the body, suffering follows an unguarded mind. [DHAMMAPADA 2]
+
+The grave is not the end of the journey, but the end of pride. [ISLAMIC TRADITION]
+
+Anger rests only in those who do not understand its cost. [BUDDHIST TEACHING]
+
+A person driven by desire is never satisfied, even if the world is offered to them. [MAHABHARATA]
+
+What is power, if it cannot prevent death, delay loss, or buy peace. [ECCLESIASTES 2:11]
+
+Loneliness is felt most deeply when surrounded by those who cannot understand you. [GURU GRANTH SAHIB]
+
+The world is but a passing enjoyment, and the home beyond is lasting. [QURAN 57:20]
+
+The grave teaches what sermons cannot. [CHRISTIAN MONASTIC SAYING]
+
+Depression is the weight of a mind that has seen truth before it was ready. [BUDDHIST CONTEMPLATIVE THOUGHT]
+
+A man may conquer thousands in battle, yet fail to conquer himself. [DHAMMAPADA 103]
+
+Life is suffering, but suffering has a cause, and therefore an end. [BUDDHA ~ FOUR NOBLE TRUTHS]
+
+Parents are a doorway through which life enters, and regret often follows when the doorway is neglected. [CONFUCIAN CLASSICS]
+
+Those who love the world too deeply will grieve it endlessly. [GURU GRANTH SAHIB]
+
+The heart grows hard when anger is fed, and weak when anger is obeyed. [BIBLE ~ EPHESIANS 4:26]
+
+Man grows weary of everything except desire, which grows stronger the more it is fed. [HINDU SCRIPTURAL TEACHING]
+
+No soul departs except by permission, at an appointed time. [QURAN 3:145]
+
+The lonely one suffers not because no one is near, but because meaning feels distant. [PSALMS 88]
+
+What profit is there if one gains the whole world and loses the soul. [BIBLE ~ MARK 8:36]
+
+The lustful mind mistakes hunger for fulfillment. [BUDDHIST TEACHING]
+
+God is nearer than breath, yet hidden from the arrogant heart. [UPANISHADIC THOUGHT]
+
+The mission of life is not comfort, but clarity. [SCRIPTURAL ETHICAL TEACHING]
+
+Power blinds those who believe it belongs to them. [QURAN 96:6~7]
+
+The dead do not speak, yet they warn the living more clearly than words. [ISLAMIC WISDOM]
+
+Hatred is never ended by hatred, but by understanding its emptiness. [DHAMMAPADA 5]
+
+Life is a test whose questions change when you think you understand it. [QURAN 67:2]
+
+Those who bury their pain alive it will someday dig itself out. [PSALMS 32:3]
+
+Attachment to pleasure is a chain disguised as comfort. [BUDDHIST PHILOSOPHY]
+
+The wise prepare for death while the foolish prepare for status. [TAOIST-ALIGNED ANCIENT SAYING]
+
+God does not need worship; the soul needs alignment. [UPANISHADIC PHILOSOPHY]
+
+A family neglected for ambition becomes a regret remembered in silence. [CONFUCIAN MORAL TEACHING]
+
+The grave equalizes kings and beggars alike. [ECCLESIASTES 9:2]
+
+Suffering humbles the soul in ways success never could. [GURU GRANTH SAHIB]
+
+The one who controls desire controls sorrow. [MAHABHARATA]
+
+Death is certain, its timing unknown, and life is judged in between. [ISLAMIC TEACHING]
+
+One who lives without reflection will die without understanding. [CONFUCIUS ~ ANALECTS]
+
+The heart finds no rest until it faces what it avoids. [BIBLE ~ ECCLESIASTES]
+
+God is found not in noise, but in surrender. [MYSTICAL SCRIPTURAL TEACHING]
+
+The world promises pleasure and delivers attachment. [BUDDHIST SUTTA]
+
+A person’s true power is revealed in restraint, not domination. [BHAGAVAD GITA]
+
+What follows you to the grave is not wealth, but consequence. [HADITH-ALIGNED WISDOM]
+
+Loneliness teaches dependence on truth rather than approval. [PSALMS]
+
+The soul that forgets death forgets how to live. [ISLAMIC SPIRITUAL TEACHING]
+
+Pain either refines the heart or hardens it; the choice is internal. [SCRIPTURAL WISDOM]
+  "
+
+  TOTAL=$(echo "$QUOTES" | grep -c .)
+
+  if [ -f "$QUOTE_STATE" ]; then
+    IDX=$(cat "$QUOTE_STATE" 2>/dev/null)
+  else
+    IDX=0
+  fi
+
+  IDX=$((IDX + 1))
+  [ "$IDX" -gt "$TOTAL" ] && IDX=1
+  echo "$IDX" > "$QUOTE_STATE"
+
+  i=0
+  echo "$QUOTES" | while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    i=$((i+1))
+    if [ "$i" -eq "$IDX" ]; then
+      echo " "
+      echo "𝗠𝗢𝗥𝗔𝗟 𝗢𝗙 𝗧𝗛𝗘 𝗗𝗔𝗬: $line"
+      echo " "
+      break
+    fi
+  done
 }
 
 ##########################################

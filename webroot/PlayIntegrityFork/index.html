@@ -89,35 +89,32 @@ h1{position:relative;z-index:2;margin:0 0 12px 0;text-align:center;font-size:18p
 </style>
 </head>
 <body>
-  <div class="card" role="region" aria-label="Play Integrity Fork Controls">
-    <h1><span class="material-icons" style="vertical-align:middle;font-size:18px;margin-right:6px">android</span> Play Integrity Fork Controls</h1>
+  <div class="card" role="region" aria-label="Spoofing Controls">
+    <h1><span class="material-icons" style="vertical-align:middle;font-size:18px;margin-right:6px">healing</span> DroidGuard Spoofing Controls</h1>
 
     <div id="warningLine" class="warning-line" role="alert"></div>
 
     <div id="rows" aria-live="polite">
-      <div class="row"><div class="input-label"><span class="material-icons">build</span> <div>Spoof Build <div class="keyname">spoofBuild</div></div></div>
+      <div class="row"><div class="input-label"><span class="material-icons">api</span> <div>Spoof Build ID <div class="keyname">Spoofs build ID to pixel</div></div></div>
         <label class="switch"><input id="spoofBuild" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-      <div class="row"><div class="input-label"><span class="material-icons">public</span> <div>Spoof Props <div class="keyname">spoofProps</div></div></div>
+      <div class="row"><div class="input-label"><span class="material-icons">android</span> <div>Spoof GMS Props <div class="keyname">Spoofs pixel props </div></div></div>
         <label class="switch"><input id="spoofProps" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-      <div class="row"><div class="input-label"><span class="material-icons">settings_ethernet</span> <div>Force Strong <div class="keyname">spoofProvider</div></div></div>
+      <div class="row"><div class="input-label"><span class="material-icons">dynamic_form</span> <div>Spoof Attestation <div class="keyname">This will break G'Wallet</div></div></div>
         <label class="switch"><input id="spoofProvider" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-      <div class="row"><div class="input-label"><span class="material-icons">vpn_key</span> <div>Spoof Signature <div class="keyname">spoofSignature</div></div></div>
+      <div class="row"><div class="input-label"><span class="material-icons">settings</span> <div>Spoof ROM Signature <div class="keyname">Pretends ROM is OEM-signed</div></div></div>
         <label class="switch"><input id="spoofSignature" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-      <div class="row"><div class="input-label"><span class="material-icons">fingerprint</span> <div>Spoof Fingerprint <div class="keyname">spoofVendingFinger</div></div></div>
+      <div class="row"><div class="input-label"><span class="material-icons">shop</span> <div>Spoof Playstore <div class="keyname">Injects Pixel fingerprint</div></div></div>
         <label class="switch"><input id="spoofVendingFinger" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
 
-      <div class="row"><div class="input-label"><span class="material-icons">storefront</span> <div>Spoof to A12 <div class="keyname">spoofVendingSdk</div></div></div>
+      <div class="row"><div class="input-label"><span class="material-icons">key_off</span> <div>Spoof to Android 12<div class="keyname">Enable when keybox gets banned</div></div></div>
         <label class="switch"><input id="spoofVendingSdk" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
-
-      <div class="row"><div class="input-label"><span class="material-icons">bug_report</span> <div>Generate Logs <div class="keyname">verboseLogs</div></div></div>
-        <label class="switch"><input id="verboseLogs" type="checkbox"><span class="slider"><span class="knob"></span></span></label></div>
     </div>
 
-    <div class="footer">IntegrityBox • 2025</div>
+    <div class="footer">IntegrityBox • 2026</div>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite">Done ✅</div>
@@ -128,7 +125,7 @@ const PROP_CANDIDATES = [
   "/data/adb/custom.pif.prop"
 ];
 
-const KEYS = ["spoofBuild","spoofProps","spoofProvider","spoofSignature","spoofVendingFinger","spoofVendingSdk","verboseLogs"];
+const KEYS = ["spoofBuild","spoofProps","spoofProvider","spoofSignature","spoofVendingFinger","spoofVendingSdk"];
 
 /* helper for UI */
 const toastEl = document.getElementById('toast');
@@ -237,21 +234,37 @@ async function init(){
   showWarning('');
 
   // For each key, read its value and set toggle
-  for(const key of KEYS){
+  for (const key of KEYS) {
     const el = document.getElementById(key);
-    if(!el) continue;
+    if (!el) continue;
+
     el.disabled = false;
+
     const val = await readKey(file, key);
-    // treat "1" as enabled, "100" as enabled (for verboseLogs), everything else disabled
-    el.checked = (val === '1' || val === '100');
-    el.addEventListener('change', async (ev) => {
-      el.parentElement.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.03)' }, { transform: 'scale(1)' }], { duration: 240, easing: 'ease' });
-      const newVal = (key === 'verboseLogs') ? (el.checked ? '100' : '0') : (el.checked ? '1' : '0');
+    // treat only "1" as enabled
+    el.checked = (val === '1');
+
+    el.addEventListener('change', async () => {
+      el.parentElement.animate(
+        [
+          { transform: 'scale(1)' },
+          { transform: 'scale(1.03)' },
+          { transform: 'scale(1)' }
+        ],
+        { duration: 240, easing: 'ease' }
+      );
+
+      const newVal = el.checked ? '1' : '0';
+
       await writeKey(file, key, newVal);
       await restartGMS();
-      try { localStorage.setItem(`toggle_${key}`, newVal); } catch(e){}
+
+      try {
+        localStorage.setItem(`toggle_${key}`, newVal);
+      } catch (e) {}
+
       showToast('Done ✅');
-    }, { passive:true });
+    }, { passive: true });
   }
 }
 

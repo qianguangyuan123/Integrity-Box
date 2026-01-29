@@ -9,65 +9,208 @@
 
 <style>
 :root{
-  --bg:#081018;
-  --fg:#eaf6ff;
+  --bg:#1f2233;
+  --fg:#e6e6e6;
   --muted:#97aac0;
-  --accent:#2aa8ff;
+  --accent:#1592FF;
+
+  --panel-bg:#232637D9;
+  --card-bg:#232637E6;
+  --card-border:#ffffff0D;
+  --btn-hover:#2d3240F2;
+  --shadow:#00000066;
 
   --col-aosp:#ffb347;
   --col-private:#d28bff;
 
-  --glass:rgba(255,255,255,0.04);
+  --radius:16px;
+  --transition:.3s;
 }
 
 html,body{
-  margin:0;padding:0;background:var(--bg);color:var(--fg);
-  font-family:Inter,Roboto,system-ui;height:100%;
+  margin:0;
+  padding:0;
+  height:100%;
+  background:linear-gradient(135deg,#1f2233,#14172b);
+  color:var(--fg);
+  font-family:Inter,Roboto,system-ui;
 }
-.container{max-width:1050px;margin:12px auto;padding:14px;}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.title{font-size:20px;font-weight:700;color:var(--accent);}
-.note{font-size:13px;color:var(--muted);}
-.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
-input,select,button{
-  padding:8px 10px;border-radius:10px;background:transparent;
-  color:var(--fg);border:1px solid var(--glass);
-}
-button.primary{background:var(--accent);color:#001;border:none;cursor:pointer;}
-button.primary,button.danger{width:80px;text-align:center;}
 
-.pkg{font-weight:700;font-size:90%;cursor:pointer;}
+.container{
+  max-width:1050px;
+  margin:14px auto;
+  padding:16px;
+  background:var(--panel-bg);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius);
+  box-shadow:0 0 24px rgba(0,153,255,0.12);
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.title{
+  font-size:20px;
+  font-weight:700;
+  color:var(--accent);
+}
+
+.note{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+input,select,button{
+  padding:8px 10px;
+  border-radius:var(--radius);
+  background:var(--card-bg);
+  color:var(--fg);
+  border:1px solid var(--card-border);
+  transition:background var(--transition),transform var(--transition),box-shadow var(--transition);
+}
+
+input:focus,select:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 16px rgba(21,146,255,.25);
+}
+
+button{
+  cursor:pointer;
+  box-shadow:0 6px 20px var(--shadow);
+}
+
+button:hover{
+  background:var(--btn-hover);
+  transform:translateY(-2px) scale(1.02);
+}
+
+button.primary{
+  color:var(--accent);
+  border-color:rgba(21,146,255,.35);
+}
+
+button.danger{
+  color:#ff6b6b;
+}
+
+button.primary,
+button.danger{
+  width:80px;
+  text-align:center;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid var(--card-border);
+  text-align:left;
+}
+
+.pkg{
+  font-weight:700;
+  font-size:90%;
+  cursor:pointer;
+}
 
 .pkg-aosp{color:var(--col-aosp);}
 .pkg-private{color:var(--col-private);}
 .pkg-default{color:var(--fg);}
 
-table{width:100%;border-collapse:collapse;}
-th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left;}
-
 .segment{
-  display:inline-flex;border-radius:20px;overflow:hidden;
-  border:1px solid rgba(255,255,255,0.06);
-}
-.segment button{
-  background:transparent;border:none;padding:6px 12px;
-  cursor:pointer;color:var(--muted);
-}
-.segment button.active{
-  background:linear-gradient(180deg,var(--accent),#0ea1ff);
-  color:#001;font-weight:600;
+  display:inline-flex;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid var(--card-border);
+  background:var(--card-bg);
 }
 
-.modeSel{margin-left:8px;padding:6px;}
+.segment button{
+  background:transparent;
+  border:none;
+  padding:6px 12px;
+  color:var(--muted);
+  box-shadow:none;
+}
+
+.segment button.active{
+  background:rgba(21,146,255,.2);
+  color:var(--accent);
+  font-weight:600;
+}
+
+.modeSel{
+  margin-left:8px;
+  padding:6px;
+}
 
 .loadMore{
-  display:block;margin:10px auto;padding:8px 12px;border-radius:8px;
-  border:1px solid var(--glass);background:transparent;cursor:pointer;
+  display:block;
+  margin:14px auto;
+  padding:8px 14px;
+  border-radius:var(--radius);
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  cursor:pointer;
 }
 
-.material-icons{vertical-align:middle;}
+.selected-row{
+  background:rgba(255,255,255,0.05);
+}
 
-.selected-row{background:rgba(255,255,255,0.05);}
+.material-icons{
+  vertical-align:middle;
+}
+
+.pkg-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.app-icon{
+  width:32px;
+  height:32px;
+  margin-left:0;
+  border-radius:8px;
+  object-fit:contain;
+  background:#00000022;
+  flex-shrink:0;
+}
+
+.app-icon.lazy{
+  opacity:0;
+}
+
+.app-icon.loaded{
+  opacity:1;
+  transition:opacity .25s ease;
+}
+
+td.pkg{
+  padding-left:1px;
+}
+
+.pkg-text{
+  font-size:12.5px;
+  letter-spacing:-0.2px;
+}
+
 </style>
 </head>
 
@@ -121,7 +264,6 @@ th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:lef
 </div>
 
 <script>
-// KernelSU toast popup
 function popup(msg,type="info"){
   try{
     if(typeof window.toast==="function"){window.toast(String(msg));return;}
@@ -130,7 +272,6 @@ function popup(msg,type="info"){
   }catch{}
 }
 
-// CORE SHELL + HELPERS
 async function runShell(cmd){
   return new Promise((res, rej) => {
     const execTarget =
@@ -161,8 +302,9 @@ function esc(s){
 
 const TARGET="/data/adb/tricky_store/target.txt";
 const TARGET_BAK="/sdcard/tee_simulator_target.txt.bak";
-const KEY_AOSP="aosp_keybox.xml";
-const KEY_PRIVATE="secondary_keybox.xml";
+const KEY_AOSP="keybox2.xml";
+const KEY_PRIVATE="keybox3.xml";
+const BLACKLIST_FILE = "/data/adb/Box-Brain/blacklist.txt";
 
 let installedApps=[];
 let visibleApps=[];
@@ -176,6 +318,19 @@ async function readLines(p){
     const out=await runShell(`if [ -f ${esc(p)} ]; then cat ${esc(p)}; fi`);
     return out.split("\n").map(x=>x.trim()).filter(Boolean);
   }catch{return [];}
+}
+
+async function readBlacklist(){
+  try{
+    const lines = await readLines(BLACKLIST_FILE);
+    return new Set(
+      lines
+        .map(l => l.trim())
+        .filter(l => l && !l.startsWith("#"))
+    );
+  }catch{
+    return new Set();
+  }
 }
 
 async function writeLines(p,lines){
@@ -195,10 +350,35 @@ function parsePm(out){
 
 async function fetchApps(){
   try{
-    const out=await runShell("pm list packages -3 || pm list packages || true");
-    return parsePm(out);
-  }catch{return [];}
+    // User-installed apps
+    const userOut = await runShell("pm list packages -3 || true");
+    const userApps = parsePm(userOut);
+
+    // Explicit system apps (Play Store + Play Services)
+    const systemApps = [];
+    for (const pkg of EXTRA_SYSTEM_APPS) {
+      try {
+        await runShell(`pm path ${pkg}`);
+        systemApps.push({ pkg });
+      } catch {
+        // ignore if package not present 
+      }
+    }
+
+    // Merge + dedupe
+    const map = new Map();
+    [...systemApps, ...userApps].forEach(a => map.set(a.pkg, a));
+
+    return [...map.values()];
+  } catch {
+    return [];
+  }
 }
+
+const EXTRA_SYSTEM_APPS = [
+  "com.android.vending",
+  "com.google.android.gms"
+];
 
 function parseTarget(lines){
   const map={"__GLOBAL__":[]};
@@ -234,14 +414,22 @@ function findMapping(pkg){
   return null;
 }
 
-// ROW CREATION + CLICK-TO-SELECT
 function createRow(app){
   const tr=document.createElement("tr");
   tr.dataset.pkg=app.pkg;
 
   tr.innerHTML=`
     <td></td> 
-    <td class="pkg pkg-default" data-pkg="${app.pkg}">${app.pkg}</td>
+    <td class="pkg pkg-default" data-pkg="${app.pkg}">
+      <div class="pkg-wrap">
+        <img
+          class="app-icon lazy"
+          data-src="ksu://icon/${app.pkg}"
+          alt=""
+        >
+        <span class="pkg-text">${app.pkg}</span>
+      </div>
+    </td>
     <td>
       <div class="segment" data-pkg="${app.pkg}">
         <button data-k="default"><span class="material-icons">apps</span></button>
@@ -262,7 +450,6 @@ function createRow(app){
   return tr;
 }
 
-// SELECT HANDLING
 function toggleSelect(pkg){
   if(selectedSet.has(pkg)) selectedSet.delete(pkg);
   else selectedSet.add(pkg);
@@ -286,7 +473,6 @@ pkgHeader.onclick = () => {
   popup(`Mapped ${pkg} → ${b.dataset.k.toUpperCase()}`);
 };
 
-// TABLE RENDERING
 function clearTable(){
   appsBody.innerHTML="";
   renderIndex=0;
@@ -296,6 +482,7 @@ function renderApps(list){
   visibleApps=list;
   clearTable();
   appendChunk();
+  setupIconLazyLoading();
 }
 
 function appendChunk(){
@@ -315,7 +502,6 @@ function appendChunk(){
 
 btnLoadMore.onclick = appendChunk;
 
-// COLORING PKG NAME BASED ON KEYBOX
 function applyPkgColor(pkg){
   const pkgCell = document.querySelector(`.pkg[data-pkg="${pkg}"]`);
   if(!pkgCell) return;
@@ -335,21 +521,18 @@ function applyPkgColor(pkg){
   }
 }
 
-// PREVENT DUPLICATES, CLEAN BEFORE ANY ADD
 function removePkgEverywhere(pkg){
   for(const s in targetMap){
     targetMap[s] = targetMap[s].filter(r => base(r)!==pkg);
   }
 }
 
-// KEYBOX + BUTTON BINDINGS
 function refreshRowBindings(){
 
   document.querySelectorAll(".segment").forEach(seg=>{
     const pkg=seg.dataset.pkg;
     const btns=seg.querySelectorAll("button");
 
-    // initialize active states based on targetMap
     const map=findMapping(pkg);
     if(map){
       const secName = 
@@ -362,7 +545,6 @@ function refreshRowBindings(){
       modeSel.value=detectMode(map.raw);
     }
 
-    /* KEYBOX BUTTON CLICK */
     btns.forEach(b=>{
       b.onclick = () => {
         const key=b.dataset.k;
@@ -393,7 +575,6 @@ function refreshRowBindings(){
       };
     });
 
-    /* MODE CHANGE HANDLER */
     const modeSel=document.querySelector(`.modeSel[data-pkg="${pkg}"]`);
     modeSel.onchange = () => {
       const activeBtn = seg.querySelector("button.active");
@@ -420,7 +601,6 @@ function refreshRowBindings(){
   });
 }
 
-// BULK OPERATIONS
 document.getElementById("btnAddSelected").onclick = async () => {
   const sel = [...selectedSet];
   if(sel.length===0) return;
@@ -459,7 +639,33 @@ document.getElementById("btnRemoveSelected").onclick = async () => {
   await refresh();
 };
 
-// SAVE
+function setupIconLazyLoading(){
+  const imgs = document.querySelectorAll("img.app-icon[data-src]");
+
+  if (!("IntersectionObserver" in window)) {
+    imgs.forEach(img => img.src = img.dataset.src);
+    return;
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const img = e.target;
+      img.src = img.dataset.src;
+      img.onload = () => {
+        img.classList.remove("lazy");
+        img.classList.add("loaded");
+      };
+      img.onerror = () => {
+        img.remove(); // clean fallback
+      };
+      obs.unobserve(img);
+    });
+  }, { rootMargin: "100px" });
+
+  imgs.forEach(img => obs.observe(img));
+}
+
 async function persist(){
   const out=[];
 
@@ -475,7 +681,6 @@ async function persist(){
     out.push(`[${KEY_PRIVATE}]`, ...targetMap[KEY_PRIVATE], "");
   }
 
-  // trim ending blanks
   while(out.length && out[out.length-1]==="") out.pop();
 
   await writeLines(TARGET, out);
@@ -486,7 +691,6 @@ document.getElementById("btnSave").onclick = async () => {
   popup("Saved.");
 };
 
-// BACKUP & RESTORE
 document.getElementById("btnBackup").onclick = async () => {
   try {
     await runShell(`cp ${esc(TARGET)} ${esc(TARGET_BAK)} 2>/dev/null || true`);
@@ -506,7 +710,6 @@ document.getElementById("btnRestore").onclick = async () => {
   }
 };
 
-// FILTERING
 let debounceTimer;
 document.getElementById("filter").oninput = () => {
   clearTimeout(debounceTimer);
@@ -517,22 +720,23 @@ document.getElementById("filter").oninput = () => {
   }, 300);
 };
 
-// REFRESH
 async function refresh(){
   selectedSet.clear();
   appsBody.innerHTML = `<tr><td colspan="3">Loading…</td></tr>`;
 
   installedApps = await fetchApps();
+
+  const blacklist = await readBlacklist();
+  installedApps = installedApps.filter(a => !blacklist.has(a.pkg));
+
   const lines = await readLines(TARGET);
   targetMap = parseTarget(lines);
 
   renderApps(installedApps);
 
-  // apply color for pkgs
   installedApps.forEach(a=>applyPkgColor(a.pkg));
 }
 
-// INITIAL LOAD
 (async()=>{
   await refresh();
 })();

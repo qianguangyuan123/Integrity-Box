@@ -1,11 +1,22 @@
 #!/system/bin/sh
+MODPATH="/data/adb/modules/playintegrityfix"
+UPDATEPATH="/data/adb/modules_update/playintegrityfix"
+
+if [ -f "$MODPATH/common_func.sh" ]; then
+    . "$MODPATH/common_func.sh"
+elif [ -f "$UPDATEPATH/common_func.sh" ]; then
+    . "$UPDATEPATH/common_func.sh"
+else
+    echo "common_func.sh not found in MODPATH or UPDATEPATH"
+    exit 1
+fi
 
 # Paths & config
 mkdir -p "/data/local/tmp"
 A="/data/adb"
 B="$A/tricky_store"
 C="$A/Box-Brain/Integrity-Box-Logs"
-D="$C/update.log"
+D="$C/keybox.log"
 E="$(mktemp -p /data/local/tmp)"
 F="$B/keybox.xml"
 G="$B/keybox.xml.bak"
@@ -14,84 +25,21 @@ I="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcm"
 J="NvbnRlbnQuY29tL01lb3dEdW1wL01lb3dEdW1wL3JlZ"
 K="nMvaGVhZHMvbWFpbi9OdWxsVm9pZC9"
 LOL="TaG9ja1dhdmUudGFy"
-L="/data/adb/modules/playintegrity/webroot/common_scripts/cleanup.sh"
+L="/data/adb/modules/playintegrityfix/webroot/common_scripts/cleanup.sh"
 M="$A/Box-Brain/.cooldown"
 N="$C/.verify"
+O="/data/adb/modules_update/playintegrityfix/webroot/common_scripts/cleanup.sh"
 BAIGAN="https://raw.githubusercontent.com/MeowDump/Integrity-Box/main/DUMP/2FA"
-TAMATAR="$(mktemp -p /data/local/tmp)"
+
+# Cleanup temp files on exit
+trap 'rm -f "$E" "$H"' EXIT
 
 log() {
   echo "$*" | tee -a "$D"
 }
 
-# Busybox finder
-P() {
-  for Q in /data/adb/modules/busybox-ndk/system/*/busybox \
-           /data/adb/ksu/bin/busybox \
-           /data/adb/ap/bin/busybox \
-           /data/adb/magisk/busybox; do
-    [ -x "$Q" ] && echo "$Q" && return
-  done
-}
-
-# Base64 decode function
-Z() {
-  b=0; s=0
-  while IFS= read -r -n1 c; do
-    case "$c" in
-      [A-Z]) v=$(printf '%d' "'$c"); v=$((v - 65));;
-      [a-z]) v=$(printf '%d' "'$c"); v=$((v - 71));;
-      [0-9]) v=$(printf '%d' "'$c"); v=$((v + 4));;
-      '+') v=62;;
-      '/') v=63;;
-      '=') break;;
-      *) continue;;
-    esac
-    b=$((b << 6 | v)); s=$((s + 6))
-    if [ "$s" -ge 8 ]; then
-      s=$((s - 8)); o=$(((b >> s) & 0xFF))
-      printf \\$(printf '%03o' "$o")
-    fi
-  done
-}
-
-# File existence & size check
-y() {
-  p=$1
-  f="$p"
-  if echo "$p" | grep -q "/modules/"; then
-    alt_f=$(echo "$p" | sed 's/\/modules\//\/modules_update\//')
-  else
-    alt_f=""
-  fi
-
-  # Check first path
-  if [ -r "$f" ] && [ -s "$f" ]; then
-    return 0
-  fi
-
-  # Check alternate path if set
-  if [ -n "$alt_f" ] && [ -r "$alt_f" ] && [ -s "$alt_f" ]; then
-    return 0
-  fi
-
-  log " ✦ Missing file: $p (tried: $f ${alt_f}) "
-  reboot recovery
-  exit 100
-}
-
-kill_process() {
-  TARGET="$1"
-  PID=$(pidof "$TARGET")
-  if [ -n "$PID" ]; then
-    log " ✦ Killing process $TARGET with PID(s): $PID"
-    kill -9 $PID
-  else
-    log " ✦ Process $TARGET not running"
-  fi
-}
-
 mkdir -p "$C"
+mkdir -p "$B"
 touch "$D"
 
 BB=$(P)
@@ -99,7 +47,8 @@ log " ✦ Busybox path: $BB"
 
 # Check verification file presence
 if [ ! -s "$N" ]; then
-  log " ✦ Verification failed, please re-flash module"
+  log " ✦ Outdated version detected❌"
+  log " ✦ Please use the latest version of module"
   exit 20
 fi
 log " ✦ Verification file present"
@@ -108,31 +57,31 @@ log " ✦ Verification file present"
 if [ -n "$BB" ] && "$BB" wget --help >/dev/null 2>&1; then
   log " "
   log " ✦ Fetching verification file"
-  "$BB" wget -q --no-check-certificate -O "$TAMATAR" "$BAIGAN"
+  "$BB" wget -q --no-check-certificate -O "$E" "$BAIGAN"
 elif command -v wget >/dev/null 2>&1; then
   log " ✦ Using system wget to download verification file"
-  wget -q --no-check-certificate -O "$TAMATAR" "$BAIGAN"
+  wget -q --no-check-certificate -O "$E" "$BAIGAN"
 elif command -v curl >/dev/null 2>&1; then
   log " ✦ Using curl to download verification file"
-  curl -fsSL --insecure "$BAIGAN" -o "$TAMATAR"
+  curl -fsSL --insecure "$BAIGAN" -o "$E"
 else
   log " ✦ No downloader available, exiting"
   exit 2
 fi
 
-if [ ! -s "$TAMATAR" ]; then
+if [ ! -s "$E" ]; then
   log " ✦ Failed to fetch remote verification file"
-  rm -f "$TAMATAR"
+  rm -f "$E"
   exit 21
 fi
 log " ✦ Processing remote verification"
 
-# Check if local verify matches remote
+# Check if local verify matches virtual 
 MATCH_FOUND=0
 while IFS= read -r local_word; do
-  grep -Fxq "$local_word" "$TAMATAR" && MATCH_FOUND=1 && break
+  grep -Fxq "$local_word" "$E" && MATCH_FOUND=1 && break
 done < "$N"
-rm -f "$TAMATAR"
+rm -f "$E"
 
 if [ "$MATCH_FOUND" -ne 1 ]; then
   log " ✦ Access denied, verification mismatch"
@@ -154,10 +103,9 @@ echo "$NOW" > "$M"
 log " "
 log " ✦ Cooldown updated"
 
-# Check required files
-y "/data/adb/modules/playintegrity/webroot/style.css"
-y "/data/adb/modules/playintegrity/webroot/Flags/index.html"
-y "/data/adb/modules/playintegrity/module.prop"
+y "/data/adb/modules/playintegrityfix/webroot/style.css"
+y "/data/adb/modules/playintegrityfix/webroot/Flags/index.html"
+y "/data/adb/modules/playintegrityfix/module.prop"
 
 # Backup keybox
 [ -s "$F" ] && { cp -f "$F" "$G"; log " ✦ Backed up keybox.xml"; }
@@ -229,5 +177,11 @@ if [ ! -s "$F" ]; then
 fi
 
 log " ✦ Keybox is ready"
+log " "
+
 # Clean temporary files
-sh "$L"
+if [ -f "$L" ]; then
+  sh "$L" > /dev/null 2>&1
+elif [ -f "$O" ]; then
+  sh "$O" > /dev/null 2>&1
+fi
