@@ -1,31 +1,137 @@
 <details>
-<summary><strong>About WEB UI Dashboard</strong></summary>
-
-<img src="https://github.com/MeowDump/MeowDump/blob/main/Assets/dashboard.png" width="25%">
-
-- `SELinux :` Your ROM's selinux status. It should not be PERMISSIVE
-- `Target :` Number of apps in tricky store's target.txt file
-- `Android :` Your android version
-- `Spoof :` The name of pixel device, your playstore spoofed to!
-- `Patch :` Your Android, Vendor security patch date
-- `Zygote :` The zygisk implementation you are using
-- `Vending :` Your current PlayStore version
-- `GMS :` Your current PlayService version
-- `Lineage :` Tells whether any lineageos prop exists or not
-- `Spoofing :` Tell whether you're using ROM's inbuilt GMS spoofing or not
-#
-</details>
-
-<details>
 <summary><strong>Requirements</strong></summary>
 
 > Please make sure you have the following **modules installed** before using Integrity Box:
 
-- [**Official Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases) or [**TEE Simulator**](https://github.com/JingMatrix/TEESimulator/releases) (use any one)
+1) - [**Official Tricky Store**](https://github.com/5ec1cff/TrickyStore/releases) or [**TEE Simulator**](https://github.com/JingMatrix/TEESimulator/releases) (use any one)
 
-- [**Zygisk Next**](https://github.com/Dr-TSNG/ZygiskNext/releases) or [**ReZygisk**](https://github.com/PerformanC/ReZygisk/releases) (use any one)
+2) - [**Zygisk Next**](https://github.com/Dr-TSNG/ZygiskNext/releases) or [**ReZygisk**](https://github.com/PerformanC/ReZygisk/releases) (use any one)
 #
 </details>
+
+<details>
+<summary><strong>FAQ</strong></summary>
+
+- **What is IntegrityBox?**  
+  A complete Play Integrity compatibility and system-signal management toolkit.
+
+- **Who should use IntegrityBox?**  
+  Rooted users and custom ROM users who care about Play Integrity reliability.
+
+- **Why was IntegrityBox created?**  
+  Honestly? It started because so many people were selling keyboxes and I thought, “this is bad, everyone should have access to this for free.” So I made a tool that just gives you keyboxes without paying a cent. Then, well… I kept adding stuff. I kept improving things, fixing bugs, adding new ways to spoof, hide, clean, and optimize. And before I knew it… it turned into a beast of a module, probably the most powerful Play Integrity Fix anyone’s ever seen. It has so many features now that even I sometimes forget half of them 😭. But yeah, that’s the story: started small, got greedy with features, and now it’s the one-stop solution for anyone who wants STRONG or DEVICE integrity without the headaches. Just flash & forget, no need to do anything manually.
+
+- **Does IntegrityBox replace Play Integrity Fix/Fork module?**  
+  Yes! Starting from v28, PIF is fully integrated into IntegrityBox. The module ID was changed to `playintegrityfix` to avoid conflicts, because honestly, using both at the same time doesn’t make sense. IntegrityBox now handles everything PIF did, plus all the extra features I’ve added along the way
+  
+- **Does IntegrityBox improve compatibility with banking apps**  
+  Yes.
+
+- **Does it support DEVICE and STRONG integrity?**  
+  Yes, make sure you have installed tricky store or TEE simulator module.
+
+- **Is IntegrityBox safe to use?**  
+  Yes.
+
+- **Does it modify user data?**  
+  No.
+
+- **Does it modify installed apps?**  
+  No.
+
+- **Does it run constantly in the background?**  
+  No.
+
+- **Is it lightweight?**  
+  Yes.
+
+- **Does it increase CPU usage?**  
+  No, it may reduce it by optimizing targets.
+
+- **Does it drain battery?**  
+  No.
+
+- **Is everything configurable?**  
+  Yes.
+
+- **Can features be disabled individually?**  
+  Yes.
+
+- **Is there a global safety option?**  
+  Yes, the Kill Switch.
+
+- **What does the Kill Switch do?**  
+  Disables all experimental features.
+
+- **Can I recover easily if something breaks?**  
+  Yes.
+
+- **Is it safe to uninstall?**  
+  Yes.
+
+- **Does IntegrityBox collect any data?**  
+  No.
+
+- **Does it include telemetry or tracking?**  
+  No.
+
+- **Are any network connections required?**  
+  No (except optional downloads).
+
+- **Are downloads verified?**  
+  Yes, using hash verification.
+
+- **Does it automatically manage target.txt?**  
+  Yes.
+
+- **Does it reduce unnecessary Play Services load?**  
+  Yes.
+
+- **Does it handle keybox management?**  
+  Yes.
+
+- **Does it support multiple keybox injections?**  
+  Yes.
+
+- **Does it help with “Device not certified” issues?**  
+  Yes.
+
+- **Does it work on all ROMs?**  
+  It works best on clean, enforcing AOSP-based ROMs.
+
+- **Is SELinux enforcing recommended?**  
+  Yes.
+
+- **Does it support Pixel spoofing?**  
+  Yes.
+
+- **Can fingerprints be customized?**  
+  Yes.
+
+- **Does it handle ROM-specific spoofing conflicts?**  
+  Yes.
+
+- **Is this module actively maintained?**  
+  Yes.
+
+- **Is it beginner-friendly?**  
+  Yes, with built-in guidance.
+
+- **Is it suitable for advanced users?**  
+  Yes.
+
+- **Should I reboot after changes?**  
+  Only if you see a popup saying **"Reboot to apply changes"**.
+
+- **Should I reboot after flashing?**  
+  Yes.
+
+- **Where should issues be reported?**  
+  Through the WebUI report option.
+
+#
+</details>
+
 
 <details>
 <summary><strong>Module Features</strong></summary>
@@ -95,9 +201,9 @@
 <summary><strong>About Module Description</strong></summary>
 <table align="center">
   <tr>
-    <td><img src="https://github.com/MeowDump/MeowDump/blob/main/Assets/valid.png" alt="1" style="max-width: 25%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/MeowDump/blob/main/Assets/soft.png" alt="2" style="max-width: 25%; height: 2400;" /></td>
-    <td><img src="https://github.com/MeowDump/MeowDump/blob/main/Assets/revoked.png" alt="3" style="max-width: 25%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/valid.png" alt="1" style="max-width: 25%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/soft.png" alt="2" style="max-width: 25%; height: 2400;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/revoked.png" alt="3" style="max-width: 25%; height: auto;" /></td>
   </tr>
 </table>
   
@@ -106,6 +212,47 @@
   - 🔴🔴🔴 means the current keybox is **REVOKED** and **cannot** pass play integrity
 #
 </details>
+
+
+<details>
+<summary><strong>Common Failure Reasons</strong></summary>
+
+Play Integrity may fail if any of the following conditions are present:
+
+- **SELinux is set to `permissive`**
+- **Higher Play Store version (higher than 40.xx)**
+- **Conflicting Magisk / KernelSU / LSPosed modules**
+- **Revoked or invalid keybox**
+- **Banned fingerprint**
+- **ROM inbuilt GMS spoofing is enabled (create `/sdcard/zygisk` & flash IntegrityBox if you want to use ROM's inbuilt spoofing with IntegrityBox)**
+- **ROM inbuilt Play Store spoofing is enabled**
+- **Root access is visible or not properly hidden**
+- **IntegrityBox is not updated to the latest version**
+- **Tricky Store is out of sync and requires reflashing**
+
+Ensure all requirements are met and recheck this list before reporting an issue.
+#
+</details>
+
+
+<details>
+<summary><strong>About WEB UI Dashboard</strong></summary>
+
+<img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/dashboard.png" width="25%">
+
+- `Profile :` Your current PlayIntegrity Profile
+- `Vending :` Your current PlayStore version
+- `Lineage :` Tells whether any lineageos prop exists or not
+- `Spoofing :` Tell whether you're using ROM's inbuilt GMS spoofing or not
+- `Spoof :` The name of pixel device, your playstore spoofed to!
+- `Patch :` Your Android, Vendor security patch date
+- `SELinux :` Your ROM's selinux status. It should not be PERMISSIVE
+- `Target :` Number of apps in tricky store's target.txt file
+- `Android :` Your android version
+- `Zygote :` The zygisk implementation you are using
+#
+</details>
+
 
 <details>
 <summary><strong>Credit & Acknowledgement</strong></summary>
@@ -126,7 +273,7 @@
 </details>
 
 <details>
-<summary><strong>Play Integrity Notes</strong></summary>
+<summary><strong>Troubleshooting</strong></summary>
 
 Google Play Integrity has fully replaced SafetyNet and is now the only attestation system used by modern apps. It checks whether a device looks *trustworthy and close to a certified Android environment*. Because of this, failures are common on outdated, heavily modified, or poorly configured systems.
 
@@ -165,16 +312,32 @@ Play Integrity is stricter than older systems and is actively updated by Google.
 
 <br>
 
-<div align="center">
-  <div style="display: flex; justify-content: center; gap: 40px;">
-    <a href="https://t.me/MeowDump" target="_blank">
-      <img src="https://github.com/MeowDump/MeowDump/blob/main/Assets/telegram.png" width="150">
-    </a>
-    <a href="https://MeowDump.github.io" target="_blank">
-      <img src="https://github.com/MeowDump/MeowDump/blob/main/Assets/donate.png" width="150">
-    </a>
-  </div>
+<div align="center" style="display: flex; justify-content: center; gap: 40px; flex-wrap: nowrap;">
+  <a href="https://t.me/MeowDump" target="_blank">
+    <img src="https://cdn-icons-png.freepik.com/512/1603/1603076.png?ga=GA1.1.2121308824.1769410236" width="150" alt="Telegram Group">
+  </a>
+  <a href="https://MeowDump.github.io" target="_blank">
+    <img src="https://cdn-icons-png.freepik.com/512/6010/6010222.png?ga=GA1.1.2121308824.1769410236" width="150" alt="Donate">
+  </a>
+  <a href="https://t.me/integritybox" target="_blank">
+    <img src="https://cdn-icons-png.freepik.com/512/1593/1593170.png" width="150" alt="Get Keybox">
+  </a>
+  <a href="https://github.com/MeowDump/Integrity-Box/raw/main/fingerprint/meow.json" target="_blank">
+    <img src="https://cdn-icons-png.freepik.com/512/1037/1037286.png?ga=GA1.1.2121308824.1769410236" width="150" alt="Download pifg.json">
+  </a>
+  <!-- 
+  </a>
+  <a href="https://github.com/MeowDump/Integrity-Box/raw/main/hidemyapplist/config.json" target="_blank">
+    <img src="https://cdn-icons-png.freepik.com/512/2858/2858053.png" width="150" alt="Download config.json">
+  </a>
+  -->
+  <a href="https://www.apkmirror.com/apk/google-inc/google-play-store/google-play-store-44-0-28-release/google-play-store-44-0-28-31-0-pr-705297086-android-apk-download/download/?key=261d00891f4c423b72e15329321563601ec849e8&forcebaseapk=true" target="_blank">
+    <img src="https://cdn-icons-png.freepik.com/512/270/270011.png?ga=GA1.1.2121308824.1769410236" width="150" alt="Downgrade PlayStore v40.xx">
+  </a>
 </div>
+
+
+
 
 
 ## Preview
@@ -196,33 +359,33 @@ Play Integrity is stricter than older systems and is actively updated by Google.
 
 <table align="center">
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/home.gif" alt="1" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/toolkit.png" alt="2" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/simulator.png" alt="3" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/home.gif" alt="1" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/toolkit.png" alt="2" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/simulator.png" alt="3" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/profile.png" alt="4" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/pif.png" alt="5" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/patch.png" alt="6" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/profile.png" alt="4" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/pif.png" alt="5" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/patch.png" alt="6" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/load.png" alt="7" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/hash.png" alt="8" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/fingerprint.png" alt="9" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/load.png" alt="7" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/hash.png" alt="8" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/fingerprint.png" alt="9" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/ctrlcentre.png" alt="10" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/certified.png" alt="11" style="max-width: 100%; height: 2400;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/blacklist.png" alt="12" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/ctrlcentre.png" alt="10" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/certified.png" alt="11" style="max-width: 100%; height: 2400;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/blacklist.png" alt="12" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/assistant.png" alt="13" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/apps.png" alt="14" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/help.png" alt="15" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/assistant.png" alt="13" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/apps.png" alt="14" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/help.png" alt="15" style="max-width: 100%; height: auto;" /></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/action.png" alt="16" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/strong.png" alt="17" style="max-width: 100%; height: auto;" /></td>
-    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/remote/assets/attestation.png" alt="18" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/action.png" alt="16" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/strong.png" alt="17" style="max-width: 100%; height: auto;" /></td>
+    <td><img src="https://github.com/MeowDump/Integrity-Box/blob/main/assets/attestation.png" alt="18" style="max-width: 100%; height: auto;" /></td>
   </tr>
 </table>
