@@ -22,15 +22,23 @@ const messageMap = {
   "piffork":       { start: "All changes will be applied immediately", type: "info" },
   "nogms":        { success: "Reboot to apply changes", type: "info" },
   "yesgms":       { start: "Reboot to apply changes", type: "info" },
-  "key.sh":        { success: "Keybox has been updated✅", type: "info" },
-  "hma.sh":        { success: "Done", type: "info" },
-  "app.sh":        { start: " Let's Go 😉", success: "Detection Complete", type: "info" },
+  "key.sh":        { success: "Keybox has been updated ✅", type: "info" },
+  "flags":        { start: "These requires Reboot / Action", type: "info" },
+  "profile":        { start: "Good Luck old friend 🌚", type: "info" },
+  "ctrl":        { start: "For those using ROM inbuilt spoofing", type: "info" },
+  "force_override.sh":        { start: "Done 👍", type: "info" },
+  "kill":        { start: "DroidGuard has been restarted", type: "info" },
+  "pif":        { start: "You can update fingerprint without internet", type: "info" },
+  "vending":        { start: "This will clear data of Play Services & Store", type: "info" },
+  "zygisknext":        { start: "☝️🤓", type: "info" },
+  "hide":        { start: "This will hide basic sus paths", type: "info" },
+  "scanner":        { start: " Click on Run Scan", success: "Detection Complete", type: "info" },
   "support":       { start: "Become a Supporter", type: "info" },
   "report":       { start: "What's wrong buddy?", type: "info" },
   "assistant":       { start: "Let me guide you to the right path", type: "info" },
-  "hma":       { success: "Done", type: "info" },
+  "hma.sh":       { success: "Done ✅", type: "info" },
   "ulock":      { success: "Done", type: "info" },
-  "boot_hash":     { start: "Paste your boot hash buddy", success: "Boot hash operation complete", type: "success" }
+  "hash":     { start: "Paste your boot hash buddy", success: "Boot hash operation complete", type: "success" }
 };
 
 /* KernelSU toast */
@@ -212,43 +220,62 @@ window.runShellFromIframe = async function (cmd) {
 /* Dashboard */
 async function updateDashboard() {
   const statusItems = {
-    "status-playstore": "dumpsys package com.android.vending | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
-//    "status-playservices": "dumpsys package com.google.android.gms | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
-    "status-selinux": "getenforce || echo Unknown",
-    "status-target": "[ -f /data/adb/tricky_store/target.txt ] && grep -cve '^$' /data/adb/tricky_store/target.txt || echo 0",
-    "status-android": "case \"$(getprop ro.system.build.version.release 2>/dev/null)\" in 4*) echo KitKat ;; 5*) echo Lollipop ;; 6*) echo Marshmallow ;; 7*) echo Nougat ;; 8*) echo Oreo ;; 9*) echo Pie ;; 10) echo QuinceTart ;; 11) echo RedVelvet ;; 12*) echo SnowCone ;; 13*) echo Tiramisu ;; 14*) echo UpsideDown ;; 15*) echo VanillaIceCream ;; 16*) echo Baklava ;; *) echo Unknown ;; esac",
-    "status-pixel": "[ -f /data/adb/modules/playintegrityfix/custom.pif.prop ] && awk -F= '/^PRODUCT=/{print $2}' /data/adb/modules/playintegrityfix/custom.pif.prop || echo None",
-    "status-patch": "getprop ro.build.version.security_patch || echo Unknown",
-    "status-zygisk": "[ -f /data/adb/modules/zygisksu/module.prop ] && awk -F= '/^name=/{print $2}' /data/adb/modules/zygisksu/module.prop || ([ -f /data/adb/modules/rezygisk/module.prop ] && echo ReZygisk) || (magisk --sqlite \"SELECT value FROM settings WHERE key='zygisk';\" | grep -q '1' && echo Magisk-Zygisk) || echo None",
-    "status-profile": "if [ -f /data/adb/Box-Brain/advanced ]; then echo 'Supreme'; elif [ -f /data/adb/Box-Brain/legacy ]; then echo 'Legacy'; elif [ -f /data/adb/Box-Brain/wipe ]; then echo 'Meta'; else echo 'None'; fi",
+  "status-playstore": "dumpsys package com.android.vending | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
+  "status-selinux": "getenforce || echo Unknown",
+  "status-target": "[ -f /data/adb/tricky_store/target.txt ] && grep -cve '^$' /data/adb/tricky_store/target.txt || echo 0",
+  "status-android": "case \"$(getprop ro.system.build.version.release 2>/dev/null)\" in 4*) echo KitKat ;; 5*) echo Lollipop ;; 6*) echo Marshmallow ;; 7*) echo Nougat ;; 8*) echo Oreo ;; 9*) echo Pie ;; 10) echo QuinceTart ;; 11) echo RedVelvet ;; 12*) echo SnowCone ;; 13*) echo Tiramisu ;; 14*) echo UpsideDown ;; 15*) echo VanillaIceCream ;; 16*) echo Baklava ;; *) echo Unknown ;; esac",
+  "status-pixel": "[ -f /data/adb/modules/playintegrityfix/custom.pif.prop ] && awk -F= '/^PRODUCT=/{print $2}' /data/adb/modules/playintegrityfix/custom.pif.prop || echo None",
+  "status-patch": "getprop ro.build.version.security_patch || echo Unknown",
+  "status-zygisk": "[ -f /data/adb/modules/zygisksu/module.prop ] && awk -F= '/^name=/{print $2}' /data/adb/modules/zygisksu/module.prop || ([ -f /data/adb/modules/rezygisk/module.prop ] && echo ReZygisk) || (magisk --sqlite \"SELECT value FROM settings WHERE key='zygisk';\" | grep -q '1' && echo Magisk-Zygisk) || echo None",
+  "status-profile": "if [ -f /data/adb/Box-Brain/advanced ]; then echo 'Supreme'; elif [ -f /data/adb/Box-Brain/legacy ]; then echo 'Legacy'; elif [ -f /data/adb/Box-Brain/wipe ]; then echo 'Meta'; else echo 'None'; fi",
 
-    "status-gms": `
-      props=(
-        persist.sys.pihooks.disable.gms_key_attestation_block
-        persist.sys.pihooks.disable.gms_props
-        persist.sys.pihooks.disable
-        persist.sys.kihooks.disable
-      );
-      found_any=0; disabled=0; enabled=0;
-      for p in "\${props[@]}"; do
-        val=$(getprop "$p" 2>/dev/null);
-        if [ -n "$val" ]; then
-          found_any=1;
-          if [ "$val" = "true" ] || [ "$val" = "1" ]; then
-            disabled=$((disabled+1));
-          elif [ "$val" = "false" ] || [ "$val" = "0" ]; then
-            enabled=$((enabled+1));
-          fi;
+  "status-whitelist": `
+    if ls /data/adb/*/whitelist* 2>/dev/null | grep -q .; then
+      echo ENABLED
+    else
+      echo DISABLED
+    fi
+  `,
+
+  "status-gms": `
+    props=(
+      persist.sys.pihooks.disable.gms_key_attestation_block
+      persist.sys.pihooks.disable.gms_props
+      persist.sys.pihooks.disable
+      persist.sys.kihooks.disable
+    );
+    found_any=0; disabled=0; enabled=0;
+    for p in "\${props[@]}"; do
+      val=$(getprop "$p" 2>/dev/null);
+      if [ -n "$val" ]; then
+        found_any=1;
+        if [ "$val" = "true" ] || [ "$val" = "1" ]; then
+          disabled=$((disabled+1));
+        elif [ "$val" = "false" ] || [ "$val" = "0" ]; then
+          enabled=$((enabled+1));
         fi;
-      done;
-      if [ $found_any -eq 0 ]; then echo "Meow Box";
-      elif [ $enabled -gt 0 ]; then echo "ENABLED";
-      else echo "DISABLED"; fi
-    `,
+      fi;
+    done;
+    if [ $found_any -eq 0 ]; then echo "Meow Box";
+    elif [ $enabled -gt 0 ]; then echo "ENABLED";
+    else echo "DISABLED"; fi
+  `,
+  
+  "status-romsign": `
+    APK=/system/framework/framework-res.apk;
+    TMP=/data/local/tmp/.romsig.$$;
+    unzip -p "$APK" META-INF/*.RSA > "$TMP" 2>/dev/null || { echo UNKNOWN Signed; exit; };
+    HASH=$(od -An -t u1 "$TMP" | awk '{for(i=1;i<=NF;i++)h=(h*31+$i)%4294967296}END{if(h>2147483647)h-=4294967296;print h}');
+    rm -f "$TMP";
+    case "$HASH" in
+      -1260709591|-671091164) echo TESTKEY ;;
+      *) echo RELEASE ;;
+    esac
+  `,
 
-    "status-LineageProp": `if getprop | grep -iq 'lineage'; then echo FOUND; else echo NONE; fi`
-  };
-
+  "status-LineageProp": `if getprop | grep -iq 'lineage'; then echo FOUND; else echo NONE; fi`
+};
+  
   for (const [id, cmd] of Object.entries(statusItems)) {
     const el = document.getElementById(id);
     if (!el) continue;
@@ -311,6 +338,29 @@ async function updateDashboard() {
           }
           break;
 
+        case "status-whitelist":
+          if (out === "ENABLED") {
+            el.textContent = "Enabled";
+            el.className = "status-indicator enabled";
+          } else {
+            el.textContent = "Disabled";
+            el.className = "status-indicator disabled";
+          }
+          break;
+          
+        case "status-romsign":
+          if (out === "TESTKEY") {
+            el.textContent = "Test-Key";
+            el.className = "status-indicator disabled";
+          } else if (out === "RELEASE") {
+            el.textContent = "Release-Key";
+            el.className = "status-indicator enabled";
+          } else {
+            el.textContent = "Unknown";
+            el.className = "status-indicator neutral";
+          }
+          break;
+        
         case "status-LineageProp":
           if (out === "FOUND") {
             el.textContent = "90% Spoofed";
@@ -353,7 +403,7 @@ btns.forEach(btn=>{
       }
 
       if (["scanner","hash","user","flags","piffork","pif","vending",
-           "support","report","profile","assistant","tee","xml","about","patch","ctrl"].includes(type)) {
+           "support","report","profile","assistant","tee","xml","hide","patch","ctrl"].includes(type)) {
 
         const pathMap = {
           scanner:"./Risky/index.html",
@@ -367,14 +417,23 @@ btns.forEach(btn=>{
           report:"./Report/index.html",
           user:"./TrickyStore/index.html",
           xml:"./KeyboxLoader/index.html",
-          about:"./About/index.html",
+          hide:"./HideMyFiles/index.html",
           patch:"./Patch/index.html",
           profile:"./Profile/index.html",
           assistant:"./Assistant/index.html",
           tee:"./TEEsimulator/index.html"
         };
 
-        popup("Opening…","info");
+        const toastKey = (type || script || "").trim().replace(/\.sh$/, "");
+
+        const msg = messageMap[toastKey];
+
+        if (msg?.start) {
+          popup(msg.start, msg.type);
+        } else {
+          popup("Opening…", "info");
+        }
+
         return openIframe(pathMap[type]);
       }
 

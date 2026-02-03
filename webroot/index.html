@@ -14,7 +14,7 @@
   <div class="container">
     <header class="title-bar">
       <div id="module-name" class="title">𝙋𝙡𝙖𝙮 𝙄𝙣𝙩𝙚𝙜𝙧𝙞𝙩𝙮 𝘽𝙤𝙭</div>
-      <div class="subtitle">ʜᴀᴛᴇᴅ ʙʏ ᴍᴀɴʏ, ᴅᴇꜰᴇᴀᴛᴇᴅ ʙʏ ɴᴏɴᴇ</div>
+      <div class="subtitle">Hated By Many, Defeated By None</div>
     </header>
 
 	<!-- Dashboard -->
@@ -29,6 +29,8 @@
       <div class="status-item">Target: <span id="status-target" class="status-indicator loading">...</span></div>
       <div class="status-item">Android: <span id="status-android" class="status-indicator loading">...</span></div>
       <div class="status-item">Zygote: <span id="status-zygisk" class="status-indicator loading">...</span></div>
+      <div class="status-item">Whitelist: <span id="status-whitelist" class="status-indicator loading">...</span></div>
+      <div class="status-item">Signature: <span id="status-romsign" class="status-indicator loading">...</span></div>
     </div>
 
     <!-- Buttons -->
@@ -56,7 +58,7 @@
       </div>
 
       <div class="button-group">
-        <h3 class="group-title">Tricky Store</h3>
+        <h3 class="group-title">Tricky Store & TEE Simulator</h3>
         <div class="button-grid">
           <button class="btn" data-script="key.sh" data-type="keybox"><span class="icon material-symbols-outlined">deployed_code_update</span>Set Valid Keybox<div class="spinner"></div></button>
           <button class="btn" data-script="aosp" onclick='ksu.exec("sh -c \"cp /data/adb/modules/playintegrityfix/keybox/aosp_keybox.xml /data/adb/tricky_store/keybox.xml 2>/dev/null || true\"")'><span class="icon material-symbols-outlined">adb</span>Set AOSP Keybox<div class="spinner"></div></button>
@@ -82,13 +84,12 @@
           <button class="btn" data-script="yesgms" onclick="ksu.exec('[ -d /data/adb/Box-Brain ] && touch /data/adb/Box-Brain/enablegms || [ -d /data/adb/Box-Brain ] && rm -f /data/adb/Box-Brain/disablegms')"><span class="icon material-symbols-outlined">toggle_off</span>Enable Spoofing <div class="spinner"></div></button>
         </div>
       </div>
-
-<!--      
+      
       <div class="button-group">
-        <h3 class="group-title">HMA & Update Locker</h3>
+        <h3 class="group-title">Hide My Stuff</h3>
         <div class="button-grid">
           <button class="btn" data-script="hma.sh" data-type="hma"><span class="icon material-symbols-outlined">adb</span>Inject HMA Template<div class="spinner"></div></button>
-          <button class="btn" data-script="ulock" onclick="ksu.exec(' ')"><span class="icon material-symbols-outlined">toggle_off</span>Inject UpdateLock Config <div class="spinner"></div></button>
+          <button class="btn" data-type="hide"><span class="icon material-symbols-outlined">visibility_off</span>Hide My Files <div class="spinner"></div></button>
         </div>
       </div>
 
@@ -99,7 +100,6 @@
           <button class="btn" data-script="stop" onclick="ksu.exec('rm -rf /data/adb/shamiko/whitelist /data/adb/nohello/whitelist')"><span class="icon material-symbols-outlined">toggle_off</span>Enable Blacklist Mode <div class="spinner"></div></button>
         </div>
       </div>
--->
 
       <div class="button-group">
         <h3 class="group-title">Community & Support</h3>
