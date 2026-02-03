@@ -4,6 +4,7 @@ MODPATH="${0%/*}"
 
 boot="/data/adb/service.d"
 placeholder="/data/adb/modules/playintegrityfix/webroot/common_scripts"
+mkdir -p "/data/adb/Box-Brain/Integrity-Box-Logs"
 mkdir -p "$boot"
 
 # Remove installation script if exists 
@@ -25,30 +26,6 @@ if [ -f "/data/adb/Box-Brain/enablegms" ]; then
     set_simpleprop persist.sys.pixelprops.vending true
     set_simpleprop persist.sys.pihooks.disable 0
     set_simpleprop persist.sys.kihooks.disable 0
-fi
-
-if [ -f "/data/adb/Box-Brain/a12" ]; then
-    API="$(getprop ro.product.first_api_level)"
-
-    {
-        echo "----------------------------------------"
-        echo "API override check: $(date '+%Y-%m-%d %H:%M:%S')"
-        echo "Flag file present: /data/adb/Box-Brain/a12"
-        echo "ro.product.first_api_level: $API"
-    } >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
-
-    if [ -n "$API" ] && [ "$API" -ge 33 ]; then
-        resetprop ro.product.first_api_level 32
-        echo "Action: reset to 32" >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
-    else
-        echo "Action: skipped (API < 33 or empty)" >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
-    fi
-else
-    {
-        echo "----------------------------------------"
-        echo "API override skipped: $(date '+%Y-%m-%d %H:%M:%S')"
-        echo "Reason: /data/adb/Box-Brain/a12 not found"
-    } >> /data/adb/Box-Brain/Integrity-Box-Logs/API_Spoof.log
 fi
 
 if [ ! -f "$placeholder/run_scan.sh" ]; then
@@ -100,6 +77,44 @@ EOF
 fi
 
 chmod 755 "$placeholder/resetprop.sh"
+
+cat <<'EOF' > "$boot/.box_cleanup.sh"
+#!/system/bin/sh
+
+# NOTE: This script cleans up leftover files after a module ID change.
+#
+# IntegrityBox and PIF now replace each other to avoid conflicts.
+# If a user flashes PIF over IntegrityBox, leftover IntegrityBox files may remain.
+# This script deletes those leftover files and folders, and then deletes itself. 
+# It only runs if IntegrityBox is not installed
+
+PROP_FILE="/data/adb/modules/playintegrityfix/module.prop"
+REQUIRED_LINE="support=https://t.me/MeowDump"
+LOG_DIR="/data/adb/Box-Brain"
+
+SERVICE_FILES="
+/data/adb/service.d/shamiko.sh
+/data/adb/service.d/prop.sh
+/data/adb/service.d/hash.sh
+/data/adb/service.d/lineage.sh
+"
+
+# Check if the prop file exists and contains the required line
+if [ ! -f "$PROP_FILE" ] || ! grep -Fq "$REQUIRED_LINE" "$PROP_FILE"; then
+    # Delete leftover files if they exist
+    for file in $SERVICE_FILES; do
+        [ -e "$file" ] && rm -rf "$file"
+    done
+
+    # Delete Box-Brain folder if it exists
+    [ -d "$LOG_DIR" ] && rm -rf "$LOG_DIR"
+
+    # Delete this script itself
+    rm -f "$0"
+fi
+EOF
+
+chmod 755 "$boot/.box_cleanup.sh"
 
 cat <<'EOF' > "$placeholder/force_override.sh"
 #!/system/bin/sh
@@ -212,8 +227,180 @@ touch "$placeholder/start"
 touch "$placeholder/nogms"
 touch "$placeholder/lineage"
 touch "$placeholder/selinux"
+touch "$placeholder/hide"
 touch "$placeholder/zygisknext"
 touch "$placeholder/yesgms"
+
+cat <<'EOF' > "$placeholder/hma.sh"
+#!/system/bin/sh
+
+# CONFIG
+SRC_CONFIG="/data/adb/modules/playintegrityfix/hidemyapplist/config.json"
+
+APP_PATHS="
+/data/user/0/org.frknkrc44.hma_oss
+/data/user/0/com.google.android.hmal
+/data/user/0/com.tsng.hidemyapplist
+"
+
+LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
+LOG_FILE="$LOG_DIR/hma.log"
+
+BACKUP_DIR="/data/adb/HMA"
+DATE_TAG="$(date '+%Y-%m-%d_%H-%M-%S')"
+ANTISELINUX="/data/adb/Box-Brain/antiselinux"
+
+ORIG_SELINUX=""
+SELINUX_CHANGED=0
+PKG_NAME=""
+LAUNCH_CMD=""
+ACTIVITY=""
+
+# INIT
+mkdir -p "$LOG_DIR"
+mkdir -p "$BACKUP_DIR"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+}
+
+get_selinux_mode() {
+    if command -v getenforce >/dev/null 2>&1; then
+        getenforce
+    else
+        echo "Unknown"
+    fi
+}
+
+set_selinux_permissive() {
+    if command -v setenforce >/dev/null 2>&1; then
+        setenforce 0
+    fi
+}
+
+restore_selinux() {
+    if [ "$SELINUX_CHANGED" -eq 1 ] && [ "$ORIG_SELINUX" = "Enforcing" ]; then
+        log "Restoring SELinux to Enforcing"
+        setenforce 1
+    fi
+}
+
+log "•••••••••••••= HMA config sync started •••••••••••••"
+
+# SOURCE CHECK
+if [ ! -f "$SRC_CONFIG" ]; then
+    log "ERROR: Source config not found: $SRC_CONFIG"
+    exit 1
+fi
+
+log "Source config found: $SRC_CONFIG"
+
+# FIND HMA
+TARGET_APP=""
+for APP in $APP_PATHS; do
+    if [ -d "$APP" ]; then
+        TARGET_APP="$APP"
+
+        case "$APP" in
+            "/data/user/0/org.frknkrc44.hma_oss")
+                PKG_NAME="org.frknkrc44.hma_oss"
+                ACTIVITY="org.frknkrc44.hma_oss/.ui.activity.MainActivity"
+                ;;
+            "/data/user/0/com.google.android.hmal")
+                PKG_NAME="com.google.android.hmal"
+                ACTIVITY="com.google.android.hmal/icu.nullptr.hidemyapplist.ui.activity.MainActivity"
+                ;;
+            "/data/user/0/com.tsng.hidemyapplist")
+                PKG_NAME="com.tsng.hidemyapplist"
+                ACTIVITY="com.tsng.hidemyapplist/icu.nullptr.hidemyapplist.ui.activity.MainActivity"
+                ;;
+        esac
+        log "Found installed app data path: $APP"
+        log "Resolved package name: $PKG_NAME"
+        break
+    fi
+done
+
+if [ -z "$TARGET_APP" ]; then
+    log "No supported HMA app installed. Nothing to do."
+    log "•••••••••••••= Finished •••••••••••••"
+    exit 0
+fi
+
+TARGET_FILES="$TARGET_APP/files"
+TARGET_CONFIG="$TARGET_FILES/config.json"
+
+# ENSURE /files EXISTS
+if [ ! -d "$TARGET_FILES" ]; then
+    log "/files directory missing, creating: $TARGET_FILES"
+    mkdir -p "$TARGET_FILES" || {
+        log "ERROR: Failed to create $TARGET_FILES"
+        exit 1
+    }
+fi
+
+# BACKUP EXISTING CONFIG
+if [ -f "$TARGET_CONFIG" ]; then
+    BACKUP_NAME="config_${DATE_TAG}.json"
+    log "Existing config found, moving to $BACKUP_DIR/$BACKUP_NAME"
+    mv "$TARGET_CONFIG" "$BACKUP_DIR/$BACKUP_NAME" || {
+        log "ERROR: Failed to move existing config"
+        exit 1
+    }
+fi
+
+# COPY NEW CONFIG
+log "Copying new config to $TARGET_CONFIG"
+cp "$SRC_CONFIG" "$TARGET_CONFIG" || {
+    log "ERROR: Failed to copy new config"
+    exit 1
+}
+
+chmod 666 "$TARGET_CONFIG"
+chown system:system "$TARGET_CONFIG" 2>/dev/null
+
+# TEMPORARY SELINUX PERMISSIVE
+if [ ! -f "$ANTISELINUX" ]; then
+    ORIG_SELINUX="$(get_selinux_mode)"
+    log "Current SELinux mode: $ORIG_SELINUX"
+
+    if [ "$ORIG_SELINUX" = "Enforcing" ]; then
+        log "Switching SELinux to Permissive temporarily"
+        set_selinux_permissive
+        SELINUX_CHANGED=1
+        sleep 0.5
+    fi
+else
+    log "antiselinux flag found, skipping SELinux mode change"
+fi
+
+# FORCE STOP & RELAUNCH
+if [ -n "$PKG_NAME" ] && [ -n "$ACTIVITY" ]; then
+    log "Force stopping app: $PKG_NAME"
+    am force-stop "$PKG_NAME" >>"$LOG_FILE" 2>&1
+
+    sleep 1
+
+    log "Launching activity: $ACTIVITY"
+    am start --user 0 -a android.intent.action.VIEW -n "$ACTIVITY" \
+        >>"$LOG_FILE" 2>&1
+
+    if [ $? -eq 0 ]; then
+        log "App launched successfully"
+    else
+        log "ERROR: Failed to launch app"
+    fi
+fi
+
+restore_selinux
+log "Config copy completed successfully"
+log "••••••••••••• Finished •••••••••••••"
+log
+log
+exit 0
+EOF
+
+chmod 777 "$placeholder/hma.sh"
 
 cat <<'EOF' > "$boot/lineage.sh"
 #!/system/bin/sh
@@ -432,19 +619,20 @@ cat <<'EOF' > "$boot/prop.sh"
 #!/system/bin/sh
 
 # CONFIG
-LOG_FILE="/data/adb/Box-Brain/Integrity-Box-Logs/prop_patch.log"
-PATCH_DATE="2025-12-05"
+PATCH_DATE="2026-01-01"
 FILE_PATH="/data/adb/tricky_store/security_patch.txt"
 SKIP_FILE="/data/adb/Box-Brain/skip"
+LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
+LOG_FILE="$LOG_DIR/prop_patch.log"
 
-# LOGGING FUNCTIONS
 writelog() {
-    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
-    /system/bin/log -t PATCH_OVERRIDE "$1"
+    TS="$(date '+%Y-%m-%d %H:%M:%S')"
+    mkdir -p "$LOG_DIR" 2>/dev/null
+    printf "%s | %s\n" "$TS" "$1" >> "$LOG_FILE"
 }
 
 abort() {
-    writelog "❌ $1"
+    writelog "ERROR | $1"
     exit 1
 }
 
