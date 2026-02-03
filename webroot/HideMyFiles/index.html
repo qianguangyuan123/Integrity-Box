@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hide My Files</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#1f2233;--fg:#e6e6e6;--muted:#97aac0;
+  --accent:#1592FF;--card:#232637E6;--border:#ffffff14;
+  --radius:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(circle at top,#262a4a,#14172b 70%);
+  font-family:Inter,system-ui;
+  color:var(--fg);
+  display:flex;
+  justify-content:center;
+  min-height:100vh;
+}
+.app{width:100%;max-width:600px;padding:20px}
+
+.header{text-align:center;margin-bottom:16px;animation:fadeIn .6s ease}
+.header h1{
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font-size:2.1rem;
+}
+.header p{font-size:13px;color:var(--muted)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+.custom-path{display:flex;gap:8px;margin-bottom:14px}
+.custom-path input{
+  flex:1;
+  padding:11px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--fg)
+}
+.custom-path button{
+  padding:11px 15px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#1592ff,#47a8ff);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s
+}
+.custom-path button:active{transform:scale(.94)}
+
+.item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  margin-bottom:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  opacity:0;
+  transform:translateY(12px);
+  animation:itemIn .45s ease forwards;
+  transition:.3s
+}
+.item:hover{
+  transform:translateY(-4px);
+  box-shadow:0 10px 30px rgba(0,0,0,.35)
+}
+@keyframes itemIn{to{opacity:1;transform:none}}
+
+.row{display:flex;justify-content:space-between;align-items:center}
+.path{font-size:14px;display:flex;align-items:center;gap:6px;word-break:break-all}
+.meta{font-size:12px;color:var(--muted)}
+
+.toggle{
+  width:50px;height:28px;border-radius:14px;
+  background:#444;position:relative;cursor:pointer;
+  transition:.25s
+}
+.toggle.active{
+  background:var(--accent);
+  box-shadow:0 0 12px rgba(21,146,255,.6)
+}
+.toggle::after{
+  content:"";
+  width:24px;height:24px;border-radius:50%;
+  background:#fff;
+  position:absolute;
+  top:2px;left:2px;
+  transition:.25s cubic-bezier(.4,1.6,.4,1)
+}
+.toggle.active::after{left:24px}
+
+.mode{display:flex;gap:10px;margin-top:6px}
+.mode button{
+  flex:1;
+  padding:9px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--fg);
+  cursor:pointer;
+  transition:.25s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px
+}
+.mode button.active{
+  background:var(--accent);
+  border-color:transparent;
+  animation:pulse .6s
+}
+@keyframes pulse{50%{box-shadow:0 0 16px rgba(21,146,255,.6)}}
+
+.actions{display:flex;gap:14px;margin-top:18px}
+.actions button{
+  flex:1;
+  padding:15px;
+  border-radius:20px;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:.25s
+}
+.actions button:active{transform:scale(.96)}
+.run{background:linear-gradient(135deg,#1592ff,#47a8ff);color:#fff}
+.unhide{background:#3a3f5c;color:#fff}
+
+.progress{
+  height:6px;
+  background:#0003;
+  border-radius:6px;
+  overflow:hidden;
+  margin:14px 0
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#1592ff,#5bb3ff,#1592ff);
+  background-size:200% 100%;
+  animation:flow 1.2s linear infinite;
+  transition:width .25s
+}
+@keyframes flow{to{background-position:-200% 0}}
+
+.webui-popup{
+  position:fixed;
+  top:-80px;
+  left:50%;
+  transform:translateX(-50%) scale(.96);
+  padding:.85rem 1.2rem;
+  border-radius:14px;
+  font-weight:600;
+  font-size:14px;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 14px 36px rgba(0,0,0,.45);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  opacity:0;
+  z-index:99999;
+  transition:
+    top .45s cubic-bezier(.4,1.4,.4,1),
+    opacity .35s ease,
+    transform .35s ease;
+}
+
+.webui-popup.show{
+  top:18px;
+  opacity:1;
+  transform:translateX(-50%) scale(1);
+}
+
+.webui-popup .material-icons{
+  font-size:20px;
+  opacity:.9;
+}
+
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="header"><span class="material-icons">folder_off</span><h1>Hide My Files</h1></div>
+  <p style="text-align:center;color:var(--muted)">Powered by IntegrityBox</p>
+
+  <!-- Custom path -->
+  <div class="custom-path">
+    <input type="text" id="customPath" placeholder="Enter custom path to hide">
+    <button onclick="addCustomPath()"><span class="material-icons">add</span> Add</button>
+  </div>
+
+  <div class="progress"><div id="bar" class="bar"></div></div>
+  <div id="list">Loading…</div>
+
+  <div class="actions">
+    <button class="run" onclick="runCleaner()"><span class="material-icons">visibility_off</span> HIDE</button>
+    <button class="unhide" onclick="unhide()"><span class="material-icons">visibility</span> UNHIDE</button>
+  </div>
+</div>
+
+<script>
+/* Toast */
+function popup(msg, type="info") {
+  try {
+    if (typeof window.toast === "function") { window.toast(String(msg)); return; }
+    if (window.kernelsu && typeof window.kernelsu.toast === "function") { window.kernelsu.toast(String(msg)); return; }
+    if (typeof ksu === "object" && typeof ksu.toast === "function") { ksu.toast(String(msg)); return; }
+  } catch {}
+
+  const old = document.querySelector(".webui-popup");
+  if (old) old.remove();
+
+  const colors = {
+    error:   "linear-gradient(135deg,#f44336,#c62828)",
+    success: "linear-gradient(135deg,#4caf50,#2e7d32)",
+    info:    "linear-gradient(135deg,#2196f3,#1565c0)",
+    warn:    "linear-gradient(135deg,#ff9800,#ef6c00)"
+  };
+
+  const icons = {
+    error:"error",
+    success:"check_circle",
+    info:"info",
+    warn:"warning"
+  };
+
+  const n = document.createElement("div");
+  n.className = "webui-popup";
+  n.style.background = colors[type] || colors.info;
+
+  n.innerHTML = `
+    <span class="material-icons">${icons[type] || "info"}</span>
+    <span>${msg}</span>
+  `;
+
+  document.body.appendChild(n);
+
+  requestAnimationFrame(() => n.classList.add("show"));
+
+  setTimeout(() => {
+    n.classList.remove("show");
+    setTimeout(() => n.remove(), 420);
+  }, 2600);
+}
+
+/* Paths & config */
+const BASE="/data/adb/Vault/.hidefiles";
+const LOG="/data/adb/Vault/webui.log";
+const VAULT="/data/adb/Vault";
+
+let PREDEFINED={
+  MT2:"/sdcard/MT2",TWRP:"/sdcard/TWRP",Fox:"/sdcard/Fox",PBRP:"/sdcard/PBRP",Magisk:"/sdcard/Magisk",SHRP:"/sdcard/SHRP",Migrate:"/sdcard/Migrate",CustomROM:"/vendor/bin/install-recovery.sh",
+  SwiftBackup:"/sdcard/SwiftBackup",AppManager:"/sdcard/AppManager",TMP:"/data/local/tmp",KernelSU:"/sdcard/.ksu",DataBackup:"/sdcard/DataBackup",OTA:"/system/addon.d"
+};
+
+let CUSTOM={}; // store manual paths
+let TARGETS={...PREDEFINED, ...CUSTOM};
+
+const sh=cmd=>parent.runShellFromIframe(cmd);
+const bar=document.getElementById("bar");
+
+/* Check existence */
+const exists=async p=>(await sh(`[ -e "${p}" ] && echo 1 || echo 0`)).trim()=="1";
+
+/* Get size */
+async function getSizeSafe(p){
+  if(p.includes("SwiftBackup")) return "Large";
+  return (await sh(`du -sh "${p}" 2>/dev/null | awk '{print $1}'`)).trim()||"0B";
+}
+
+async function isEmpty(p){const r=await sh(`if [ -d "${p}" ]; then [ -z "$(ls -A "${p}" 2>/dev/null)" ] && echo 1 || echo 0; else [ ! -s "${p}" ] && echo 1 || echo 0; fi`);return r.trim()==="1";}
+
+/* Load/save config */
+async function loadConf(k){
+  try{const o=await sh(`. ${BASE}/${k}.conf 2>/dev/null; echo "$ENABLED|$MODE"`);const [e,m]=o.trim().split("|");return {e:e==="1",m:m||"move"};}catch{return {e:false,m:"move"}}
+}
+async function saveConf(k,e,m){await sh(`mkdir -p ${BASE}; echo "ENABLED=${e?1:0}" > ${BASE}/${k}.conf; echo "MODE=${m}" >> ${BASE}/${k}.conf`);}
+
+/* Add custom path */
+function addCustomPath(){
+  const path=document.getElementById("customPath").value.trim();
+  if(!path) return popup("Please enter a valid path","warn");
+  const name=path.split("/").pop()||path;
+  CUSTOM[name]=path;
+  TARGETS={...PREDEFINED,...CUSTOM};
+  render();
+  document.getElementById("customPath").value="";
+  popup("Custom path added","success");
+}
+
+/* Render all items */
+async function render(){
+  const list=document.getElementById("list");list.innerHTML="";
+  for(const k in TARGETS){
+    const p=TARGETS[k];if(!await exists(p)) continue;
+    const size=await getSizeSafe(p);
+    const cfg=await loadConf(k);
+    const el=document.createElement("div");el.className="item";
+    el.innerHTML=`
+      <div class="row">
+        <div class="path"><span class="material-icons">folder</span> ${p}</div>
+        <div class="toggle ${cfg.e?"active":""}"></div>
+      </div>
+      <div class="meta">Size: <span class="size">${size}</span></div>
+      <div class="mode">
+        <button data-m="move" class="${cfg.m=="move"?"active":""}"><span class="material-icons">drive_file_move</span> Move</button>
+        <button data-m="rename" class="${cfg.m=="rename"?"active":""}"><span class="material-icons">edit</span> Rename</button>
+      </div>`;
+    const t=el.querySelector(".toggle");const btns=[...el.querySelectorAll("button")];
+    t.onclick=()=>{t.classList.toggle("active");saveConf(k,t.classList.contains("active"),btns.find(b=>b.classList.contains("active")).dataset.m);};
+    btns.forEach(b=>b.onclick=()=>{btns.forEach(x=>x.classList.remove("active"));b.classList.add("active");saveConf(k,t.classList.contains("active"),b.dataset.m);});
+    list.appendChild(el);
+  }
+}
+
+/* Run cleaner */
+async function runCleaner(){
+  const keys = Object.keys(TARGETS);
+  let done = 0;
+  await sh(`mkdir -p ${BASE}/.unhide ${VAULT}; : > ${BASE}/last_action.sh; echo "[$(date)] RUN" >> ${LOG}`);
+  for (const k of keys){
+    const p = TARGETS[k];
+    const conf = `${BASE}/${k}.conf`;
+    await sh(`
+      if [ ! -f "${conf}" ]; then echo "[SKIP] ${p} (no config)" >> ${LOG};
+      else . "${conf}";
+        if [ "$ENABLED" != "1" ]; then echo "[SKIP] ${p} (disabled)" >> ${LOG};
+        elif [ ! -e "${p}" ]; then echo "[SKIP] ${p} (missing)" >> ${LOG};
+        else TS=$(date +%s);
+          if [ -d "${p}" ]; then [ -z "$(ls -A "${p}" 2>/dev/null)" ] && EMPTY=1 || EMPTY=0;
+          else [ ! -s "${p}" ] && EMPTY=1 || EMPTY=0; fi;
+          if [ "$EMPTY" = "1" ]; then
+            mv "${p}" "${BASE}/.unhide/$(basename "${p}").$TS";
+            echo "mv \"${BASE}/.unhide/$(basename "${p}").$TS\" \"${p}\"" >> ${BASE}/last_action.sh;
+            echo "[EMPTY] ${p}" >> ${LOG};
+          else
+            if [ "$MODE" = "move" ]; then
+              dst="${VAULT}/$(basename "${p}")"; [ -e "$dst" ] && dst="$dst.$TS"; mv "${p}" "$dst";
+              echo "mv \"$dst\" \"${p}\"" >> ${BASE}/last_action.sh;
+              echo "[MOVE] ${p} -> Vault" >> ${LOG};
+            else
+              newname=$(tr -dc a-zA-Z0-9 </dev/urandom | head -c12)
+              mv "${p}" "${p}.$newname";
+              echo "mv \"${p}.$newname\" \"${p}\"" >> ${BASE}/last_action.sh;
+              echo "[RENAME] ${p}" >> ${LOG};
+            fi
+          fi
+        fi
+      fi
+    `);
+    done++;
+    bar.style.width = Math.round(done / keys.length * 100) + "%";
+  }
+  render();
+  popup("Cleaner completed","success");
+}
+
+/* unhide */
+async function unhide(){
+  await sh(`[ -f ${BASE}/last_action.sh ] && sh ${BASE}/last_action.sh`);
+  await sh(`echo "[$(date)] UNHIDE" >> "${LOG}"`);
+  bar.style.width="0%";
+  render();
+  popup("Unhide completed!","info");
+}
+
+render();
+</script>
+</body>
+</html>
