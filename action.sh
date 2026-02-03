@@ -19,7 +19,7 @@ UPDATE="$SCRIPT_DIR/key.sh"
 PROP="$MODPATH/module.prop"
 BAK="$PROP.bak"
 
-URL="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/DUMP/notice.md"
+URL="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/keybox-status.md"
 INSTALLATION="/data/adb/modules_update/playintegrityfix/webroot/common_scripts/key.sh"
 
 FLAG="$BOX/advanced"
@@ -28,7 +28,7 @@ PATCH_FLAG="$BOX/patch"
 P="$MODPATH/custom.pif.prop"
 SKIP_FILE="/data/adb/Box-Brain/skip"
 
-PATCH_DATE="2025-12-05"
+PATCH_DATE="2026-01-01"
 PROP_MAIN="ro.build.version.security_patch"
 
 TARGET_DIR="/data/adb/tricky_store"
@@ -47,12 +47,14 @@ URL_KA="https://github.com/qwq233/KeyAttestation/releases/download/1.8.4/key-att
 SUM_KA="c9bbc118c75b11bfca7d99b67470d68b5505e1959b6a5f0b298b38ba8104c93a"
 URL_UL="https://github.com/Xposed-Modules-Repo/ru.mike.updatelocker/releases/download/19-1.4.2/updatelocker_v1.4.2_icon.apk"
 SUM_UL="7e157f7847e4ac1e7a2262f9865740f405c3a6346108d08dec835f3e7cae12ee"
-URL_HMA="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/toolbox/HMAL_Config.json"
-SUM_HMA="7614a3fad184cb53eeca7c94706391c4ef9ec29abd27c1d0a22c643509bfcd78"
+URL_HMA="https://raw.githubusercontent.com/MeowDump/Integrity-Box/refs/heads/main/hidemyapplist/config.json"
+SUM_HMA="bd3e1754d1fdb8147130e3e8deca2c020351fe5a4e600529dd21cb2c0c348c13"
 URL_HMA2="https://github.com/frknkrc44/HMA-OSS/releases/download/oss-151/HMA-OSS-oss-151-release.apk"
 SUM_HMA2="9f17f0569cb0192d4fefe6171965c49af5d80d13270ded97ed5fc3d854bab8e3"
 URL_RP="https://github.com/uragiristereo/Reverse_Pixelify/releases/download/v1.0/Reverse_Pixelify_v1.0.apk"
 SUM_RP="d7c69f958bfdec13f8d3ded5cf34705cf3743645aad713813f463aefab9d971a"
+URL_KW="https://github.com/5ec1cff/KsuWebUIStandalone/releases/download/v1.0/KsuWebUI-1.0-34-release.apk"
+SUM_KW="a99e9a66c79d94db7cc5cf0c12607df1790215423e3d917c937dc16093c8135d"
 PIPE="$RECORD/integrity_downloader.pipe"
 OUT="/storage/emulated/0/Download/IntegrityModules"
 WIDTH=55
@@ -95,10 +97,10 @@ if [ -f $BOX/download ]; then
         print_row "TrickyStore" "$(get_size "$OUT/TrickyStore.zip")" "Verified" ||
         print_row "TrickyStore" "-" "Failed"
 
-    download "$URL_IB" "Old-IntegrityBox.zip" "$SUM_IB"
-    [ -f "$OUT/Old-IntegrityBox.zip" ] &&
-        print_row "IntegrityBox" "$(get_size "$OUT/Old-IntegrityBox.zip")" "Verified" ||
-        print_row "IntegrityBox" "-" "Failed"
+#    download "$URL_IB" "Old-IntegrityBox.zip" "$SUM_IB"
+#    [ -f "$OUT/Old-IntegrityBox.zip" ] &&
+#        print_row "IntegrityBox" "$(get_size "$OUT/Old-IntegrityBox.zip")" "Verified" ||
+#        print_row "IntegrityBox" "-" "Failed"
 
     download "$URL_KA" "KeyAttestation.apk" "$SUM_KA"
     [ -f "$OUT/KeyAttestation.apk" ] &&
@@ -124,6 +126,11 @@ if [ -f $BOX/download ]; then
     [ -f "$OUT/Disable_ROM_spoofing_lsposed.apk" ] &&
         print_row "Reverse Pixelify" "$(get_size "$OUT/Disable_ROM_spoofing_lsposed.apk")" "Verified" ||
         print_row "Reverse Pixelify" "-" "Failed"
+        
+    download "$URL_KW" "KSU_WebUI.apk" "$SUM_KW"
+    [ -f "$OUT/KSU_WebUI.apk" ] &&
+        print_row "KSU WebUI" "$(get_size "$OUT/KSU_WebUI.apk")" "Verified" ||
+        print_row "KSU WebUI" "-" "Failed"
 
     printf "%${WIDTH}s\n" | tr ' ' '='
     center "DONE"
