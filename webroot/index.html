@@ -43,7 +43,7 @@
           <button class="btn" data-type="ctrl"><span class="icon material-symbols-outlined">settings</span>Advanced Control <div class="spinner"></div></button>
           <button class="btn" data-type="hash"><span class="icon material-symbols-outlined">threat_intelligence</span>Fix Abnormal Boot Hash<div class="spinner"></div></button>
           <button class="btn" data-script="resetprop.sh" onclick="ksu.exec(`su -c 'for p in $(getprop | grep -E pphooks\|gphooks\|pihook\|pixelprops\|gms\|pi | sed -E s/^\\[\\(.*\\)\\]:.*/\\1/); do resetprop -p -d $p; done; pm list packages | grep -q com.reveny.nativecheck && am force-stop com.reveny.nativecheck'`)"><span class='icon material-symbols-outlined'>drag_click</span>Hide PIF Hook Detection<div class='spinner'></div></button>
-          <button class="btn" data-script="force_override.sh" data-type="lineage"><span class="icon material-symbols-outlined">visibility_off</span>Spoof Lineage Props<div class="spinner"></div></button>
+          <button class="btn" data-script="override_lineage.sh" data-type="lineage"><span class="icon material-symbols-outlined">visibility_off</span>Spoof Lineage Props<div class="spinner"></div></button>
         </div>
       </div>
 
@@ -70,15 +70,15 @@
       </div>
 
       <div class="button-group">
-        <h3 class="group-title">Zygisk & Selinux</h3>
+        <h3 class="group-title">Hide My Stuff</h3>
         <div class="button-grid">
-          <button class="btn" data-script="selinux" onclick="ksu.exec('setenforce 1')"><span class="icon material-symbols-outlined">bolt</span>Spoof SeLinux<div class="spinner"></div></button>
-          <button class="btn" data-script="zygisknext" onclick="ksu.exec('rm -f /data/adb/zygisksu/{denylist_enforce,linker,memory_type,klog}')"><span class="icon material-symbols-outlined">bolt</span>Reset ZygiskNext <div class="spinner"></div></button>
+          <button class="btn" data-script="hma.sh" data-type="hma"><span class="icon material-symbols-outlined">adb</span>Inject HMA Template<div class="spinner"></div></button>
+          <button class="btn" data-type="hide"><span class="icon material-symbols-outlined">visibility_off</span>Hide Sus Files <div class="spinner"></div></button>
         </div>
       </div>
 
       <div class="button-group">
-        <h3 class="group-title">Custom ROM Inbuilt Spoofing</h3>
+        <h3 class="group-title">Custom ROM Spoofing</h3>
         <div class="button-grid">
           <button class="btn" data-script="nogms" onclick="ksu.exec('[ -d /data/adb/Box-Brain ] && touch /data/adb/Box-Brain/disablegms || [ -d /data/adb/Box-Brain ] && rm -f /data/adb/Box-Brain/enablegms')"><span class="icon material-symbols-outlined">toggle_on</span>Disable Spoofing<div class="spinner"></div></button>
           <button class="btn" data-script="yesgms" onclick="ksu.exec('[ -d /data/adb/Box-Brain ] && touch /data/adb/Box-Brain/enablegms || [ -d /data/adb/Box-Brain ] && rm -f /data/adb/Box-Brain/disablegms')"><span class="icon material-symbols-outlined">toggle_off</span>Enable Spoofing <div class="spinner"></div></button>
@@ -86,13 +86,13 @@
       </div>
       
       <div class="button-group">
-        <h3 class="group-title">Hide My Stuff</h3>
+        <h3 class="group-title">Zygisk & Selinux</h3>
         <div class="button-grid">
-          <button class="btn" data-script="hma.sh" data-type="hma"><span class="icon material-symbols-outlined">adb</span>Inject HMA Template<div class="spinner"></div></button>
-          <button class="btn" data-type="hide"><span class="icon material-symbols-outlined">visibility_off</span>Hide My Files <div class="spinner"></div></button>
+          <button class="btn" data-script="selinux" onclick="ksu.exec('setenforce 1')"><span class="icon material-symbols-outlined">bolt</span>Spoof SeLinux<div class="spinner"></div></button>
+          <button class="btn" data-script="zygisknext" onclick="ksu.exec('rm -f /data/adb/zygisksu/{denylist_enforce,linker,memory_type,klog}')"><span class="icon material-symbols-outlined">bolt</span>Reset ZygiskNext <div class="spinner"></div></button>
         </div>
       </div>
-
+      
       <div class="button-group">
         <h3 class="group-title">Shamiko & NoHello</h3>
         <div class="button-grid">

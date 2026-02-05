@@ -78,12 +78,15 @@ check_integrity() {
 # Setup environment and permissions
 setup_environment() {
     debug " ✦ Setting up Environment "
-    chmod +x "$SCRIPT/key.sh"
-    sh "$SCRIPT/key.sh" #> /dev/null 2>&1
+
+    chmod +x "$SCRIPT/key.sh" || { echo "❌ chmod failed"; exit 1; }
+    sh "$SCRIPT/key.sh" || { echo "❌ ERROR 69"; exit 1; }
 }
 
 hizru() {
+    FLAG="/data/adb/Box-Brain"
     FLAG_FILE="$FLAG/skip"
+    LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"
     LOG_FILE="$LOG_DIR/skip.log"
 
     mkdir -p "$FLAG" "$LOG_DIR"
@@ -186,13 +189,13 @@ gather_system_info() {
 # Release the source
 release_source() {
     [ -f "/data/adb/Box-Brain/noredirect" ] && return 0
-    nohup am start -a android.intent.action.VIEW -d "https://t.me/MeowDump" > /dev/null 2>&1 &
+    nohup am start -a android.intent.action.VIEW -d "https://t.me/MeowRedirect" > /dev/null 2>&1 &
 }
 
 # Enable recommended settings
 enable_recommended_settings() {
     debug " ✦ Enabling Recommended Settings "
-    touch "$FLAG/NoLineageProp"
+#    touch "$FLAG/NoLineageProp"
     touch "$FLAG/migrate_force"
     touch "$FLAG/run_migrate"
     touch "$FLAG/noredirect"
@@ -203,12 +206,6 @@ enable_recommended_settings() {
     touch "$FLAG/twrp"
     touch "$FLAG/tag"
 }
-
-if [ "$SDK" -ge 33 ]; then
-    touch "$FLAG/advanced"
-else
-    touch "$FLAG/legacy"
-fi
 
 # Final footer message
 display_footer() {
@@ -256,7 +253,7 @@ cp "$MODPATH/fingerprint/custom.pif.prop" "$MODPATH/custom.pif.prop"
 
 # Quote of the day 
 cat <<EOF > $LOG_DIR/.verify
-YourMindIsAWeaponTrainItToSeeOpportunityNotObstacles
+YouAreWhoYouAreWhenNoOneIsWatching
 EOF
 
 # remove old module id to avoid conflict
@@ -267,10 +264,32 @@ fi
 # Start the installation process
 install_module
 
+debug " ✦ Setting IntegrityBox Profile"
+if [ "$SDK" -ge 33 ]; then
+    touch "$FLAG/advanced"
+else
+    touch "$FLAG/legacy"
+fi
+
+debug " ✦ Detecting ROM signature"
+# Get the signature of the "android" package
+SIG=$(pm dump android 2>/dev/null | grep -A1 "signatures:" | tail -n1 | tr -d '[:space:]')
+
+case "$SIG" in
+    # Known AOSP test key hex prefixes
+    *30820122300d06092a864886f70d01010105000382010f00*|\
+    *30820122300d06092a864886f70d01010105000382010f01*)
+        touch "$FLAG/test-key"
+        ;;
+    *)
+        touch "$FLAG/release-key"
+        ;;
+esac
+
 # Write security patch file if missing 
 if [ ! -f /data/adb/tricky_store/security_patch.txt ]; then
 cat <<EOF > /data/adb/tricky_store/security_patch.txt
-all=2025-12-05
+all=2026-01-01
 EOF
 fi
 

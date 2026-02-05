@@ -220,76 +220,66 @@ window.runShellFromIframe = async function (cmd) {
 /* Dashboard */
 async function updateDashboard() {
   const statusItems = {
-  "status-playstore": "dumpsys package com.android.vending | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
-  "status-selinux": "getenforce || echo Unknown",
-  "status-target": "[ -f /data/adb/tricky_store/target.txt ] && grep -cve '^$' /data/adb/tricky_store/target.txt || echo 0",
-  "status-android": "case \"$(getprop ro.system.build.version.release 2>/dev/null)\" in 4*) echo KitKat ;; 5*) echo Lollipop ;; 6*) echo Marshmallow ;; 7*) echo Nougat ;; 8*) echo Oreo ;; 9*) echo Pie ;; 10) echo QuinceTart ;; 11) echo RedVelvet ;; 12*) echo SnowCone ;; 13*) echo Tiramisu ;; 14*) echo UpsideDown ;; 15*) echo VanillaIceCream ;; 16*) echo Baklava ;; *) echo Unknown ;; esac",
-  "status-pixel": "[ -f /data/adb/modules/playintegrityfix/custom.pif.prop ] && awk -F= '/^PRODUCT=/{print $2}' /data/adb/modules/playintegrityfix/custom.pif.prop || echo None",
-  "status-patch": "getprop ro.build.version.security_patch || echo Unknown",
-  "status-zygisk": "[ -f /data/adb/modules/zygisksu/module.prop ] && awk -F= '/^name=/{print $2}' /data/adb/modules/zygisksu/module.prop || ([ -f /data/adb/modules/rezygisk/module.prop ] && echo ReZygisk) || (magisk --sqlite \"SELECT value FROM settings WHERE key='zygisk';\" | grep -q '1' && echo Magisk-Zygisk) || echo None",
-  "status-profile": "if [ -f /data/adb/Box-Brain/advanced ]; then echo 'Supreme'; elif [ -f /data/adb/Box-Brain/legacy ]; then echo 'Legacy'; elif [ -f /data/adb/Box-Brain/wipe ]; then echo 'Meta'; else echo 'None'; fi",
+    "status-playstore": "dumpsys package com.android.vending | grep versionName | head -n1 | awk -F'=' '{print $2}' | cut -d'-' -f1 | cut -d' ' -f1 | cut -d'.' -f1-3",
+    "status-selinux": "getenforce || echo Unknown",
+    "status-target": "[ -f /data/adb/tricky_store/target.txt ] && grep -cve '^$' /data/adb/tricky_store/target.txt || echo 0",
+    "status-android": "case \"$(getprop ro.system.build.version.release 2>/dev/null)\" in 4*) echo KitKat ;; 5*) echo Lollipop ;; 6*) echo Marshmallow ;; 7*) echo Nougat ;; 8*) echo Oreo ;; 9*) echo Pie ;; 10) echo QuinceTart ;; 11) echo RedVelvet ;; 12*) echo SnowCone ;; 13*) echo Tiramisu ;; 14*) echo UpsideDown ;; 15*) echo VanillaIceCream ;; 16*) echo Baklava ;; *) echo Unknown ;; esac",
+    "status-pixel": "[ -f /data/adb/modules/playintegrityfix/custom.pif.prop ] && awk -F= '/^PRODUCT=/{print $2}' /data/adb/modules/playintegrityfix/custom.pif.prop || echo None",
+    "status-patch": "getprop ro.build.version.security_patch || echo Unknown",
+    "status-zygisk": "[ -f /data/adb/modules/zygisksu/module.prop ] && awk -F= '/^name=/{print $2}' /data/adb/modules/zygisksu/module.prop || ([ -f /data/adb/modules/rezygisk/module.prop ] && echo ReZygisk) || (magisk --sqlite \"SELECT value FROM settings WHERE key='zygisk';\" | grep -q '1' && echo Magisk-Zygisk) || echo None",
+    "status-profile": "if [ -f /data/adb/Box-Brain/advanced ]; then echo 'Supreme'; elif [ -f /data/adb/Box-Brain/legacy ]; then echo 'Legacy'; elif [ -f /data/adb/Box-Brain/wipe ]; then echo 'Meta'; else echo 'None'; fi",
 
-  "status-whitelist": `
-    if ls /data/adb/*/whitelist* 2>/dev/null | grep -q .; then
-      echo ENABLED
-    else
-      echo DISABLED
-    fi
-  `,
+    "status-whitelist": `
+      if ls /data/adb/*/whitelist* 2>/dev/null | grep -q .; then
+        echo ENABLED
+      else
+        echo DISABLED
+      fi
+    `,
 
-  "status-gms": `
-    props=(
-      persist.sys.pihooks.disable.gms_key_attestation_block
-      persist.sys.pihooks.disable.gms_props
-      persist.sys.pihooks.disable
-      persist.sys.kihooks.disable
-    );
-    found_any=0; disabled=0; enabled=0;
-    for p in "\${props[@]}"; do
-      val=$(getprop "$p" 2>/dev/null);
-      if [ -n "$val" ]; then
-        found_any=1;
-        if [ "$val" = "true" ] || [ "$val" = "1" ]; then
-          disabled=$((disabled+1));
-        elif [ "$val" = "false" ] || [ "$val" = "0" ]; then
-          enabled=$((enabled+1));
+    "status-gms": `
+      props=(
+        persist.sys.pihooks.disable.gms_key_attestation_block
+        persist.sys.pihooks.disable.gms_props
+        persist.sys.pihooks.disable
+        persist.sys.kihooks.disable
+      );
+      found_any=0; disabled=0; enabled=0;
+      for p in "\${props[@]}"; do
+        val=$(getprop "$p" 2>/dev/null);
+        if [ -n "$val" ]; then
+          found_any=1;
+          if [ "$val" = "true" ] || [ "$val" = "1" ]; then
+            disabled=$((disabled+1));
+          elif [ "$val" = "false" ] || [ "$val" = "0" ]; then
+            enabled=$((enabled+1));
+          fi;
         fi;
-      fi;
-    done;
-    if [ $found_any -eq 0 ]; then echo "Meow Box";
-    elif [ $enabled -gt 0 ]; then echo "ENABLED";
-    else echo "DISABLED"; fi
-  `,
-  
-  "status-romsign": `
-    APK=/system/framework/framework-res.apk;
-    TMP=/data/local/tmp/.romsig.$$;
-    unzip -p "$APK" META-INF/*.RSA > "$TMP" 2>/dev/null || { echo UNKNOWN Signed; exit; };
-    HASH=$(od -An -t u1 "$TMP" | awk '{for(i=1;i<=NF;i++)h=(h*31+$i)%4294967296}END{if(h>2147483647)h-=4294967296;print h}');
-    rm -f "$TMP";
-    case "$HASH" in
-      -1260709591|-671091164) echo TESTKEY ;;
-      *) echo RELEASE ;;
-    esac
-  `,
+      done;
+      if [ $found_any -eq 0 ]; then echo "Meow Box";
+      elif [ $enabled -gt 0 ]; then echo "ENABLED";
+      else echo "DISABLED"; fi
+    `,
 
-  "status-LineageProp": `if getprop | grep -iq 'lineage'; then echo FOUND; else echo NONE; fi`
-};
-  
+    "status-romsign": `su -c 'if [ -f /data/adb/Box-Brain/test-key ]; then echo TESTKEY; elif [ -f /data/adb/Box-Brain/release-key ]; then echo RELEASE; else echo Unknown; fi'`,
+    "status-LineageProp": `if getprop | grep -iq 'lineage'; then echo FOUND; else echo NONE; fi`
+  };
+
   for (const [id, cmd] of Object.entries(statusItems)) {
     const el = document.getElementById(id);
     if (!el) continue;
     try {
       let out = (await runShell(cmd)).trim();
-      if (!out) out = id === "status-status-zygisk" ? "Scripts Mode" : "Unknown";
+      if (!out) out = id === "status-zygisk" ? "Scripts Mode" : "Unknown";
 
       switch (id) {
-         case "status-playstore":
-         case "status-profile":
-         case "status-playservices":
-           el.textContent = out;
-           el.className = "status-indicator play";
+        case "status-playstore":
+        case "status-profile":
+        case "status-playservices":
+          el.textContent = out;
+          el.className = "status-indicator play";
           break;
+
         case "status-selinux":
           el.textContent = out;
           el.className = `status-indicator ${
@@ -301,25 +291,17 @@ async function updateDashboard() {
           el.textContent = `${out} apps`;
           el.className = `status-indicator ${out === "0" ? "disabled" : "enabled"}`;
           break;
-          
+
         case "status-pixel":
-          el.textContent = out;
-           el.className = "status-indicator enabled";
-          break;
-          
         case "status-patch":
           el.textContent = out;
-           el.className = "status-indicator enabled";
+          el.className = "status-indicator enabled";
           break;
-          
+
         case "status-android":
-          el.textContent = out;
-           el.className = "status-indicator neutral";
-          break;
-          
         case "status-zygisk":
           el.textContent = out;
-           el.className = "status-indicator neutral";
+          el.className = "status-indicator neutral";
           break;
 
         case "status-gms":
@@ -347,20 +329,20 @@ async function updateDashboard() {
             el.className = "status-indicator disabled";
           }
           break;
-          
+
         case "status-romsign":
           if (out === "TESTKEY") {
             el.textContent = "Test-Key";
             el.className = "status-indicator disabled";
           } else if (out === "RELEASE") {
-            el.textContent = "Release-Key";
+            el.textContent = "Normal";
             el.className = "status-indicator enabled";
           } else {
             el.textContent = "Unknown";
             el.className = "status-indicator neutral";
           }
           break;
-        
+
         case "status-LineageProp":
           if (out === "FOUND") {
             el.textContent = "90% Spoofed";
