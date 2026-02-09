@@ -1,1 +1,1 @@
-Current keybox is soft banned (06/02/2026) and only passes DEVICE INTEGRITY 🟢🟢🔴 | It was leaked on 29/01/2026.
+Current keybox is VALID and can pass STRONG INTEGRITY 🟢🟢🟢 | It was leaked on 09/02/2026.
