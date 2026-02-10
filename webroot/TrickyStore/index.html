@@ -112,7 +112,7 @@ body {
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 14px;
   border-radius: var(--border-radius);
   background: var(--card-bg);
@@ -143,10 +143,9 @@ body {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
 .pkg {
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.6);
-  word-break: break-all;
+  display: none;
 }
 
 /* Actions */
@@ -288,6 +287,32 @@ body {
   .item { padding: 10px; }
   .toggle { width: 42px; }
 }
+
+.app-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.app-icon.lazy {
+  opacity: 0;
+}
+
+.app-icon.loaded {
+  opacity: 1;
+  transition: opacity .25s ease;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 </style>
 </head>
 <body>
@@ -369,18 +394,28 @@ function render(apps, targets, blacks){
     const isBlack = blacks.includes(a.pkg);
     const item = document.createElement("div");
     item.className="item"+(isBlack?" blacklisted":"");
-    item.innerHTML=`
+    item.innerHTML = `
+      <img class="app-icon lazy" data-src="ksu://icon/${a.pkg}" alt="">
+
       <div class="info">
         <div class="name">${a.label}</div>
-        <div class="pkg">${a.pkg}</div>
       </div>
+
       <div class="actions">
-        <div class="toggle ${isTarget?'active':''} ${isBlack?'disabled':''}" data-pkg="${a.pkg}"></div>
-        <button class="icon-btn black" data-pkg="${a.pkg}"><span class="material-icons">${isBlack?"block":"block_flipped"}</span></button>
-      </div>`;
+        <div class="toggle ${isTarget?'active':''} ${isBlack?'disabled':''}"
+             data-pkg="${a.pkg}"></div>
+
+        <button class="icon-btn black" data-pkg="${a.pkg}">
+          <span class="material-icons">
+            ${isBlack ? "block" : "block_flipped"}
+          </span>
+        </button>
+      </div>
+    `;
     list.appendChild(item);
   });
   attachListeners();
+  loadIcons();
 }
 
 function attachListeners(){
@@ -410,6 +445,31 @@ function attachListeners(){
 }
 
 document.getElementById("search").addEventListener("input", buildList);
+
+function loadIcons(){
+  const imgs = document.querySelectorAll("img.app-icon[data-src]");
+
+  if (!("IntersectionObserver" in window)) {
+    imgs.forEach(img => img.src = img.dataset.src);
+    return;
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const img = e.target;
+      img.src = img.dataset.src;
+      img.onload = () => {
+        img.classList.remove("lazy");
+        img.classList.add("loaded");
+      };
+      img.onerror = () => img.remove();
+      obs.unobserve(img);
+    });
+  }, { rootMargin: "100px" });
+
+  imgs.forEach(img => obs.observe(img));
+}
 
 // Backup / Restore
 function backupTargets(){
