@@ -86,18 +86,18 @@
       </div>
       
       <div class="button-group">
-        <h3 class="group-title">Zygisk & Selinux</h3>
+        <h3 class="group-title">Cleanup & Selinux</h3>
         <div class="button-grid">
           <button class="btn" data-script="selinux" onclick="ksu.exec('setenforce 1')"><span class="icon material-symbols-outlined">bolt</span>Spoof SeLinux<div class="spinner"></div></button>
-          <button class="btn" data-script="zygisknext" onclick="ksu.exec('rm -f /data/adb/zygisksu/{denylist_enforce,linker,memory_type,klog}')"><span class="icon material-symbols-outlined">bolt</span>Reset ZygiskNext <div class="spinner"></div></button>
+          <button class="btn" data-script="cache" data-type="cache"><span class="icon material-symbols-outlined">mop</span>Nuke App Storage <div class="spinner"></div></button>
         </div>
       </div>
       
       <div class="button-group">
-        <h3 class="group-title">Shamiko & NoHello</h3>
+        <h3 class="group-title">ZygiskNext & Shamiko</h3>
         <div class="button-grid">
-          <button class="btn" data-script="start" onclick="ksu.exec('[ -d /data/adb/Box-Brain ] && touch /data/adb/shamiko/whitelist || [ -d /data/adb/nohello ] && touch /data/adb/nohello/whitelist')"><span class="icon material-symbols-outlined">toggle_on</span>Enable Whitelist Mode <div class="spinner"></div></button>
-          <button class="btn" data-script="stop" onclick="ksu.exec('rm -rf /data/adb/shamiko/whitelist /data/adb/nohello/whitelist')"><span class="icon material-symbols-outlined">toggle_off</span>Enable Blacklist Mode <div class="spinner"></div></button>
+          <button class="btn" data-script="start" onclick="ksu.exec('[ -d /data/adb/Box-Brain ] && touch /data/adb/shamiko/whitelist || [ -d /data/adb/zygisksu ] && touch /data/adb/zygisksu/denylist_enforce')"><span class="icon material-symbols-outlined">toggle_on</span>Enable Whitelist Mode <div class="spinner"></div></button>
+          <button class="btn" data-script="zygisknext" onclick="ksu.exec('rm -f /data/adb/zygisksu/{denylist_enforce,linker,memory_type,klog}')"><span class="icon material-symbols-outlined">bolt</span>Reset ZygiskNext <div class="spinner"></div></button>
         </div>
       </div>
 

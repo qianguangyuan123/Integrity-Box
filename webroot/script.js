@@ -31,6 +31,7 @@ const messageMap = {
   "pif":        { start: "You can update fingerprint without internet", type: "info" },
   "vending":        { start: "This will clear data of Play Services & Store", type: "info" },
   "zygisknext":        { start: "☝️🤓", type: "info" },
+  "cache":        { start: "This will delete temporary unnecessary files", type: "info" },
   "hide":        { start: "This will hide basic sus paths", type: "info" },
   "scanner":        { start: " Click on Run Scan", success: "Detection Complete", type: "info" },
   "support":       { start: "Become a Supporter", type: "info" },
@@ -230,8 +231,19 @@ async function updateDashboard() {
     "status-profile": "if [ -f /data/adb/Box-Brain/advanced ]; then echo 'Supreme'; elif [ -f /data/adb/Box-Brain/legacy ]; then echo 'Legacy'; elif [ -f /data/adb/Box-Brain/wipe ]; then echo 'Meta'; else echo 'None'; fi",
 
     "status-whitelist": `
-      if ls /data/adb/*/whitelist* 2>/dev/null | grep -q .; then
+      # whitelist ALWAYS has priority
+      if ls /data/adb/*/whitelist* >/dev/null 2>&1; then
         echo ENABLED
+        exit
+      fi
+
+      # read value
+      val="$(sed 's/[^0-9]//g' /data/adb/zygisksu/denylist_enforce 2>/dev/null)"
+
+      if [ "$val" = "1" ]; then
+        echo ENABLED
+      elif [ "$val" = "2" ]; then
+        echo UNMOUNT
       else
         echo DISABLED
       fi
@@ -323,10 +335,13 @@ async function updateDashboard() {
         case "status-whitelist":
           if (out === "ENABLED") {
             el.textContent = "Enabled";
-            el.className = "status-indicator enabled";
+            el.className = "status-indicator neutral";
+          } else if (out === "UNMOUNT") {
+            el.textContent = "Unmount";
+            el.className = "status-indicator neutral";
           } else {
             el.textContent = "Disabled";
-            el.className = "status-indicator disabled";
+            el.className = "status-indicator aqua";
           }
           break;
 
@@ -336,10 +351,10 @@ async function updateDashboard() {
             el.className = "status-indicator disabled";
           } else if (out === "RELEASE") {
             el.textContent = "Normal";
-            el.className = "status-indicator enabled";
+            el.className = "status-indicator neutral";
           } else {
             el.textContent = "Unknown";
-            el.className = "status-indicator neutral";
+            el.className = "status-indicator enabled";
           }
           break;
 
@@ -384,7 +399,7 @@ btns.forEach(btn=>{
         return;
       }
 
-      if (["scanner","hash","user","flags","piffork","pif","vending",
+      if (["scanner","hash","user","flags","cache","piffork","pif","vending",
            "support","report","profile","assistant","tee","xml","hide","patch","ctrl"].includes(type)) {
 
         const pathMap = {
@@ -397,6 +412,7 @@ btns.forEach(btn=>{
           vending:"./Certified/index.html",
           support:"./Support/index.html",
           report:"./Report/index.html",
+          cache:"./Cache/index.html",
           user:"./TrickyStore/index.html",
           xml:"./KeyboxLoader/index.html",
           hide:"./HideMyFiles/index.html",
