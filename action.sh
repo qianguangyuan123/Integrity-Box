@@ -1,4 +1,5 @@
 #!/system/bin/sh
+
 MODPATH="${0%/*}"
 . $MODPATH/common_func.sh
 
@@ -41,8 +42,6 @@ URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.3.1/Zygisk-Ne
 SUM_ZN="7ab5f6bb06c60c960f62fdbf2312e56b094ee91e44105a734a57c763c274b5c3"
 URL_TS="https://github.com/5ec1cff/TrickyStore/releases/download/1.4.1/Tricky-Store-v1.4.1-245-72b2e84-release.zip"
 SUM_TS="2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9"
-URL_IB="https://github.com/MeowDump/Integrity-Box/releases/download/v27/v27-Integrity-Box-25-11-2025.zip"
-SUM_IB="3ce56bd3a3dd27bc77dbfbf3990b2a580cd8cab0fb67710c6a7db75ea01ab6e5"
 URL_KA="https://github.com/qwq233/KeyAttestation/releases/download/1.8.4/key-attestation-v1.8.4-release.apk"
 SUM_KA="c9bbc118c75b11bfca7d99b67470d68b5505e1959b6a5f0b298b38ba8104c93a"
 URL_UL="https://github.com/Xposed-Modules-Repo/ru.mike.updatelocker/releases/download/19-1.4.2/updatelocker_v1.4.2_icon.apk"
@@ -97,11 +96,6 @@ if [ -f $BOX/download ]; then
         print_row "TrickyStore" "$(get_size "$OUT/TrickyStore.zip")" "Verified" ||
         print_row "TrickyStore" "-" "Failed"
 
-#    download "$URL_IB" "Old-IntegrityBox.zip" "$SUM_IB"
-#    [ -f "$OUT/Old-IntegrityBox.zip" ] &&
-#        print_row "IntegrityBox" "$(get_size "$OUT/Old-IntegrityBox.zip")" "Verified" ||
-#        print_row "IntegrityBox" "-" "Failed"
-
     download "$URL_KA" "KeyAttestation.apk" "$SUM_KA"
     [ -f "$OUT/KeyAttestation.apk" ] &&
         print_row "KeyAttestation" "$(get_size "$OUT/KeyAttestation.apk")" "Verified" ||
@@ -145,10 +139,36 @@ fi
 
 if [ -f "$BOX/root" ]; then
   rm -f "$BOX/root"
-  find "$DIR" -type f \( -name "*_install_log_2025*" -o -name "*_action_log_2025*" \) | while read -r f; do
+  find "$DIR" -type f \( -name "*_install_log_2026*" -o -name "*_action_log_2025*" \) | while read -r f; do
     echo "$(date '+%F %T') Deleted: $f" | tee -a "$LOG"
     rm -f "$f"
   done
+  handle_delay
+  exit 0
+fi
+
+if [ -e "$BOX/ota" ]; then
+    rm -f "$MODPATH/system.prop"
+    rm -f "$BOX/NoLineageProp"
+    rm -rf "$BOX/override"
+    rm -rf "$BOX/ota"
+    echo " "
+    echo "  D O N E 👍 | REBOOT YOUR DEVICE"
+    handle_delay
+    exit 0
+fi
+
+if [ -f "$BOX/override" ]; then
+  sh "$SCRIPT_DIR/override_lineage.sh"
+  rm -f "$BOX/override"
+  handle_delay
+  exit 0
+fi
+
+if [ -f "$BOX/hma" ]; then
+  sh "$SCRIPT_DIR/hma.sh"
+  echo " D O N E 👍"
+  rm -f "$BOX/hma"
   handle_delay
   exit 0
 fi
@@ -216,6 +236,8 @@ log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >>"$CPP"; }
 # Exit if offline
 #if ! megatron; then exit 1; fi
 
+sh "$UPDATE" || { sleep 10; exit 1; }
+
 # Show header
 print_header
 
@@ -271,9 +293,6 @@ for i in {1..9}; do
 done
 
 [ -n "$ARGDESC" ] && log_step "MODE" "$ARGDESC"
-
-# Update keybox
-sh "$UPDATE" >/dev/null 2>&1 && log_step "UPDATED" "Valid keybox"
 
 # Keybox Handling
 for f in keybox keybox2; do
@@ -428,36 +447,6 @@ else
     fi
 fi
 
-# Check if Google Wallet is installed
-#if command -v pm >/dev/null 2>&1 && pm list packages | grep -q com.google.android.apps.walletnfcrel; then
-#    WALLET_INSTALLED=true
-#else
-#    WALLET_INSTALLED=false
-#fi
-
-#log_step "INFO" "Wallet installed: $WALLET_INSTALLED"
-
-# Enable spoofing only when Wallet is NOT installed
-#if [ "$WALLET_INSTALLED" != "true" ] \
-#   && [ ! -f "$BOX/force_spoof_off" ] \
-#   && [ -f "$P" ]; then
-
-    # Backup once per run (overwrite is intentional)
-#    cp -f "$P" "$P.bak" && log_step "BACKUP" "Fingerprint backup created"
-
-#    for k in spoofProvider spoofProps spoofBuild spoofVendingFinger; do
-#        setval "$P" "$k" "1"
-#    done
-
-#    if grep -q "^spoofProvider=1" "$P"; then
-#        log_step "UPDATED" "Spoofing Props enabled"
-#    else
-#        log_step "WARNING" "Spoofing failed"
-#    fi
-#else
-#    log_step "SKIPPED" "Spoofing Props update"
-#fi
-
 # Write security_patch.txt based on patch flag
 if [ -f "$PATCH_FLAG" ]; then
   echo "system=prop" > "$FILE_PATH" 2>>"$PATCH_LOG"
@@ -501,6 +490,7 @@ done
 
 log_step "STOPPED" "Droidguard Processes"
 
+sh "$SCRIPT_DIR/cleanup.sh" >/dev/null 2>&1; 
 echo " "
 echo " "
 handle_delay
