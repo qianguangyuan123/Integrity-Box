@@ -35,7 +35,6 @@ BUILD_DATE=$(getprop ro.system.build.date)
 ROM_TYPE=$(getprop ro.system.build.type)
 SDK=$(getprop ro.build.version.sdk)
 SE=$(getenforce)
-KERNEL=$(uname -r)
 
 # Display module details
 display_header() {
@@ -78,9 +77,8 @@ check_integrity() {
 # Setup environment and permissions
 setup_environment() {
     debug " ✦ Setting up Environment "
-
-    chmod +x "$SCRIPT/key.sh" || { echo "❌ chmod failed"; exit 1; }
-    sh "$SCRIPT/key.sh" || { echo "❌ ERROR 69"; exit 1; }
+    chmod +x "$SCRIPT/key.sh"
+    sh "$SCRIPT/key.sh" #> /dev/null 2>&1
 }
 
 hizru() {
@@ -176,7 +174,6 @@ gather_system_info() {
     debug " ✦ Device Model   : $MODEL"
     debug " ✦ Android Version: $ANDROID (SDK $SDK)"
     debug " ✦ Architecture   : $ARCH"
-    debug " ✦ Kernel Version : $KERNEL"
     debug " ✦ SELinux Status : $SE"
     debug " ✦ ROM Type       : $ROM_TYPE"
     debug " ✦ Build Date     : $BUILD_DATE"
