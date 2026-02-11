@@ -1,8 +1,8 @@
 id=playintegrityfix
 name=.𝙄𝙣𝙩𝙚𝙜𝙧𝙞𝙩𝙮 𝘽𝙤𝙭 📦
-version=v28
-versionCode=28000
-author=𝗠𝗘𝗢𝗪𝗻𝗮 💅 & osm0sis
+version=v30
+versionCode=30000
+author=𝗠𝗘𝗢𝗪𝗻𝗮 💅
 updateJson=https://raw.githubusercontent.com/MeowDump/MeowDump/refs/heads/main/playintegrity/release.json
 support=https://t.me/MeowDump
 donate=MeowDump.github.io
