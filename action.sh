@@ -38,8 +38,14 @@ FILE_PATH="$TARGET_DIR/security_patch.txt"
 DIR="/sdcard/Download"
 OUTJSON="/sdcard/meow.json"
 
-URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.3.1/Zygisk-Next-1.3.1-665-7e5b533-release.zip"
-SUM_ZN="7ab5f6bb06c60c960f62fdbf2312e56b094ee91e44105a734a57c763c274b5c3"
+URL_ZN="https://github.com/Dr-TSNG/ZygiskNext/releases/download/v1.3.2/Zygisk-Next-1.3.2-688-2c60cdd-release.zip"
+SUM_ZN="6eedf9401eeb0778febee48f08af8ea517208ceb31f644715e24ca2a57b59425"
+URL_CP="https://github.com/LSPosed/CorePatch/releases/download/4.8/app-release.apk"
+SUM_CP="61db1976f9e47f28700825942cfed0a373cbed9ac0d4006faefd21de34e19fef"
+URL_TH="https://github.com/trinadhthatakula/Thor/releases/download/v1.71.1/foss-release.apk"
+SUM_TH="8d8e74aa9e9d49cf8fc0fc03a5244f9f72b210a1de1cfe0c71bcfd212541b539"
+URL_AF="https://github.com/Android1500/AndroidFaker/releases/download/v2.0.0-beta-9-3/AF-v2.0.0-beta-9-3.apk"
+SUM_AF="7269658249f150b9f177e8d72322fe54f200e408b238e5b245b2f7b0a5a6fd62"
 URL_TS="https://github.com/5ec1cff/TrickyStore/releases/download/1.4.1/Tricky-Store-v1.4.1-245-72b2e84-release.zip"
 SUM_TS="2f5e73fcba0e4e43b6e96b38f333cbe394873e3a81cf8fe1b831c2fbd6c46ea9"
 URL_KA="https://github.com/qwq233/KeyAttestation/releases/download/1.8.4/key-attestation-v1.8.4-release.apk"
@@ -125,6 +131,21 @@ if [ -f $BOX/download ]; then
     [ -f "$OUT/KSU_WebUI.apk" ] &&
         print_row "KSU WebUI" "$(get_size "$OUT/KSU_WebUI.apk")" "Verified" ||
         print_row "KSU WebUI" "-" "Failed"
+        
+    download "$URL_CP" "Downgrade_Playstore.apk" "$SUM_CP"
+    [ -f "$OUT/Downgrade_Playstore.apk" ] &&
+        print_row "Core Patch" "$(get_size "$OUT/Downgrade_Playstore.apk")" "Verified" ||
+        print_row "Core Patch" "-" "Failed"
+        
+    download "$URL_TH" "Installation_Spoofer.apk" "$SUM_TH"
+    [ -f "$OUT/Installation_Spoofer.apk" ] &&
+        print_row "Thor Installer" "$(get_size "$OUT/Installation_Spoofer.apk")" "Verified" ||
+        print_row "Thor Installer" "-" "Failed"
+        
+#    download "$URL_AF" "Android_Faker.apk" "$SUM_AF"
+#    [ -f "$OUT/Android_Faker.apk" ] &&
+#        print_row "Android Faker" "$(get_size "$OUT/Android_Faker.apk")" "Verified" ||
+#        print_row "Android Faker" "-" "Failed"
 
     printf "%${WIDTH}s\n" | tr ' ' '='
     center "DONE"
