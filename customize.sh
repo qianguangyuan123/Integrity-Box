@@ -192,11 +192,10 @@ release_source() {
 # Enable recommended settings
 enable_recommended_settings() {
     debug " ✦ Enabling Recommended Settings "
-#    touch "$FLAG/NoLineageProp"
+    touch "$FLAG/NoLineageProp"
     touch "$FLAG/migrate_force"
     touch "$FLAG/run_migrate"
     touch "$FLAG/noredirect"
-#    touch "$FLAG/advanced"
     touch "$FLAG/nodebug"
     touch "$FLAG/encrypt"
     touch "$FLAG/build"
@@ -246,11 +245,13 @@ echo "
 "
 
 # Copy local fingerprint to correct path so that user doesn't have to fetch it manually after installation 
-cp "$MODPATH/fingerprint/custom.pif.prop" "$MODPATH/custom.pif.prop"
+if [ ! -f "/data/adb/modules/playintegrityfix/service.sh" ]; then
+    cp "$MODPATH/fingerprint/custom.pif.prop" "$MODPATH/custom.pif.prop"
+fi
 
 # Quote of the day 
 cat <<EOF > $LOG_DIR/.verify
-YouAreWhoYouAreWhenNoOneIsWatching
+TrueStrengthNeedsNoAudience
 EOF
 
 # remove old module id to avoid conflict
@@ -297,12 +298,14 @@ fi
 ##########################################
 
 # Zygiskless installation 
-if [ -f /sdcard/zygisk ] || [ -f /data/adb/Box-Brain/zygisk ]; then
-    debug " ✦ Installing global scripts only"
+if [ -e /sdcard/zygisk ] || [ -f /data/adb/Box-Brain/zygisk ]; then
+    debug " ✦ Proceeding Zygiskless Installation"
     debug " ✦ Disabled: Zygisk Attestation fallback"
-    debug " ✦ Disabled: PIF Module Spoofing"
+    debug " ✦ Enabled:  Pixel Mode"
     touch "$FLAG/zygisk"
-    sed -i 's/\(description=\)\(.*\)/\1𝙒𝙊𝙍𝙆𝙄𝙉𝙂 𝘼𝙎 𝙎𝙐𝙋𝙋𝙊𝙍𝙏 𝙁𝙊𝙍 𝙄𝙉𝘽𝙐𝙄𝙇𝙏 𝙎𝙋𝙊𝙊𝙁𝙄𝙉𝙂 || \2/' $MODPATH/module.prop
+    touch "$FLAG/keybox"
+    touch "$FLAG/json"
+    sed -i 's/^description=.*/description=Pixel Mode 🌱 has been enabled, all zygisk related components has been disabled/' "$MODPATH/module.prop"
     rm -rf $MODPATH/app_replace_list.txt \
         $MODPATH/autopif2.sh $MODPATH/classes.dex \
         $MODPATH/common_setup.sh $MODPATH/custom.app_replace_list.txt \
@@ -321,14 +324,6 @@ if [ -d /data/adb/modules/playintegrityfix/system ]; then
     cp -afL /data/adb/modules/playintegrityfix/system $MODPATH
 fi
 
-# Copy any supported custom files to updated module
-for FILE in custom.app_replace_list.txt custom.pif.prop skipdelprop skippersistprop uninstall.sh; do
-    if [ -f "/data/adb/modules/playintegrityfix/$FILE" ]; then
-        debug " ✦ Restoring $FILE"
-        cp -af /data/adb/modules/playintegrityfix/$FILE $MODPATH/$FILE
-    fi
-done
-
 # Warn if potentially conflicting modules are installed
 if [ -d /data/adb/modules/MagiskHidePropsConf ]; then
     debug " ✦ MagiskHidePropsConfig (MHPC) module may cause issues with PIF"
@@ -346,7 +341,7 @@ rm -f /data/data/com.google.android.gms/cache/pif.prop /data/data/com.google.and
     /data/data/com.google.android.gms/cache/pif.json /data/data/com.google.android.gms/pif.json
 
 # Remove flag from /sdcard to avoid detection 
-[ -f /sdcard/zygisk ] && rm -f /sdcard/zygisk
+[ -f /sdcard/zygisk ] || [ -d /sdcard/zygisk ] && rm -rf /sdcard/zygisk
 
 display_footer
 exit 0
