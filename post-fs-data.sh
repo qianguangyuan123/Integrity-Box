@@ -848,7 +848,7 @@ cat <<'EOF' > "$boot/prop.sh"
 #!/system/bin/sh
 
 # CONFIG
-PATCH_DATE="2026-01-01"
+PATCH_DATE="2026-02-01"
 FILE_PATH="/data/adb/tricky_store/security_patch.txt"
 SKIP_FILE="/data/adb/Box-Brain/skip"
 LOG_DIR="/data/adb/Box-Brain/Integrity-Box-Logs"

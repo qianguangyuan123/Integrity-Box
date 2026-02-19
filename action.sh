@@ -29,7 +29,7 @@ PATCH_FLAG="$BOX/patch"
 P="$MODPATH/custom.pif.prop"
 SKIP_FILE="/data/adb/Box-Brain/skip"
 
-PATCH_DATE="2026-01-01"
+PATCH_DATE="2026-02-01"
 PROP_MAIN="ro.build.version.security_patch"
 
 TARGET_DIR="/data/adb/tricky_store"

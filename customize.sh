@@ -287,7 +287,7 @@ esac
 # Write security patch file if missing 
 if [ ! -f /data/adb/tricky_store/security_patch.txt ]; then
 cat <<EOF > /data/adb/tricky_store/security_patch.txt
-all=2026-01-01
+all=2026-02-01
 EOF
 fi
 
